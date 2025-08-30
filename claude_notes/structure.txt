@@ -1,0 +1,136 @@
+WM_1 Project Structure
+======================
+
+Root: /n/home12/cfpark00/WM_1/
+
+Main Directories:
+-----------------
+configs/                    # Configuration files
+  training_config.yaml      # Main training configuration
+  location_training.yaml    # Location prediction training config
+
+src/                        # All source code (previously scripts/)
+  data_processing/          # Data preparation scripts
+    create_filtered_dataset.py     # Filter cities by population
+    create_distance_dataset_hf.py  # Create HF format distance dataset (no zero-padding)
+    create_distancethres_dataset_hf.py  # Create binary classification threshold dataset
+    create_location_dataset_hf.py  # Create location prediction dataset (supports validation splits)
+    create_randomwalk_dataset_hf.py  # Create random walk sequences dataset
+    
+  training/                 # Model training scripts  
+    train.py                # Main training script with loss masking support
+    train_threshold.py      # Binary classification training script
+    train_location.py       # Location prediction training script
+    batch_test.py           # Test batch processing and generation
+    
+  tokenizer/                # Tokenizer creation and configuration
+    tokenizer_config.py     # Token vocabulary configuration (44 tokens)
+    create_hf_tokenizer.py  # Create HuggingFace-compatible tokenizer
+    
+  visualization/            # Plotting and analysis scripts
+    create_city_map.py      # Generate world maps with city dots
+    create_population_histogram.py  # Population distribution plots
+
+notebooks/                  # Jupyter notebooks
+  load_dataset.ipynb        # Minimal notebook for loading HF datasets and testing tokenizer
+
+analysis/                   # Analysis scripts (to be merged into src)
+  spatial_analysis_csv.py   # Analyze city clustering with cKDTree
+
+outputs/                    # All generated outputs
+  datasets/                 # Processed datasets
+    cities_25k_plus.csv     # Cities with pop > 25k (18,683 cities)
+    cities_50k_plus.csv     # Cities with pop > 50k (10,286 cities) 
+    cities_100k_plus.csv    # Cities with pop > 100k (5,075 cities)
+    dist_*/                 # HuggingFace distance prediction datasets
+    distthres*/             # HuggingFace threshold classification datasets
+    loc_*/                  # HuggingFace location prediction datasets
+    srd_*/                  # HuggingFace random walk datasets
+    
+  tokenizer/                # Custom tokenizer
+    wm1_tokenizer/          # HuggingFace-compatible tokenizer (44 tokens)
+    
+  figures/                  # Generated visualizations
+    world_cities_*.png      # City maps
+    city_population_histogram.png  # Population distributions
+    
+  experiments/              # Training run outputs
+    <exp_name>/             # Per-experiment directory
+      checkpoints/          # Model checkpoints during training
+      final_model/          # Final trained model
+      losses.png            # Training curves
+      metrics.json          # Final metrics
+      config_used.yaml      # Config snapshot
+
+data/                       # Raw data files
+  geonames-all-cities-with-a-population-1000.csv  # Original city data
+
+models/                     # (Currently empty, for saved models)
+
+scratch/                    # Temporary scripts and analysis
+  calc_avg_distance.py      # Calculate average distances in datasets
+  analyze_threshold_balance.py  # Analyze class balance in threshold datasets
+
+claude_notes/               # Development logs
+  logs/                     # Daily activity logs
+    <date>/                 # Per-day directory
+      <time>_<topic>.md     # Timestamped log files
+  structure.txt             # This file
+
+Other Files:
+------------
+.venv/                      # Python virtual environment (uv)
+README.md                   # Project documentation
+
+Data Flow:
+----------
+1. Raw GeoNames CSV → filtered city CSVs (50k+, 100k+)
+2. Filtered CSVs → HuggingFace datasets with train/val/test splits
+3. HF datasets → Training pipeline → Model checkpoints & metrics
+4. Checkpoints → Final model
+
+Key Dataset Formats:
+--------------------
+1. Distance Prediction:
+   Text format: d(c_XX,c_YY)=ZZZZ
+   - XX, YY: City row IDs (no zero padding)
+   - ZZZZ: Distance in kilometers (0-20000)
+
+2. Threshold Classification:
+   Text format: dt(c_XX,c_YY,ZZZZ)={0,1}
+   - XX, YY: City row IDs (no zero padding)
+   - ZZZZ: Distance threshold in km (no leading zeros)
+   - Output: 1 if within threshold, 0 if outside
+
+3. Location Prediction:
+   Text format: loc(c_XX)=XXXX,YYYY
+   - XX: City row ID (no zero padding)
+   - XXXX: floor(1000 * longitude in radians), range 0-6283
+   - YYYY: floor(1000 * latitude in radians), range 0-3141
+
+4. Random Walk:
+   Text format: srd_200=c_XX,c_YY,c_ZZ,...
+   - Sequential random distance walk
+   - Cities connected within 200km threshold
+   - Variable length sequences (1-32 cities)
+
+Columns in HF datasets:
+- text: Full string (e.g., "d(c_847,c_3986)=1324" or "loc(c_847)=4862,1787")
+- prompt: Input portion with <bos> prefix
+- completion: Output portion with <eos> suffix
+
+Tokenizer:
+----------
+- Character-level tokenizer with exactly 44 tokens
+- 3 special tokens: <bos>, <eos>, <pad>
+- 5 grammar tokens: ( ) , = _
+- 26 lowercase letters: a-z
+- 10 digits: 0-9
+- HuggingFace-compatible, loadable with AutoTokenizer
+
+Training Features:
+------------------
+- loss_mask_type: null (all tokens) or "answer_only" (only output tokens)
+- Evaluation metrics: MAE for regression, F1/precision/recall for classification
+- Validation split support for all dataset types
+- Checkpoint saving and training curve visualization

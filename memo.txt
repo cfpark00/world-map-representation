@@ -1,0 +1,2 @@
+python scripts/data_processing/create_distance_dataset_hf.py 8000 1000 1000 outputs/datasets/
+
