@@ -1,9 +1,12 @@
 # Experiment directory - all outputs go here
-exp_dir: "outputs/experiments/location_500k_100epochs_bs512"
+exp_dir: "outputs/experiments/loc_100k_200epochs_ar"
+
+# Task type (location or distance)
+task_type: "location"
 
 # Dataset
 dataset:
-  path: "/n/home12/cfpark00/WM_1/outputs/datasets/loc_500kplus_all_42"
+  path: "/n/home12/cfpark00/WM_1/outputs/datasets/loc_100k_all_42"
   max_sequence_length: 32
 
 # Tokenizer
@@ -13,23 +16,23 @@ tokenizer_path: "outputs/tokenizer/wm1_tokenizer"
 model:
   vocab_size: 44  # Our custom tokenizer vocab size
   hidden_size: 128
-  num_hidden_layers: 4
+  num_hidden_layers: 6
   num_attention_heads: 4
   intermediate_size: 512
-  init_scale: 0.02  # Standard deviation for weight initialization (GPT-2 style)
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
 
 # Training
 training:
-  batch_size: 512
+  batch_size: 64
   eval_batch_size: 32
-  num_epochs: 100
+  num_epochs: 200
   optimizer: "adamw"
   learning_rate: 3e-4
-  weight_decay: 0.00
+  weight_decay: 0.01
   scheduler: "linear_with_warmup"
   warmup_steps: 50
   seed: 42
-  loss_mask_type: "answer_only" 
+  loss_mask_type: "full"  # Full autoregressive loss (not answer_only) 
 
 # Checkpointing
 checkpointing:

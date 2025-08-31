@@ -1,0 +1,7 @@
+{
+  "title": "Emergent Geographic Representations in Distance-Trained Transformers",
+  "date": "2025-08-31",
+  "excerpt": "We trained a 6-layer transformer on 1M city distance predictions and discovered it spontaneously develops an internal world map. Linear probes reveal longitude and latitude coordinates emerge in layer representations, achieving R²=0.96 without ever seeing geographic supervision.",
+  "tags": ["representation-learning", "world-models", "interpretability", "emergent-behavior", "transformers"],
+  "readingTime": "15 min read"
+}

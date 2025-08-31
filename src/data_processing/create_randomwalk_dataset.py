@@ -10,19 +10,19 @@ import os
 import argparse
 import random
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from tqdm import tqdm
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Create random walk dataset with train/val/test splits')
-parser.add_argument('n_train', type=int, help='Number of training samples')
-parser.add_argument('n_val', type=int, help='Number of validation samples')
-parser.add_argument('n_test', type=int, help='Number of test samples')
 parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
+parser.add_argument('--n_train', type=int, default=10000, help='Number of training samples (default: 10000)')
+parser.add_argument('--n_val', type=int, default=128, help='Number of validation samples (default: 128)')
+parser.add_argument('--n_test', type=int, default=1000, help='Number of test samples (default: 1000)')
 parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
 parser.add_argument('--cities-csv', type=str, default=None, help='Path to cities CSV file')
 parser.add_argument('--max-length', type=int, default=32, help='Maximum sequence length (default: 32)')
 parser.add_argument('--distance-km', type=float, default=200.0, help='Distance threshold in km (default: 200)')
-parser.add_argument('--visualize', type=int, default=0, help='Number of random sequences to visualize (default: 0, no visualization)')
+parser.add_argument('--visualize', type=int, default=10, help='Number of random sequences to visualize (default: 10)')
 
 args = parser.parse_args()
 
@@ -36,13 +36,13 @@ max_length = args.max_length
 distance_km = args.distance_km
 n_visualize = args.visualize
 
-# Load the 100k cities dataset
+# Load the cities dataset
 print("Loading cities data...")
 try:
     df = load_cities_csv(args.cities_csv)
 except FileNotFoundError as e:
     print(f"Error: {e}")
-    print("Please run: python src/data_processing/create_filtered_dataset.py 100000")
+    print("Please run: python src/data_processing/generate_filtered_dataset.py 100000")
     print("Or specify path with --cities-csv")
     sys.exit(1)
 
@@ -166,7 +166,7 @@ def create_dataset_dict(n_samples, df, tree, coords_rad):
     prompt_list = []
     completion_list = []
     
-    for _ in range(n_samples):
+    for _ in tqdm(range(n_samples), desc="Generating walks", leave=False):
         # Randomly choose sequence length between 1 and max_length
         target_length = random.randint(1, max_length)
         
@@ -179,9 +179,9 @@ def create_dataset_dict(n_samples, df, tree, coords_rad):
         # Convert to city IDs (no zero padding)
         city_ids = [f"c_{int(df.iloc[idx]['row_id'])}" for idx in walk]
         
-        # Create text format: srd_200=c_XX,c_XX,... (no zero padding)
-        full_text = f"srd_{int(distance_km)}=" + ",".join(city_ids)
-        prompt = f"<bos>srd_{int(distance_km)}="
+        # Create text format: walk_{distance}=c_XX,c_XX,... (no zero padding)
+        full_text = f"walk_{int(distance_km)}=" + ",".join(city_ids)
+        prompt = f"<bos>walk_{int(distance_km)}="
         completion = ",".join(city_ids) + "<eos>"
         
         text_list.append(full_text)
@@ -241,13 +241,13 @@ for i in range(min(5, len(train_dataset))):
     print(f"  {text[:100]}... ({n_cities_in_seq} cities)")
 
 print("\nSample val rows:")
-for i in range(min(5, len(val_dataset))):
+for i in range(min(3, len(val_dataset))):
     text = val_dataset[i]['text']
     n_cities_in_seq = len(text.split('=')[1].split(','))
     print(f"  {text[:100]}... ({n_cities_in_seq} cities)")
 
 print("\nSample test rows:")
-for i in range(min(5, len(test_dataset))):
+for i in range(min(3, len(test_dataset))):
     text = test_dataset[i]['text']
     n_cities_in_seq = len(text.split('=')[1].split(','))
     print(f"  {text[:100]}... ({n_cities_in_seq} cities)")
@@ -268,6 +268,11 @@ print(f">>> dataset = load_from_disk('{output_dir}')")
 print(">>> train_data = dataset['train']")
 print(">>> val_data = dataset['validation']")
 print(">>> test_data = dataset['test']")
+
+print("\nFormat: walk_{distance}=c_X,c_Y,c_Z,...")
+print(f"  - walk_{int(distance_km)}: random walk with {distance_km}km distance threshold")
+print("  - c_X, c_Y, c_Z: city IDs in walk order (no zero padding)")
+print(f"  - Variable length sequences (1 to {max_length} cities)")
 
 # Visualize random sequences if requested
 if n_visualize > 0:

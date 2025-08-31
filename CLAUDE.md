@@ -34,10 +34,18 @@ For complete directory structure, see `claude_notes/structure.txt`
 - All scripts should be run from the root directory
 - Exception: Notebooks can be run from their own directory
 
+## Development Philosophy
+This project follows the **ResearchPy Philosophy** - a research-first development model where:
+- Implementation (HOW) lives in `src/utils.py`
+- Orchestration (WHAT/WHEN) lives in scripts
+- Fail fast with no fallbacks - explicit is better than implicit
+
+See `claude_notes/tips/researchpy_philosophy.md` for detailed examples and principles.
+
 ## Running Scripts
 Always execute scripts from the project root:
 ```bash
 # From root directory:
-python src/training/train_location.py configs/location_training.yaml
-python src/data_processing/create_distance_dataset_hf.py 10000 1000 1000
+python src/training/train.py configs/loc_100k_200epochs.yaml
+python src/training/train.py configs/dist_100k_1M_10epochs.yaml --overwrite
 ```

@@ -22,15 +22,17 @@ from dotenv import load_dotenv
 from datasets import load_from_disk
 from typing import Dict
 import torch.nn as nn
+import re
+import math
 
 sys.path.append('.')  # Add root to path
-from src.utils import BaseDataset
+from src.utils import haversine, parse_location, BaseDataset
 
 # Load environment variables
 load_dotenv()
 
 # Parse command line arguments
-parser = argparse.ArgumentParser(description='Train random 4-to-4 mapping model with HuggingFace Trainer')
+parser = argparse.ArgumentParser(description='Train WM1 models with HuggingFace Trainer')
 parser.add_argument('config_path', type=str, help='Path to training config YAML file')
 parser.add_argument('--overwrite', action='store_true', 
                    help='Overwrite existing experiment directory')
@@ -47,16 +49,52 @@ if not Path(config_path).exists():
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 
+# Validate required config fields exist
+required_fields = {
+    'task_type': "Task type must be 'location' or 'distance'",
+    'exp_dir': "Experiment directory path",
+    'dataset.path': "Dataset path",
+    'dataset.max_sequence_length': "Maximum sequence length",
+    'tokenizer_path': "Path to tokenizer",
+    'model.vocab_size': "Model vocabulary size",
+    'model.hidden_size': "Model hidden size",
+    'model.num_hidden_layers': "Number of hidden layers",
+    'model.num_attention_heads': "Number of attention heads",
+    'model.intermediate_size': "Intermediate layer size",
+    'model.init_scale': "Weight initialization scale",
+    'training.learning_rate': "Learning rate",
+    'training.weight_decay': "Weight decay",
+    'training.batch_size': "Training batch size",
+    'training.eval_batch_size': "Evaluation batch size",
+    'training.num_epochs': "Number of epochs",
+    'training.warmup_steps': "Warmup steps",
+    'training.seed': "Random seed",
+    'training.loss_mask_type': "Loss mask type ('answer_only' or 'full')",
+    'training.scheduler': "Learning rate scheduler",
+    'checkpointing.save_steps': "Save checkpoint frequency",
+    'checkpointing.eval_steps': "Evaluation frequency"
+}
+
+# Check all required fields
+for field, description in required_fields.items():
+    parts = field.split('.')
+    value = config
+    for part in parts:
+        if part not in value:
+            print(f"Error: Missing required config field '{field}': {description}")
+            sys.exit(1)
+        value = value[part]
+
 # Convert all numeric values from strings if needed
 config['training']['learning_rate'] = float(config['training']['learning_rate'])
 config['training']['weight_decay'] = float(config['training']['weight_decay'])
 config['training']['batch_size'] = int(config['training']['batch_size'])
-config['training']['eval_batch_size'] = int(config['training'].get('eval_batch_size', config['training']['batch_size']))
+config['training']['eval_batch_size'] = int(config['training']['eval_batch_size'])
 config['training']['num_epochs'] = int(config['training']['num_epochs'])
 config['training']['warmup_steps'] = int(config['training']['warmup_steps'])
 config['training']['seed'] = int(config['training']['seed'])
-config['training']['loss_mask_type'] = config['training'].get('loss_mask_type', None)
-config['training']['scheduler'] = config['training'].get('scheduler', 'linear_with_warmup')
+config['training']['loss_mask_type'] = config['training']['loss_mask_type']  # No fallback
+config['training']['scheduler'] = config['training']['scheduler']  # No fallback
 config['checkpointing']['save_steps'] = float(config['checkpointing']['save_steps'])
 config['checkpointing']['eval_steps'] = float(config['checkpointing']['eval_steps'])
 config['dataset']['max_sequence_length'] = int(config['dataset']['max_sequence_length'])
@@ -65,7 +103,14 @@ config['model']['hidden_size'] = int(config['model']['hidden_size'])
 config['model']['num_hidden_layers'] = int(config['model']['num_hidden_layers'])
 config['model']['num_attention_heads'] = int(config['model']['num_attention_heads'])
 config['model']['intermediate_size'] = int(config['model']['intermediate_size'])
-config['model']['init_scale'] = float(config['model'].get('init_scale', 0.02))
+config['model']['init_scale'] = float(config['model']['init_scale'])  # No fallback
+
+# Get task type (required)
+task_type = config['task_type']
+if task_type not in ['location', 'distance']:
+    print(f"Error: task_type must be 'location' or 'distance', got: {task_type}")
+    sys.exit(1)
+print(f"Task type: {task_type}")
 
 # Check if experiment directory exists
 exp_dir = Path(config['exp_dir'])
@@ -110,56 +155,62 @@ with open(exp_dir / 'config.yaml', 'w') as f:
     yaml.dump(config, f)
 
 
-def compute_metrics(eval_preds: EvalPrediction) -> Dict[str, float]:
-    """
-    Compute metrics during evaluation.
-    Since we need generation for exact match, this just returns empty.
-    The actual generation metrics are computed in GenerationEvalCallback.
-    """
-    # Loss is computed automatically by trainer
-    # Exact match requires generation, handled in callback
-    return {}
+def convert_numpy_to_python(obj):
+    """Convert numpy types to Python native types for JSON serialization."""
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_numpy_to_python(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_to_python(item) for item in obj]
+    return obj
 
 
-def parse_random4to4(text):
-    """Parse a random 4-to-4 mapping like 'loc(c_1234)=5678'.
-    Returns the 4-digit string or None if invalid."""
-    if '=' in text:
-        parts = text.split('=')
-        if len(parts) >= 2:
-            # Get the right side (output)
-            right_side = parts[1].replace('<eos>', '').strip()
-            # Return the right side (may not be exactly 4 digits if generation is wrong)
-            return right_side
+def parse_distance(text):
+    """
+    Parse distance from text like 'dist(c_1234,c_5678)=901' or just '901'.
+    
+    Args:
+        text: String containing distance information
+    
+    Returns:
+        Distance value as int or None if not found
+    """
+    # Try to find the pattern after =
+    match = re.search(r'=(\d+)', text)
+    if match:
+        return int(match.group(1))
+    # Try just a number
+    match = re.search(r'^(\d+)', text)
+    if match:
+        return int(match.group(1))
     return None
 
 
-def count_matching_digits(true_str, gen_str):
-    """Count how many digits match in the same position.
-    For comma-separated format like '1234,5678', counts digit matches only (not comma).
-    Returns a value from 0 to 8 (4 digits + 4 digits)."""
-    if true_str is None or gen_str is None:
-        return 0
-    
-    matches = 0
-    for i in range(min(len(true_str), len(gen_str))):
-        # Skip the comma at position 4
-        if i == 4:
-            continue
-        if i < len(true_str) and i < len(gen_str):
-            if true_str[i] == gen_str[i]:
-                matches += 1
-    return matches
+def compute_metrics(eval_preds: EvalPrediction) -> Dict[str, float]:
+    """
+    Compute metrics during evaluation.
+    Since we need generation for task-specific metrics, this just returns empty.
+    The actual generation metrics are computed in GenerationEvalCallback.
+    """
+    # Loss is computed automatically by trainer
+    # Task-specific metrics require generation, handled in callback
+    return {}
 
 
 class GenerationEvalCallback(TrainerCallback):
     """Callback to perform generation-based evaluation and update plots."""
     
-    def __init__(self, exp_dir, tokenizer, eval_dataset, device):
+    def __init__(self, exp_dir, tokenizer, eval_dataset, device, task_type):
         self.exp_dir = exp_dir
         self.tokenizer = tokenizer
         self.eval_dataset = eval_dataset
         self.device = device
+        self.task_type = task_type
     
     def on_evaluate(self, args, state, control, model=None, metrics=None, **kwargs):
         """Called after standard evaluation - add generation metrics."""
@@ -168,43 +219,46 @@ class GenerationEvalCallback(TrainerCallback):
             
         # Perform generation-based evaluation
         print("\nPerforming generation-based evaluation...")
-        num_samples = min(64, len(self.eval_dataset))  # Use all validation samples if less than 64
+        num_samples = 64
         gen_metrics = evaluate_with_generation(
             model, self.eval_dataset, self.tokenizer, self.device, 
-            num_samples=num_samples, batch_size=16
+            self.task_type, num_samples=num_samples, batch_size=16
         )
         
-        # Add metrics to the log
+        # Add metrics to the log (convert numpy types to Python native)
         if state.log_history and gen_metrics:
-            state.log_history[-1].update(gen_metrics)
+            state.log_history[-1].update(convert_numpy_to_python(gen_metrics))
         
         # Also add to metrics dict if provided (for best model tracking)
         if metrics is not None and gen_metrics:
-            metrics.update(gen_metrics)
+            metrics.update(convert_numpy_to_python(gen_metrics))
         
         # Save plots after each evaluation
-        save_training_plots(None, self.exp_dir, state)
+        save_training_plots(None, self.exp_dir, state, self.task_type)
         
         # Print generation metrics
         if gen_metrics:
             print(f"\n[Evaluation Metrics]")
-            print(f"  Avg digit matches: {gen_metrics.get('eval_digit_matches_mean', 0):.2f}/8 (±{gen_metrics.get('eval_digit_matches_std', 0):.2f})")
-            print(f"  Min digit matches: {gen_metrics.get('eval_digit_matches_min', 0)}")
-            print(f"  Max digit matches: {gen_metrics.get('eval_digit_matches_max', 0)}")
-            print(f"  Median digit matches: {gen_metrics.get('eval_digit_matches_median', 0):.1f}")
-            print(f"  Valid generations: {gen_metrics.get('eval_valid_count', 0)}/{num_samples} ({gen_metrics.get('eval_valid_ratio', 0)*100:.1f}%)")
+            if self.task_type == 'location':
+                print(f"  Avg Haversine Distance: {gen_metrics['eval_metric_mean']:.2f} km (±{gen_metrics['eval_metric_std']:.2f})")
+            else:  # distance
+                print(f"  Avg Absolute Error: {gen_metrics['eval_metric_mean']:.2f} km (±{gen_metrics['eval_metric_std']:.2f})")
+            print(f"  Min: {gen_metrics['eval_metric_min']:.2f} km")
+            print(f"  Max: {gen_metrics['eval_metric_max']:.2f} km")  
+            print(f"  Median: {gen_metrics['eval_metric_median']:.2f} km")
+            print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
         
         return control
 
 
-def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples=128, batch_size=16):
-    """Evaluate model with generation and digit matching calculation."""
+def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_type, num_samples=128, batch_size=16):
+    """Evaluate model with generation and task-specific metric calculation."""
     model.eval()
     
     # Sample a subset for evaluation
     eval_indices = np.random.choice(len(eval_dataset), min(num_samples, len(eval_dataset)), replace=False)
     
-    digit_matches = []
+    metrics = []
     all_generated_texts = []
     all_true_texts = []
     
@@ -264,42 +318,55 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples
                     print(f"    Expected: {batch_true_completions[ex_idx]}")
                     print(f"    Generated: {generated_batch[ex_idx]}")
             
-            # Calculate digit matches
+            # Calculate task-specific metrics
             for i, (prompt, true_completion, generated) in enumerate(zip(batch_prompts, batch_true_completions, generated_batch)):
-                # Extract the outputs
-                # true_completion is like "7838,1234<eos>" - remove <eos>
-                true_output = true_completion.replace('<eos>', '').strip()
-                # generated is like "loc(c_9123)=7838,1234" - parse normally
-                gen_output = parse_random4to4(generated)
-                
                 all_generated_texts.append(generated)
                 all_true_texts.append(prompt + true_completion)
                 
-                if true_output and gen_output is not None:
-                    matches = count_matching_digits(true_output, gen_output)
-                    digit_matches.append(matches)
+                if task_type == 'location':
+                    true_x, true_y = parse_location(true_completion)
+                    gen_x, gen_y = parse_location(generated)
+                    
+                    if true_x is not None and gen_x is not None:
+                        true_lon = math.degrees(true_x / 1000.0 - math.pi)
+                        true_lat = math.degrees(true_y / 1000.0 - math.pi/2)
+                        gen_lon = math.degrees(gen_x / 1000.0 - math.pi)
+                        gen_lat = math.degrees(gen_y / 1000.0 - math.pi/2)
+                        
+                        dist = haversine(true_lon, true_lat, gen_lon, gen_lat)
+                        metrics.append(dist)
+                
+                else:  # distance
+                    true_dist = parse_distance(true_completion)
+                    gen_dist = parse_distance(generated)
+                    
+                    if true_dist is not None and gen_dist is not None:
+                        abs_error = abs(true_dist - gen_dist)
+                        metrics.append(abs_error)
     
-    # Calculate metrics (convert numpy types to Python native types)
-    if digit_matches:
+    # Calculate metrics
+    if metrics:
         return {
-            'eval_digit_matches_mean': float(np.mean(digit_matches)),
-            'eval_digit_matches_median': float(np.median(digit_matches)),
-            'eval_digit_matches_std': float(np.std(digit_matches)),
-            'eval_digit_matches_min': int(np.min(digit_matches)),
-            'eval_digit_matches_max': int(np.max(digit_matches)),
-            'eval_valid_count': int(len(digit_matches)),
-            'eval_valid_ratio': float(len(digit_matches) / num_samples)
+            'eval_metric_mean': np.mean(metrics),
+            'eval_metric_median': np.median(metrics),
+            'eval_metric_std': np.std(metrics),
+            'eval_metric_min': np.min(metrics),
+            'eval_metric_max': np.max(metrics),
+            'eval_valid_count': len(metrics),
+            'eval_valid_ratio': len(metrics) / num_samples
         }
     else:
+        # Use different failure values for different tasks
+        fail_value = 20000.0 if task_type == 'location' else 100000.0
         return {
-            'eval_digit_matches_mean': 0.0,
+            'eval_metric_mean': fail_value,
             'eval_valid_count': 0,
             'eval_valid_ratio': 0.0
         }
 
 
-def save_training_plots(trainer, exp_dir, state=None):
-    """Save training plots matching original format."""
+def save_training_plots(trainer, exp_dir, state=None, task_type='location'):
+    """Save training plots matching original script's format."""
     # Use provided state or trainer's state
     if state is None:
         state = trainer.state
@@ -307,7 +374,7 @@ def save_training_plots(trainer, exp_dir, state=None):
     # Extract metrics from log history
     train_losses = []
     eval_losses = []
-    eval_digit_matches = []
+    eval_metrics = []
     eval_steps = []
     train_steps = []
     
@@ -318,8 +385,8 @@ def save_training_plots(trainer, exp_dir, state=None):
         if 'eval_loss' in entry:
             eval_losses.append(entry['eval_loss'])
             eval_steps.append(entry.get('step', len(eval_losses)))
-        if 'eval_digit_matches_mean' in entry:
-            eval_digit_matches.append(entry['eval_digit_matches_mean'])
+        if 'eval_metric_mean' in entry:
+            eval_metrics.append(entry['eval_metric_mean'])
     
     # Create plots matching original format
     plt.figure(figsize=(12, 5))
@@ -327,42 +394,47 @@ def save_training_plots(trainer, exp_dir, state=None):
     # Loss plot
     plt.subplot(1, 2, 1)
     if train_losses:
-        plt.plot(train_steps, train_losses, label='Train Loss', alpha=0.7)
+        plt.plot(train_steps, train_losses, alpha=0.3, label='Train Loss (per batch)')
     if eval_losses:
-        plt.plot(eval_steps, eval_losses, label='Eval Loss', marker='o', markersize=3)
-    plt.xlabel('Steps')
-    plt.ylabel('Loss')
+        plt.plot(eval_steps, eval_losses, 'r-', label='Eval Loss', marker='o', markersize=4)
+    plt.xlabel('Step')
+    plt.ylabel('Loss (log scale)')
+    plt.yscale('log')
     plt.title('Training and Evaluation Loss')
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    # Digit matches plot (analogous to haversine distance)
+    # Task-specific metric plot
     plt.subplot(1, 2, 2)
-    if eval_digit_matches:
-        plt.plot(eval_steps[:len(eval_digit_matches)], eval_digit_matches, 
-                label='Avg Digit Matches', color='green', marker='o', markersize=3)
-        plt.xlabel('Steps')
-        plt.ylabel('Number of Matching Digits')
-        plt.title('Digit Matches on Validation Set')
+    if eval_metrics:
+        plt.plot(eval_steps[:len(eval_metrics)], eval_metrics, 'b-', marker='o', markersize=4)
+        plt.xlabel('Step')
+        
+        if task_type == 'location':
+            plt.ylabel('Average Haversine Distance (km, log scale)')
+            plt.title('Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
+            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
+            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
+            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
+            plt.axhline(y=20000, color='red', linestyle=':', alpha=0.7, label='20000km (parse failed)')
+            plt.ylim(bottom=10, top=30000)
+        else:  # distance
+            plt.ylabel('Average Absolute Error (km, log scale)')
+            plt.title('Evaluation Absolute Distance Error\n(Lower is better, 100000km = parse failed)')
+            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10km reference')
+            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
+            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
+            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
+            plt.axhline(y=100000, color='red', linestyle=':', alpha=0.7, label='100000km (parse failed)')
+            plt.ylim(bottom=1, top=200000)
+        
+        plt.yscale('log')
         plt.legend()
         plt.grid(True, alpha=0.3)
-        plt.ylim([0, 8.2])
     
     plt.tight_layout()
-    plt.savefig(exp_dir / 'training_plots.png', dpi=100)
+    plt.savefig(exp_dir / 'summary.png', dpi=150)
     plt.close()
-    
-    # Also save metrics to JSON (convert numpy types to Python types)
-    metrics_data = {
-        'train_losses': [float(x) for x in train_losses],
-        'train_steps': [int(x) if isinstance(x, (np.integer, np.int64)) else x for x in train_steps],
-        'eval_losses': [float(x) for x in eval_losses],
-        'eval_steps': [int(x) if isinstance(x, (np.integer, np.int64)) else x for x in eval_steps],
-        'eval_digit_matches': [float(x) for x in eval_digit_matches],
-    }
-    
-    with open(exp_dir / 'metrics.json', 'w') as f:
-        json.dump(metrics_data, f)
 
 
 def init_weights(module):
@@ -377,12 +449,16 @@ def init_weights(module):
 
 
 def main():
-    # Setup
+    # Set seed for reproducibility
+    torch.manual_seed(config['training']['seed'])
+    np.random.seed(config['training']['seed'])
+    
+    # Device setup
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
     # Load HuggingFace tokenizer
-    tokenizer_path = config.get('tokenizer_path', 'outputs/tokenizer/wm1_tokenizer')
+    tokenizer_path = config['tokenizer_path']  # Required, no fallback
     print(f"Loading tokenizer from {tokenizer_path}")
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     
@@ -460,6 +536,7 @@ def main():
     model.apply(init_weights)
     
     print(f"\nTraining configuration:")
+    print(f"  Task type: {task_type}")
     print(f"  Epochs: {config['training']['num_epochs']}")
     print(f"  Batch size: {config['training']['batch_size']}")
     print(f"  Save steps: {config['checkpointing']['save_steps']} {'(fraction)' if config['checkpointing']['save_steps'] < 1 else 'steps'}")
@@ -529,50 +606,56 @@ def main():
     trainer = Trainer(
         model=model,
         args=training_args,
+        data_collator=data_collator,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        compute_metrics=compute_metrics,
-        callbacks=[
-            GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device)
-        ]
+        processing_class=tokenizer,  # Use processing_class instead of tokenizer (deprecated)
+        compute_metrics=compute_metrics,  # Basic metrics (loss/perplexity)
+        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, task_type)],  # Generation eval + plots
     )
     
     # Override optimizer and scheduler
     trainer.optimizer, trainer.lr_scheduler = get_optimizer_and_scheduler(trainer)
     
     # Train
-    print("\n" + "="*50)
-    print("Starting training...")
-    print("="*50)
-    trainer.train()
+    print("\nStarting training...")
+    train_result = trainer.train()
     
     # Save final model
     print("\nSaving final model...")
-    trainer.save_model(str(exp_dir / 'final_model'))
-    tokenizer.save_pretrained(str(exp_dir / 'final_model'))
+    trainer.save_model(str(exp_dir / 'checkpoints' / 'final'))
     
-    # Save final plots
-    save_training_plots(trainer, exp_dir)
+    # Save training metrics
+    with open(exp_dir / 'train_results.json', 'w') as f:
+        json.dump(convert_numpy_to_python(train_result.metrics), f, indent=2)
     
-    print(f"\nTraining complete! Results saved to {exp_dir}")
+    # Final evaluation
+    print("\nRunning final evaluation...")
+    eval_metrics = trainer.evaluate()
     
-    # Print final metrics
-    if trainer.state.log_history:
-        last_eval = None
-        for entry in reversed(trainer.state.log_history):
-            if 'eval_loss' in entry:
-                last_eval = entry
-                break
-        
-        if last_eval:
-            print("\nFinal evaluation metrics:")
-            print(f"  Eval loss: {last_eval.get('eval_loss', 'N/A'):.4f}")
-            if 'eval_digit_matches_mean' in last_eval:
-                print(f"  Avg digit matches: {last_eval['eval_digit_matches_mean']:.2f}/8")
-            if 'eval_valid_ratio' in last_eval:
-                print(f"  Valid generation ratio: {last_eval['eval_valid_ratio']*100:.1f}%")
+    with open(exp_dir / 'eval_results.json', 'w') as f:
+        json.dump(convert_numpy_to_python(eval_metrics), f, indent=2)
+    
+    print("\nFinal evaluation metrics:")
+    for key, value in eval_metrics.items():
+        if 'metric' in key or 'valid' in key:
+            print(f"  {key}: {value:.2f}")
+    
+    # Save final plot
+    save_training_plots(trainer, exp_dir, task_type=task_type)
+    print(f"Final training summary plot saved to {exp_dir / 'summary.png'}")
+    
+    # Print final statistics
+    if 'eval_metric_mean' in eval_metrics:
+        metric_name = "distance" if task_type == 'location' else "error"
+        print(f"\nFinal {metric_name} statistics:")
+        print(f"  Mean: {eval_metrics['eval_metric_mean']:.2f} km")
+        print(f"  Median: {eval_metrics['eval_metric_median']:.2f} km")
+        print(f"  Std: {eval_metrics['eval_metric_std']:.2f} km")
+        print(f"  Min: {eval_metrics['eval_metric_min']:.2f} km")
+        print(f"  Max: {eval_metrics['eval_metric_max']:.2f} km")
+    
+    print(f"\nTraining completed! Results saved to {exp_dir}")
 
 
 if __name__ == "__main__":

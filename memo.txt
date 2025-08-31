@@ -1,2 +1,5 @@
 python scripts/data_processing/create_distance_dataset_hf.py 8000 1000 1000 outputs/datasets/
 
+
+cd /n/home12/cfpark00/WM_1 && uv run python analysis/representation_dynamics.py outputs/experiments/dist_100k_1M_20epochs
+  outputs/datasets/cities_100k_plus_seed42.csv --layers 3,4

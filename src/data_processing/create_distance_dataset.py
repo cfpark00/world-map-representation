@@ -7,13 +7,14 @@ from src.utils import haversine, load_cities_csv
 from datasets import Dataset, DatasetDict
 import os
 import argparse
+from tqdm import tqdm
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Create distance dataset with train/val/test splits')
-parser.add_argument('n_train', type=int, help='Number of training samples')
-parser.add_argument('n_val', type=int, help='Number of validation samples')
-parser.add_argument('n_test', type=int, help='Number of test samples')
 parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
+parser.add_argument('--n_train', type=int, default=100000, help='Number of training samples (default: 100000)')
+parser.add_argument('--n_val', type=int, default=128, help='Number of validation samples (default: 128)')
+parser.add_argument('--n_test', type=int, default=10000, help='Number of test samples (default: 10000)')
 parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
 parser.add_argument('--cities-csv', type=str, default=None, help='Path to cities CSV file')
 
@@ -67,29 +68,36 @@ test_j = indices[1][n_train+n_val:]
 
 # Function to create dataset from indices
 def create_dataset_dict(indices_i, indices_j, df):
-    """Create a dictionary suitable for HuggingFace Dataset"""
+    """Create a dictionary suitable for HuggingFace Dataset using vectorized operations"""
+    
+    # Get coordinates in degrees for all city pairs at once
+    lon1 = df.iloc[indices_i]['longitude'].values
+    lat1 = df.iloc[indices_i]['latitude'].values
+    lon2 = df.iloc[indices_j]['longitude'].values
+    lat2 = df.iloc[indices_j]['latitude'].values
+    
+    # Use vectorized haversine from utils (handles degrees -> radians internally)
+    distances_km = haversine(lon1, lat1, lon2, lat2)
+    
+    # Round to nearest km
+    distances_km = np.round(distances_km).astype(int)
+    
+    # Get city IDs
+    city1_ids = df.iloc[indices_i]['row_id'].values.astype(int)
+    city2_ids = df.iloc[indices_j]['row_id'].values.astype(int)
+    
+    # Create text lists with progress bar
     text_list = []
     prompt_list = []
     completion_list = []
     
-    for i, j in zip(indices_i, indices_j):
-        city1 = df.iloc[i]
-        city2 = df.iloc[j]
-        
-        # Calculate geodesic distance and round to nearest km
-        distance = round(haversine(
-            city1['longitude'], city1['latitude'],
-            city2['longitude'], city2['latitude']
-        ))
-        
-        # Create text format: d(c_XX,c_XX)=XXXX (no zero padding)
-        full_text = f"d(c_{int(city1['row_id'])},c_{int(city2['row_id'])})={distance}"
-        prompt = f"<bos>d(c_{int(city1['row_id'])},c_{int(city2['row_id'])})="
-        completion = f"{distance}<eos>"
-        
-        text_list.append(full_text)
-        prompt_list.append(prompt)
-        completion_list.append(completion)
+    for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances_km), 
+                          total=len(city1_ids), 
+                          desc="Formatting samples", 
+                          leave=False):
+        text_list.append(f"dist(c_{c1},c_{c2})={d}")
+        prompt_list.append(f"<bos>dist(c_{c1},c_{c2})=")
+        completion_list.append(f"{d}<eos>")
     
     return {
         'text': text_list,
@@ -136,18 +144,21 @@ print(dataset_dict)
 print("\nFeatures:")
 print(train_dataset.features)
 
-# Show sample rows
+# Show sample rows with explanation
 print("\nSample train rows:")
-for i in range(min(3, len(train_dataset))):
-    print(f"  {train_dataset[i]['text']}")
+for i in range(min(5, len(train_dataset))):
+    sample = train_dataset[i]
+    print(f"  {sample['text']}")
 
 print("\nSample val rows:")
 for i in range(min(3, len(val_dataset))):
-    print(f"  {val_dataset[i]['text']}")
+    sample = val_dataset[i]
+    print(f"  {sample['text']}")
 
 print("\nSample test rows:")
 for i in range(min(3, len(test_dataset))):
-    print(f"  {test_dataset[i]['text']}")
+    sample = test_dataset[i]
+    print(f"  {sample['text']}")
 
 print("\nTo load this dataset:")
 print(">>> from datasets import load_from_disk")
@@ -155,3 +166,7 @@ print(f">>> dataset = load_from_disk('{output_dir}')")
 print(">>> train_data = dataset['train']")
 print(">>> val_data = dataset['validation']")
 print(">>> test_data = dataset['test']")
+
+print("\nFormat: dist(c_X,c_Y)=Z")
+print("  - c_X, c_Y: city IDs (no zero padding)")
+print("  - Z: haversine distance in km (rounded to nearest integer)")

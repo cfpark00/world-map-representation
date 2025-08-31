@@ -8,9 +8,10 @@ import argparse
 import sys
 sys.path.append('.')  # Add root to path
 from src.utils import load_cities_csv
+from tqdm import tqdm
 
 # Parse command line arguments
-parser = argparse.ArgumentParser(description='Create location dataset with spatial IDs (first 2 digits encoded in ID)')
+parser = argparse.ArgumentParser(description='Create location dataset with train and optional validation split')
 parser.add_argument('n_train', type=int, nargs='?', help='Number of training samples')
 parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
 parser.add_argument('--n_val', type=int, default=0, help='Number of validation samples (default: 0, no validation set)')
@@ -59,12 +60,12 @@ val_indices = np.random.choice(n_cities, size=n_val, replace=False) if n_val > 0
 
 # Function to create dataset from indices
 def create_dataset_dict(city_indices, df):
-    """Create a dictionary suitable for HuggingFace Dataset with spatial IDs"""
+    """Create a dictionary suitable for HuggingFace Dataset"""
     text_list = []
     prompt_list = []
     completion_list = []
     
-    for idx in city_indices:
+    for idx in tqdm(city_indices, desc="Formatting samples", leave=False):
         city = df.iloc[idx]
         
         # Convert longitude from degrees to radians and scale by 1000
@@ -79,21 +80,10 @@ def create_dataset_dict(city_indices, df):
         lat_rad = radians(city['latitude']) + np.pi/2  # Now 0 to pi
         lat_scaled = floor(lat_rad * 1000)  # 0 to ~3141
         
-        # Create SPATIAL city ID: c_XXYY where XX are first 2 digits of lon, YY are first 2 digits of lat
-        # Extract first 2 digits (handle cases with fewer than 2 digits by padding with 0)
-        lon_str = str(lon_scaled).zfill(4)  # Pad to at least 4 digits
-        lat_str = str(lat_scaled).zfill(4)  # Pad to at least 4 digits
-        
-        # Take first 2 digits of each
-        lon_prefix = lon_str[:2]  # First 2 digits of longitude
-        lat_prefix = lat_str[:2]  # First 2 digits of latitude
-        
-        # Create spatial city ID
-        spatial_city_id = f"{lon_prefix}{lat_prefix}"
-        
-        # Create text format: loc(c_XXYY)=XXXX,YYYY
-        full_text = f"loc(c_{spatial_city_id})={lon_scaled},{lat_scaled}"
-        prompt = f"<bos>loc(c_{spatial_city_id})="
+        # Create text format: loc(c_XX)=XXXX,YYYY (no zero padding)
+        city_id = int(city['row_id'])
+        full_text = f"loc(c_{city_id})={lon_scaled},{lat_scaled}"
+        prompt = f"<bos>loc(c_{city_id})="
         completion = f"{lon_scaled},{lat_scaled}<eos>"
         
         text_list.append(full_text)
@@ -107,14 +97,13 @@ def create_dataset_dict(city_indices, df):
     }
 
 # Create train dataset
-print("\nCreating train dataset with SPATIAL IDs...")
-print("ID format: c_XXYY where XX=first 2 digits of longitude, YY=first 2 digits of latitude")
+print("\nCreating train dataset...")
 train_data = create_dataset_dict(train_indices, df)
 train_dataset = Dataset.from_dict(train_data)
 
 # Create validation dataset if requested
 if n_val > 0:
-    print(f"Creating validation dataset with SPATIAL IDs...")
+    print(f"Creating validation dataset...")
     val_data = create_dataset_dict(val_indices, df)
     val_dataset = Dataset.from_dict(val_data)
     
@@ -149,20 +138,13 @@ print("\nFeatures:")
 print(train_dataset.features)
 
 # Show sample rows with explanation
-print("\nSample train rows (with SPATIAL IDs):")
+print("\nSample train rows:")
 for i in range(min(10, len(train_dataset))):
     sample = train_dataset[i]
-    # Parse the ID to show what it encodes
-    text = sample['text']
-    if 'loc(c_' in text:
-        id_part = text.split('loc(c_')[1].split(')')[0]
-        coords = text.split('=')[1]
-        print(f"  {text}")
-        print(f"    -> ID c_{id_part}: encodes lon prefix {id_part[:2]}xx, lat prefix {id_part[2:]}xx")
-        print(f"    -> Actual coords: {coords}")
+    print(f"  {sample['text']}")
 
 if n_val > 0:
-    print("\nSample validation rows (with SPATIAL IDs):")
+    print("\nSample validation rows:")
     for i in range(min(5, len(val_dataset))):
         sample = val_dataset[i]
         print(f"  {sample['text']}")
@@ -174,10 +156,7 @@ print(">>> train_data = dataset['train']")
 if n_val > 0:
     print(">>> val_data = dataset['validation']")
 
-print("\nFormat: loc(c_XXYY)=XXXX,YYYY")
-print("  - c_XXYY: spatial city ID")
-print("    - XX: first 2 digits of longitude coordinate")
-print("    - YY: first 2 digits of latitude coordinate")
-print("  - XXXX: full longitude (floor(1000 * radians), range 0-6283)")
-print("  - YYYY: full latitude (floor(1000 * radians), range 0-3141)")
-print("\nThis encoding gives the model spatial hints in the city ID itself!")
+print("\nFormat: loc(c_XX)=XXXX,YYYY")
+print("  - c_XX: city ID (no zero padding)")
+print("  - XXXX: floor(1000 * longitude in radians), range 0-6283")
+print("  - YYYY: floor(1000 * latitude in radians), range 0-3141")

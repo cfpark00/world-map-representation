@@ -22,15 +22,16 @@ from dotenv import load_dotenv
 from datasets import load_from_disk
 from typing import Dict
 import torch.nn as nn
+import re
 
 sys.path.append('.')  # Add root to path
-from src.utils import haversine, parse_location, BaseDataset
+from src.utils import BaseDataset
 
 # Load environment variables
 load_dotenv()
 
 # Parse command line arguments
-parser = argparse.ArgumentParser(description='Train location prediction model with HuggingFace Trainer')
+parser = argparse.ArgumentParser(description='Train distance prediction model with HuggingFace Trainer')
 parser.add_argument('config_path', type=str, help='Path to training config YAML file')
 parser.add_argument('--overwrite', action='store_true', 
                    help='Overwrite existing experiment directory')
@@ -110,14 +111,50 @@ with open(exp_dir / 'config.yaml', 'w') as f:
     yaml.dump(config, f)
 
 
+def convert_numpy_to_python(obj):
+    """Convert numpy types to Python native types for JSON serialization."""
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_numpy_to_python(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_to_python(item) for item in obj]
+    return obj
+
+
+def parse_distance(text):
+    """
+    Parse distance from text like 'dist(c_1234,c_5678)=901' or just '901'.
+    
+    Args:
+        text: String containing distance information
+    
+    Returns:
+        Distance value as int or None if not found
+    """
+    # Try to find the pattern after =
+    match = re.search(r'=(\d+)', text)
+    if match:
+        return int(match.group(1))
+    # Try just a number
+    match = re.search(r'^(\d+)', text)
+    if match:
+        return int(match.group(1))
+    return None
+
+
 def compute_metrics(eval_preds: EvalPrediction) -> Dict[str, float]:
     """
     Compute metrics during evaluation.
-    Since we need generation for haversine distance, this just returns empty.
+    Since we need generation for distance error, this just returns empty.
     The actual generation metrics are computed in GenerationEvalCallback.
     """
     # Loss is computed automatically by trainer
-    # Haversine distance requires generation, handled in callback
+    # Distance error requires generation, handled in callback
     return {}
 
 
@@ -143,13 +180,13 @@ class GenerationEvalCallback(TrainerCallback):
             num_samples=num_samples, batch_size=16
         )
         
-        # Add metrics to the log
+        # Add metrics to the log (convert numpy types to Python native)
         if state.log_history and gen_metrics:
-            state.log_history[-1].update(gen_metrics)
+            state.log_history[-1].update(convert_numpy_to_python(gen_metrics))
         
         # Also add to metrics dict if provided (for best model tracking)
         if metrics is not None and gen_metrics:
-            metrics.update(gen_metrics)
+            metrics.update(convert_numpy_to_python(gen_metrics))
         
         # Save plots after each evaluation
         save_training_plots(None, self.exp_dir, state)
@@ -157,23 +194,23 @@ class GenerationEvalCallback(TrainerCallback):
         # Print generation metrics
         if gen_metrics:
             print(f"\n[Evaluation Metrics]")
-            print(f"  Avg Haversine Distance: {gen_metrics.get('eval_haversine_mean', 0):.2f} km (±{gen_metrics.get('eval_haversine_std', 0):.2f})")
-            print(f"  Min distance: {gen_metrics.get('eval_haversine_min', 0):.2f} km")
-            print(f"  Max distance: {gen_metrics.get('eval_haversine_max', 0):.2f} km")  
-            print(f"  Median distance: {gen_metrics.get('eval_haversine_median', 0):.2f} km")
+            print(f"  Avg Absolute Error: {gen_metrics.get('eval_abs_error_mean', 0):.2f} km (±{gen_metrics.get('eval_abs_error_std', 0):.2f})")
+            print(f"  Min error: {gen_metrics.get('eval_abs_error_min', 0):.2f} km")
+            print(f"  Max error: {gen_metrics.get('eval_abs_error_max', 0):.2f} km")  
+            print(f"  Median error: {gen_metrics.get('eval_abs_error_median', 0):.2f} km")
             print(f"  Valid generations: {gen_metrics.get('eval_valid_count', 0)}/{num_samples} ({gen_metrics.get('eval_valid_ratio', 0)*100:.1f}%)")
         
         return control
 
 
 def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples=128, batch_size=16):
-    """Evaluate model with generation and distance calculation."""
+    """Evaluate model with generation and distance error calculation."""
     model.eval()
     
     # Sample a subset for evaluation
     eval_indices = np.random.choice(len(eval_dataset), min(num_samples, len(eval_dataset)), replace=False)
     
-    distances = []
+    abs_errors = []
     all_generated_texts = []
     all_true_texts = []
     
@@ -233,38 +270,32 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples
                     print(f"    Expected: {batch_true_completions[ex_idx]}")
                     print(f"    Generated: {generated_batch[ex_idx]}")
             
-            # Calculate distances
+            # Calculate absolute errors
             for i, (prompt, true_completion, generated) in enumerate(zip(batch_prompts, batch_true_completions, generated_batch)):
-                true_x, true_y = parse_location(true_completion)
-                gen_x, gen_y = parse_location(generated)
+                true_dist = parse_distance(true_completion)
+                gen_dist = parse_distance(generated)
                 
                 all_generated_texts.append(generated)
                 all_true_texts.append(prompt + true_completion)
                 
-                if true_x is not None and gen_x is not None:
-                    import math
-                    true_lon = math.degrees(true_x / 1000.0 - math.pi)
-                    true_lat = math.degrees(true_y / 1000.0 - math.pi/2)
-                    gen_lon = math.degrees(gen_x / 1000.0 - math.pi)
-                    gen_lat = math.degrees(gen_y / 1000.0 - math.pi/2)
-                    
-                    dist = haversine(true_lon, true_lat, gen_lon, gen_lat)
-                    distances.append(dist)
+                if true_dist is not None and gen_dist is not None:
+                    abs_error = abs(true_dist - gen_dist)
+                    abs_errors.append(abs_error)
     
     # Calculate metrics
-    if distances:
+    if abs_errors:
         return {
-            'eval_haversine_mean': np.mean(distances),
-            'eval_haversine_median': np.median(distances),
-            'eval_haversine_std': np.std(distances),
-            'eval_haversine_min': np.min(distances),
-            'eval_haversine_max': np.max(distances),
-            'eval_valid_count': len(distances),
-            'eval_valid_ratio': len(distances) / num_samples
+            'eval_abs_error_mean': np.mean(abs_errors),
+            'eval_abs_error_median': np.median(abs_errors),
+            'eval_abs_error_std': np.std(abs_errors),
+            'eval_abs_error_min': np.min(abs_errors),
+            'eval_abs_error_max': np.max(abs_errors),
+            'eval_valid_count': len(abs_errors),
+            'eval_valid_ratio': len(abs_errors) / num_samples
         }
     else:
         return {
-            'eval_haversine_mean': 20000.0,
+            'eval_abs_error_mean': 100000.0,  # Large error for parse failures
             'eval_valid_count': 0,
             'eval_valid_ratio': 0.0
         }
@@ -279,7 +310,7 @@ def save_training_plots(trainer, exp_dir, state=None):
     # Extract metrics from log history
     train_losses = []
     eval_losses = []
-    eval_haversines = []
+    eval_abs_errors = []
     eval_steps = []
     train_steps = []
     
@@ -290,8 +321,8 @@ def save_training_plots(trainer, exp_dir, state=None):
         if 'eval_loss' in entry:
             eval_losses.append(entry['eval_loss'])
             eval_steps.append(entry.get('step', len(eval_losses)))
-        if 'eval_haversine_mean' in entry:
-            eval_haversines.append(entry['eval_haversine_mean'])
+        if 'eval_abs_error_mean' in entry:
+            eval_abs_errors.append(entry['eval_abs_error_mean'])
     
     # Create plots matching original format
     plt.figure(figsize=(12, 5))
@@ -309,19 +340,20 @@ def save_training_plots(trainer, exp_dir, state=None):
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    # Haversine distance plot
+    # Absolute error plot
     plt.subplot(1, 2, 2)
-    if eval_haversines:
-        plt.plot(eval_steps[:len(eval_haversines)], eval_haversines, 'b-', marker='o', markersize=4)
+    if eval_abs_errors:
+        plt.plot(eval_steps[:len(eval_abs_errors)], eval_abs_errors, 'b-', marker='o', markersize=4)
         plt.xlabel('Step')
-        plt.ylabel('Average Haversine Distance (km, log scale)')
+        plt.ylabel('Average Absolute Error (km, log scale)')
         plt.yscale('log')
-        plt.title('Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
+        plt.title('Evaluation Absolute Distance Error\n(Lower is better, 100000km = parse failed)')
+        plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10km reference')
         plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
         plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
         plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
-        plt.axhline(y=20000, color='red', linestyle=':', alpha=0.7, label='20000km (parse failed)')
-        plt.ylim(bottom=10, top=30000)
+        plt.axhline(y=100000, color='red', linestyle=':', alpha=0.7, label='100000km (parse failed)')
+        plt.ylim(bottom=1, top=200000)
         plt.legend()
         plt.grid(True, alpha=0.3)
     
@@ -519,34 +551,34 @@ def main():
     
     # Save training metrics
     with open(exp_dir / 'train_results.json', 'w') as f:
-        json.dump(train_result.metrics, f, indent=2)
+        json.dump(convert_numpy_to_python(train_result.metrics), f, indent=2)
     
     # Final evaluation
     print("\nRunning final evaluation...")
     eval_metrics = trainer.evaluate()
     
     with open(exp_dir / 'eval_results.json', 'w') as f:
-        json.dump(eval_metrics, f, indent=2)
+        json.dump(convert_numpy_to_python(eval_metrics), f, indent=2)
     
     print("\nFinal evaluation metrics:")
     for key, value in eval_metrics.items():
-        if 'haversine' in key or 'valid' in key:
+        if 'abs_error' in key or 'valid' in key:
             print(f"  {key}: {value:.2f}")
     
     # Save final plot
     save_training_plots(trainer, exp_dir)
     print(f"Final training summary plot saved to {exp_dir / 'summary.png'}")
     
-    # Create histogram of final haversine distances if available
-    if 'eval_haversine_mean' in eval_metrics:
-        # Note: We can't create the detailed histogram without individual distances
+    # Create histogram of final absolute errors if available
+    if 'eval_abs_error_mean' in eval_metrics:
+        # Note: We can't create the detailed histogram without individual errors
         # but we can log the final statistics
-        print(f"\nFinal distance statistics:")
-        print(f"  Mean: {eval_metrics.get('eval_haversine_mean', 0):.2f} km")
-        print(f"  Median: {eval_metrics.get('eval_haversine_median', 0):.2f} km")
-        print(f"  Std: {eval_metrics.get('eval_haversine_std', 0):.2f} km")
-        print(f"  Min: {eval_metrics.get('eval_haversine_min', 0):.2f} km")
-        print(f"  Max: {eval_metrics.get('eval_haversine_max', 0):.2f} km")
+        print(f"\nFinal error statistics:")
+        print(f"  Mean: {eval_metrics.get('eval_abs_error_mean', 0):.2f} km")
+        print(f"  Median: {eval_metrics.get('eval_abs_error_median', 0):.2f} km")
+        print(f"  Std: {eval_metrics.get('eval_abs_error_std', 0):.2f} km")
+        print(f"  Min: {eval_metrics.get('eval_abs_error_min', 0):.2f} km")
+        print(f"  Max: {eval_metrics.get('eval_abs_error_max', 0):.2f} km")
     
     print(f"\nTraining completed! Results saved to {exp_dir}")
 

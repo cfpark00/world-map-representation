@@ -1,86 +1,1549 @@
 .
-├── analysis
+├── analysis/
+│   ├── randomwalk_checkpoint/
+│   │   ├── analysis_results_greedy.json
+│   │   ├── analysis_results.json
+│   │   ├── analyze_transitions.py
+│   │   ├── generated_walks_greedy.txt
+│   │   ├── generated_walks.txt
+│   │   └── test_eval_fix.py
+│   ├── layer4_representations.pkl
 │   ├── nearby_cities_distribution.png
+│   ├── representation_dynamics.py
 │   ├── spatial_analysis_csv.py
 │   ├── spatial_analysis.py
 │   └── spatial_analysis_results.json
-├── CLAUDE.md
-├── claude_notes
-│   ├── logs
-│   │   └── 2025-08-30
+├── claude_notes/
+│   ├── logs/
+│   │   ├── 2025-08-30/
+│   │   │   ├── 0127_city_distance_model_development.md
+│   │   │   ├── 1541_loss_masking_and_threshold_classification.md
+│   │   │   ├── 1712_dataset_creation_and_audit.md
+│   │   │   ├── 1728_wm1_experiments_setup.md
+│   │   │   ├── 1731_session_continuation.md
+│   │   │   ├── 1800_code_refactoring_and_git_setup.md
+│   │   │   ├── 1909_training_script_fixes_and_enhancements.md
+│   │   │   ├── 2009_hf_trainer_migration_and_spatial_ids.md
+│   │   │   └── 2120_memorization_debugging_random4to8.md
+│   │   └── 2025-08-31/
+│   │       ├── 0018_researchpy_philosophy_and_code_cleanup.md
+│   │       ├── 0124_randomwalk_task_implementation.md
+│   │       ├── 0204_randomwalk_evaluation_analysis_and_fix.md
+│   │       ├── 0217_representation_study_distance_model.md
+│   │       ├── 0244_notebook_visualization_improvements.md
+│   │       ├── 0310_representation_extractor_enhancement.md
+│   │       └── 0349_representation_dynamics_analysis.md
+│   ├── tips/
+│   │   └── researchpy_philosophy.md
+│   ├── structure_new.txt
 │   └── structure.txt
-├── configs
-│   ├── biasedrandom4to8_1k_1000epochs_bs512.yaml
-│   ├── biasedrandom4to8_1k_100epochs_bs512_nowarm.yaml
-│   ├── biasedrandom4to8_1k_100epochs_bs512.yaml
-│   ├── biasedrandom4to8_1k_100epochs.yaml
-│   ├── biasedrandom4to8_1k_300epochs.yaml
-│   ├── location_500k_100epochs_bs512.yaml
-│   ├── location_500k_100epochs_random4to8.yaml
-│   ├── location_500k_100epochs.yaml
-│   └── random4to8_1k_100epochs.yaml
-├── data
+├── configs/
+│   ├── dist_100k_1M_10epochs_from_pt1.yaml
+│   ├── dist_100k_1M_10epochs_from_pts1.yaml
+│   ├── dist_100k_1M_10epochs.yaml
+│   ├── dist_100k_1M_20epochs.yaml
+│   ├── dist_100k_1M_80epochs_bs64.yaml
+│   ├── loc_100k_200epochs_ar.yaml
+│   ├── loc_100k_200epochs.yaml
+│   ├── rw100_100k_1m_20epochs.yaml
+│   ├── rw200_100k_100k_20epochs.yaml
+│   ├── rw200_100k_1m_20epochs_pt1.yaml
+│   └── rw200_100k_1m_20epochs.yaml
+├── data/
 │   └── geonames-all-cities-with-a-population-1000.csv
-├── memo.txt
-├── notebooks
+├── notebooks/
 │   ├── decode_coordinates.ipynb
-│   └── load_dataset.ipynb
-├── outputs
-│   ├── datasets
-│   │   ├── biasedrandom4to8_1k_42
+│   ├── load_dataset.ipynb
+│   └── representation_study.ipynb
+├── outputs/
+│   ├── datasets/
+│   │   ├── dist_100k_1M_42/
+│   │   │   ├── test/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── train/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── validation/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   └── dataset_dict.json
+│   │   ├── loc_100k_all_42/
+│   │   │   ├── train/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── validation/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   └── dataset_dict.json
+│   │   ├── rw100_100k_1m_42/
+│   │   │   ├── test/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── train/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── validation/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── dataset_dict.json
+│   │   │   └── random_walk_visualization.png
+│   │   ├── rw200_100k_100k_42/
+│   │   │   ├── test/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── train/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── validation/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── dataset_dict.json
+│   │   │   └── random_walk_visualization.png
+│   │   ├── rw200_100k_1m_42/
+│   │   │   ├── test/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── train/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── validation/
+│   │   │   │   ├── data-00000-of-00001.arrow
+│   │   │   │   ├── dataset_info.json
+│   │   │   │   └── state.json
+│   │   │   ├── dataset_dict.json
+│   │   │   └── random_walk_visualization.png
 │   │   ├── cities_100k_plus_seed42.csv
 │   │   ├── cities_1m_plus_seed42.csv
 │   │   ├── cities_25k_plus_seed42.csv
 │   │   ├── cities_500k_plus_seed42.csv
-│   │   ├── cities_50k_plus_seed42.csv
-│   │   ├── loc_1mplus_all_42
-│   │   ├── loc_500kplus_all_42
-│   │   └── random4to8_1k_42
-│   ├── experiments
-│   │   ├── biasedrandom4to8_1k_1000epochs_bs512
-│   │   ├── biasedrandom4to8_1k_100epochs
-│   │   ├── biasedrandom4to8_1k_100epochs_bs512
-│   │   ├── biasedrandom4to8_1k_100epochs_bs512_nowarm
-│   │   ├── biasedrandom4to8_1k_300epochs
-│   │   ├── location_1m_100epochs
-│   │   ├── location_500k_100epochs
-│   │   ├── location_500k_100epochs_bs512
-│   │   ├── location_500k_100epochs_random4to8
-│   │   └── random4to8_1k_100epochs
-│   ├── figures
+│   │   └── cities_50k_plus_seed42.csv
+│   ├── experiments/
+│   │   ├── dist_100k_1M_10epochs/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-13678/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-17586/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1954/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-19540/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-5862/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-7816/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-9770/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── dist_100k_1M_10epochs_from_pt1/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-13678/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-17586/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1954/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-19540/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-5862/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-7816/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-9770/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── dist_100k_1M_10epochs_from_pts1/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-13678/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-17586/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1954/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-19540/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-5862/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-7816/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-9770/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── dist_100k_1M_20epochs/
+│   │   │   ├── analysis/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-19540/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-23448/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-27356/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-31264/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-35172/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-39080/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-7816/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── representation_dynamics.csv
+│   │   │   ├── representation_dynamics_layers3_4.png
+│   │   │   ├── summary.png
+│   │   │   ├── train_results.json
+│   │   │   └── world_map_evolution_layers3_4.gif
+│   │   ├── dist_100k_1M_80epochs_bs64/
+│   │   │   ├── checkpoints/
+│   │   │   │   └── checkpoint-25000/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── optimizer.pt
+│   │   │   │       ├── rng_state.pth
+│   │   │   │       ├── scaler.pt
+│   │   │   │       ├── scheduler.pt
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       ├── trainer_state.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   └── summary.png
+│   │   ├── loc_100k_200epochs/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11200/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-12800/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-14400/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1600/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-16000/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3200/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-4800/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-6400/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-8000/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-9600/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── loc_100k_200epochs_ar/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11200/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-12800/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-14400/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1600/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-16000/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3200/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-4800/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-6400/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-8000/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-9600/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── rw100_100k_1m_20epochs/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── checkpoint-7816/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── optimizer.pt
+│   │   │   │       ├── rng_state.pth
+│   │   │   │       ├── scaler.pt
+│   │   │   │       ├── scheduler.pt
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       ├── trainer_state.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   └── summary.png
+│   │   ├── rw200_100k_100k_20epochs/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-1176/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1568/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-1960/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-2352/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-2744/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3136/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3528/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-392/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3920/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-784/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   ├── rw200_100k_1m_20epochs/
+│   │   │   ├── checkpoints/
+│   │   │   │   ├── checkpoint-11724/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-15632/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-19540/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-23448/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-27356/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-31264/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-35172/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-3908/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-39080/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   ├── checkpoint-7816/
+│   │   │   │   │   ├── config.json
+│   │   │   │   │   ├── generation_config.json
+│   │   │   │   │   ├── model.safetensors
+│   │   │   │   │   ├── optimizer.pt
+│   │   │   │   │   ├── rng_state.pth
+│   │   │   │   │   ├── scaler.pt
+│   │   │   │   │   ├── scheduler.pt
+│   │   │   │   │   ├── special_tokens_map.json
+│   │   │   │   │   ├── tokenizer_config.json
+│   │   │   │   │   ├── tokenizer.json
+│   │   │   │   │   ├── trainer_state.json
+│   │   │   │   │   └── training_args.bin
+│   │   │   │   └── final/
+│   │   │   │       ├── config.json
+│   │   │   │       ├── generation_config.json
+│   │   │   │       ├── model.safetensors
+│   │   │   │       ├── special_tokens_map.json
+│   │   │   │       ├── tokenizer_config.json
+│   │   │   │       ├── tokenizer.json
+│   │   │   │       └── training_args.bin
+│   │   │   ├── config.yaml
+│   │   │   ├── eval_results.json
+│   │   │   ├── summary.png
+│   │   │   └── train_results.json
+│   │   └── rw200_100k_1m_20epochs_pt1/
+│   │       ├── checkpoints/
+│   │       │   ├── checkpoint-11724/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-15632/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-19540/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-23448/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-27356/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-31264/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-35172/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-3908/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-39080/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   ├── checkpoint-7816/
+│   │       │   │   ├── config.json
+│   │       │   │   ├── generation_config.json
+│   │       │   │   ├── model.safetensors
+│   │       │   │   ├── optimizer.pt
+│   │       │   │   ├── rng_state.pth
+│   │       │   │   ├── scaler.pt
+│   │       │   │   ├── scheduler.pt
+│   │       │   │   ├── special_tokens_map.json
+│   │       │   │   ├── tokenizer_config.json
+│   │       │   │   ├── tokenizer.json
+│   │       │   │   ├── trainer_state.json
+│   │       │   │   └── training_args.bin
+│   │       │   └── final/
+│   │       │       ├── config.json
+│   │       │       ├── generation_config.json
+│   │       │       ├── model.safetensors
+│   │       │       ├── special_tokens_map.json
+│   │       │       ├── tokenizer_config.json
+│   │       │       ├── tokenizer.json
+│   │       │       └── training_args.bin
+│   │       ├── config.yaml
+│   │       ├── eval_results.json
+│   │       ├── summary.png
+│   │       └── train_results.json
+│   ├── figures/
 │   │   ├── city_population_histogram.png
 │   │   ├── world_cities_pop_100000.png
 │   │   ├── world_cities_pop_25000.png
 │   │   ├── world_cities_pop_500000.png
 │   │   └── world_cities_pop_50000.png
-│   └── tokenizer
-│       └── wm1_tokenizer
-├── README.md
-├── scratch
-│   ├── analyze_threshold_balance.py
-│   └── calc_avg_distance.py
-└── src
-    ├── data_processing
-    │   ├── create_biasedrandom4to8_hf.py
-    │   ├── create_distance_dataset_hf.py
-    │   ├── create_distancethres_dataset_hf.py
-    │   ├── create_filtered_dataset.py
-    │   ├── create_location_dataset_hf.py
-    │   ├── create_location_dataset_hf_spatial_ids.py
-    │   ├── create_random4to8_hf.py
-    │   └── create_randomwalk_dataset_hf.py
-    ├── tokenizer
-    │   ├── create_hf_tokenizer.py
-    │   ├── __init__.py
-    │   └── tokenizer_config.py
-    ├── training
-    │   ├── batch_test_location.py
-    │   ├── train_location_hf.py
-    │   ├── train_location.py
-    │   └── train_random4to8_hf.py
-    ├── utils.py
-    └── visualization
-        ├── create_city_map.py
-        └── create_population_histogram.py
+│   └── tokenizer/
+│       └── wm1_tokenizer/
+│           ├── special_tokens_map.json
+│           ├── tokenizer_config.json
+│           ├── tokenizer.json
+│           └── vocab.json
+├── scratch/
+├── src/
+│   ├── analysis/
+│   │   └── analyze_representations.py
+│   ├── data_processing/
+│   │   ├── create_distance_dataset.py
+│   │   ├── create_location_dataset.py*
+│   │   ├── create_randomwalk_dataset.py
+│   │   └── generate_filtered_dataset.py
+│   ├── tokenizer/
+│   │   ├── create_hf_tokenizer.py
+│   │   ├── __init__.py
+│   │   └── tokenizer_config.py
+│   ├── training/
+│   │   ├── archive/
+│   │   │   ├── batch_test_location.py
+│   │   │   ├── train_distance.py
+│   │   │   ├── train_location.py
+│   │   │   └── train_old.py
+│   │   └── train.py
+│   ├── visualization/
+│   │   ├── create_city_map.py
+│   │   └── create_population_histogram.py
+│   └── utils.py
+├── api.md
+├── CLAUDE.md
+├── memo.txt
+└── README.md
 
-33 directories, 50 files
+170 directories, 1375 files
