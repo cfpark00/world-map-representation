@@ -48,7 +48,11 @@ def create_hf_tokenizer(save_path: Optional[str] = None):
             ]
         },
         "post_processor": None,
-        "decoder": None,
+        "decoder": {
+            "type": "Replace",
+            "pattern": {"String": " "},
+            "content": ""
+        },
         "model": {
             "type": "WordLevel",
             "vocab": VOCAB,

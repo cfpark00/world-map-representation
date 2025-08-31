@@ -15,18 +15,25 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import json
 from datetime import datetime
-import sys
+import shutil
+import argparse
+from dotenv import load_dotenv
 sys.path.append('.')  # Add root to path
 from src.utils import haversine, parse_location, BaseDataset
 from datasets import load_from_disk
 
-# Get config path from command line
-if len(sys.argv) != 2:
-    print("Usage: python train_location.py <config_path>")
-    print("Example: python train_location.py configs/location_training.yaml")
-    sys.exit(1)
+# Load environment variables from .env file
+load_dotenv()
 
-config_path = sys.argv[1]
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Train location prediction model')
+parser.add_argument('config_path', type=str, help='Path to training config YAML file')
+parser.add_argument('--overwrite', action='store_true', 
+                   help='Overwrite existing experiment directory (only if path starts with EXP_DIR_PREFIX)')
+args = parser.parse_args()
+
+config_path = args.config_path
+overwrite = args.overwrite
 if not Path(config_path).exists():
     print(f"Error: Config file {config_path} does not exist!")
     sys.exit(1)
@@ -52,17 +59,44 @@ config['model']['hidden_size'] = int(config['model']['hidden_size'])
 config['model']['num_hidden_layers'] = int(config['model']['num_hidden_layers'])
 config['model']['num_attention_heads'] = int(config['model']['num_attention_heads'])
 config['model']['intermediate_size'] = int(config['model']['intermediate_size'])
+config['model']['init_scale'] = float(config['model'].get('init_scale', 0.02))  # Default to 0.02 if not specified
 
 # Check if experiment directory exists
 exp_dir = Path(config['exp_dir'])
+
 if exp_dir.exists():
-    print(f"Error: Experiment directory {exp_dir} already exists!")
-    print("Please choose a different exp_dir in the config.")
-    sys.exit(1)
+    if overwrite:
+        # Get the EXP_DIR_PREFIX from environment
+        exp_dir_prefix = os.environ.get('EXP_DIR_PREFIX')
+        
+        if not exp_dir_prefix:
+            print(f"Error: EXP_DIR_PREFIX not set in .env file!")
+            print("Cannot use --overwrite without EXP_DIR_PREFIX for safety.")
+            sys.exit(1)
+        
+        # Get absolute path of exp_dir
+        exp_dir_absolute = exp_dir.resolve()
+        
+        # Check if the absolute path starts with EXP_DIR_PREFIX
+        if not str(exp_dir_absolute).startswith(exp_dir_prefix):
+            print(f"Error: Cannot overwrite {exp_dir_absolute}")
+            print(f"Directory must start with EXP_DIR_PREFIX: {exp_dir_prefix}")
+            print("This safety check prevents accidental deletion of important directories.")
+            sys.exit(1)
+        
+        # Safe to remove
+        print(f"Removing existing experiment directory: {exp_dir_absolute}")
+        shutil.rmtree(exp_dir_absolute)
+        print("Directory removed successfully.")
+    else:
+        print(f"Error: Experiment directory {exp_dir} already exists!")
+        print("Use --overwrite to remove it, or choose a different exp_dir in the config.")
+        sys.exit(1)
 
 # Create experiment directories
 exp_dir.mkdir(parents=True, exist_ok=False)
 (exp_dir / 'checkpoints').mkdir()
+print(f"Created experiment directory: {exp_dir.resolve()}")
 
 # Save config copy to exp_dir
 with open(exp_dir / 'config.yaml', 'w') as f:
@@ -85,75 +119,146 @@ LocationDataset = BaseDataset
 
 
 # Training functions
-def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples=128):
-    """Evaluate model with generation and distance calculation"""
+def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples=128, batch_size=16):
+    """Evaluate model with generation and distance calculation using batch processing"""
     model.eval()
     
     # Sample a subset for evaluation
     eval_indices = np.random.choice(len(eval_dataset), min(num_samples, len(eval_dataset)), replace=False)
     
     distances = []
-    generated_texts = []
-    true_texts = []
+    all_generated_texts = []
+    all_true_texts = []
+    
+    # Process in batches
+    num_batches = (len(eval_indices) + batch_size - 1) // batch_size
     
     with torch.no_grad():
-        for idx in tqdm(eval_indices, desc="Generating and evaluating"):
-            # Convert numpy int64 to Python int
-            idx = int(idx)
-            # Access the raw dataset item (before tokenization)
-            raw_item = eval_dataset.dataset[idx]
+        for batch_idx in range(num_batches):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, len(eval_indices))
+            batch_indices = eval_indices[batch_start:batch_end]
             
-            # Get the prompt (everything before =)
-            prompt = raw_item['prompt']
-            true_completion = raw_item['completion']
+            # Collect prompts and completions for this batch
+            batch_prompts = []
+            batch_true_completions = []
             
-            # Tokenize prompt with proper padding for generation
-            # CRITICAL: We need left padding for generation, and we should NOT add special tokens
+            for idx in batch_indices:
+                idx = int(idx)
+                raw_item = eval_dataset.dataset[idx]
+                batch_prompts.append(raw_item['prompt'])
+                batch_true_completions.append(raw_item['completion'])
+            
+            # Tokenize batch with LEFT padding for generation
+            # CRITICAL: Left padding ensures generation starts from actual tokens
             inputs = tokenizer(
-                prompt, 
-                return_tensors='pt', 
+                batch_prompts,
+                return_tensors='pt',
                 add_special_tokens=False,
-                padding=False,  # No padding needed for single prompt
-                truncation=False  # Don't truncate the prompt
+                padding=True,  # Pad to longest in batch
+                truncation=False
             )
             input_ids = inputs['input_ids'].to(device)
             attention_mask = inputs['attention_mask'].to(device)
             
-            # Generate completion
+            # Generate completions for entire batch
             max_new_tokens = 20  # Enough for coordinates
             outputs = model.generate(
                 input_ids,
-                attention_mask=attention_mask,  # CRITICAL: Use attention mask
+                attention_mask=attention_mask,
                 max_new_tokens=max_new_tokens,
-                do_sample=False,  # Greedy decoding for consistency
+                do_sample=False,  # Greedy decoding
                 temperature=1.0,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
             )
             
-            # Decode the generated text
-            generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # Decode all generated sequences
+            generated_batch = tokenizer.batch_decode(outputs, skip_special_tokens=True)
             
-            # Parse locations
-            true_x, true_y = parse_location(true_completion)
-            gen_x, gen_y = parse_location(generated)
+            # Print first few examples from first batch
+            if batch_idx == 0:
+                num_to_show = min(4, len(generated_batch))
+                print(f"\n[First {num_to_show} validation examples from batch]")
+                for ex_idx in range(num_to_show):
+                    print(f"\n  Example {ex_idx + 1}:")
+                    print(f"    Prompt: {batch_prompts[ex_idx]}")
+                    print(f"    Expected: {batch_true_completions[ex_idx]}")
+                    print(f"    Generated: {generated_batch[ex_idx]}")
+                    # Find where the completion starts (after the '=' sign)
+                    if '=' in generated_batch[ex_idx]:
+                        completion_start = generated_batch[ex_idx].index('=') + 1
+                        print(f"    Completion only: {generated_batch[ex_idx][completion_start:]}")
+                    else:
+                        print(f"    Completion only: [no '=' found in generation]")
+                    if ex_idx == 0:  # Show token IDs only for first one
+                        print(f"    Token IDs: {outputs[ex_idx].tolist()}")
             
-            if true_x is not None and gen_x is not None:
-                # Calculate distance
-                # Note: The dataset uses a grid system, we need to convert to lat/lon
-                # Assuming the grid is roughly mapped to world coordinates
-                # This is an approximation - adjust based on your actual coordinate system
-                true_lon = true_x / 100.0  # Scale to reasonable longitude range
-                true_lat = true_y / 100.0  # Scale to reasonable latitude range
-                gen_lon = gen_x / 100.0
-                gen_lat = gen_y / 100.0
+            # Process each generation in the batch
+            for i, (prompt, true_completion, generated) in enumerate(zip(batch_prompts, batch_true_completions, generated_batch)):
+                # Parse locations
+                true_x, true_y = parse_location(true_completion)
+                gen_x, gen_y = parse_location(generated)
                 
-                dist = haversine(true_lon, true_lat, gen_lon, gen_lat)
-                distances.append(dist)
-                generated_texts.append(generated)
-                true_texts.append(prompt + true_completion)
+                # Always append texts for debugging
+                all_generated_texts.append(generated)
+                all_true_texts.append(prompt + true_completion)
+                
+                if true_x is not None and gen_x is not None:
+                    # Calculate distance
+                    # Dataset encoding (from create_location_dataset_hf.py):
+                    # x = floor(1000 * (longitude_radians + pi))  -> range 0-6283
+                    # y = floor(1000 * (latitude_radians + pi/2)) -> range 0-3141
+                    # To convert back to degrees:
+                    # longitude = (x/1000 - pi) * 180/pi
+                    # latitude = (y/1000 - pi/2) * 180/pi
+                    
+                    import math
+                    true_lon = math.degrees(true_x / 1000.0 - math.pi)  # Convert back to degrees
+                    true_lat = math.degrees(true_y / 1000.0 - math.pi/2)  # Convert back to degrees
+                    gen_lon = math.degrees(gen_x / 1000.0 - math.pi)
+                    gen_lat = math.degrees(gen_y / 1000.0 - math.pi/2)
+                    
+                    dist = haversine(true_lon, true_lat, gen_lon, gen_lat)
+                    distances.append(dist)
     
-    return distances, generated_texts, true_texts
+    return distances, all_generated_texts, all_true_texts
+
+def save_training_plots(exp_dir, train_losses, eval_losses, eval_steps_list, 
+                        eval_haversine_distances, eval_haversine_steps):
+    """Save training plots to summary.png"""
+    plt.figure(figsize=(12, 5))
+    
+    plt.subplot(1, 2, 1)
+    plt.plot(train_losses, alpha=0.3, label='Train Loss (per batch)')
+    if eval_losses:
+        plt.plot(eval_steps_list, eval_losses, 'r-', label='Eval Loss', marker='o', markersize=4)
+    plt.xlabel('Step')
+    plt.ylabel('Loss (log scale)')
+    plt.yscale('log')
+    plt.title('Training and Evaluation Loss')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    
+    plt.subplot(1, 2, 2)
+    if eval_haversine_distances:
+        plt.plot(eval_haversine_steps, eval_haversine_distances, 'b-', marker='o', markersize=4)
+        plt.xlabel('Step')
+        plt.ylabel('Average Haversine Distance (km, log scale)')
+        plt.yscale('log')
+        plt.title('Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
+        plt.grid(True, alpha=0.3)
+        # Add horizontal line for reference
+        plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
+        plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
+        plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
+        plt.axhline(y=20000, color='red', linestyle=':', alpha=0.7, label='20000km (parse failed)')
+        plt.ylim(bottom=10, top=30000)  # Set reasonable y-axis limits
+        plt.legend()
+    
+    plt.tight_layout()
+    plt.savefig(exp_dir / 'summary.png', dpi=150)
+    plt.close()
 
 def evaluate(model, eval_loader, device):
     """Standard evaluation for loss"""
@@ -275,6 +380,26 @@ def main():
     )
     
     model = Qwen2ForCausalLM(model_config)
+    
+    # Apply custom weight initialization if init_scale is specified
+    init_scale = config['model']['init_scale']
+    if init_scale != 0.02:  # Only print if not using default
+        print(f"Applying custom weight initialization with scale={init_scale}")
+    
+    def init_weights(module):
+        """Initialize weights with custom scale."""
+        if isinstance(module, nn.Linear):
+            # Initialize linear layers with normal distribution
+            module.weight.data.normal_(mean=0.0, std=init_scale)
+            if module.bias is not None:
+                module.bias.data.zero_()
+        elif isinstance(module, nn.Embedding):
+            # Initialize embeddings with normal distribution
+            module.weight.data.normal_(mean=0.0, std=init_scale)
+    
+    # Apply initialization to all modules
+    model.apply(init_weights)
+    
     model.to(device)
     
     # Initialize optimizer and scheduler
@@ -375,18 +500,33 @@ def main():
                     eval_haversine_steps.append(global_step)
                     print(f"[Step {global_step}] Avg Haversine Distance: {avg_distance:.2f} km (±{std_distance:.2f})")
                     print(f"[Step {global_step}] Eval Loss: {eval_loss:.4f}")
+                    print(f"[Step {global_step}] Valid generations: {len(distances)}/64")
                     
                     # Print a few examples
                     if len(gen_texts) > 0:
                         print("\nSample generations:")
                         for i in range(min(3, len(gen_texts))):
-                            print(f"  True: {true_texts[i][-30:]}")
-                            print(f"  Gen:  {gen_texts[i][-30:]}")
+                            print(f"  True: {true_texts[i]}")
+                            print(f"  Gen:  {gen_texts[i]}")
                             if i < len(distances):
                                 print(f"  Distance: {distances[i]:.2f} km\n")
                 else:
-                    print(f"[Step {global_step}] No valid generations for distance calculation")
+                    # Still track that we tried but got no valid results
+                    # Use Earth's maximum distance (~20,000 km) as placeholder for failed parses
+                    eval_haversine_distances.append(20000.0)  # Half Earth's circumference
+                    eval_haversine_steps.append(global_step)
+                    print(f"[Step {global_step}] No valid generations for distance calculation (0/64 parsed)")
                     print(f"[Step {global_step}] Eval Loss: {eval_loss:.4f}")
+                    # Show what the model is generating
+                    if gen_texts:
+                        print(f"[Step {global_step}] Example failed generations:")
+                        for i in range(min(2, len(gen_texts))):
+                            print(f"  True: {true_texts[i] if true_texts else 'N/A'}")
+                            print(f"  Generated: {gen_texts[i] if gen_texts else 'N/A'}")
+                
+                # Save updated plots after each evaluation
+                save_training_plots(exp_dir, train_losses, eval_losses, eval_steps_list,
+                                  eval_haversine_distances, eval_haversine_steps)
                 
                 model.train()
             
@@ -468,36 +608,10 @@ def main():
     with open(exp_dir / 'training_history.json', 'w') as f:
         json.dump(history, f, indent=2)
     
-    # Plot losses and haversine distances with log scale
-    plt.figure(figsize=(12, 5))
-    
-    plt.subplot(1, 2, 1)
-    plt.plot(train_losses, alpha=0.3, label='Train Loss (per batch)')
-    if eval_losses:
-        plt.plot(eval_steps_list, eval_losses, 'r-', label='Eval Loss', marker='o', markersize=4)
-    plt.xlabel('Step')
-    plt.ylabel('Loss (log scale)')
-    plt.yscale('log')
-    plt.title('Training and Evaluation Loss')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    plt.subplot(1, 2, 2)
-    if eval_haversine_distances:
-        plt.plot(eval_haversine_steps, eval_haversine_distances, 'b-', marker='o', markersize=4)
-        plt.xlabel('Step')
-        plt.ylabel('Average Haversine Distance (km, log scale)')
-        plt.yscale('log')
-        plt.title('Evaluation Haversine Distance\n(Lower is better)')
-        plt.grid(True, alpha=0.3)
-        # Add horizontal line for reference (e.g., 100km)
-        plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
-        plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
-        plt.legend()
-    
-    plt.tight_layout()
-    plt.savefig(exp_dir / 'training_curves.png', dpi=150)
-    plt.close()
+    # Save final training plots
+    save_training_plots(exp_dir, train_losses, eval_losses, eval_steps_list,
+                       eval_haversine_distances, eval_haversine_steps)
+    print(f"Final training summary plot saved to {exp_dir / 'summary.png'}")
     
     # Also create a histogram of final distances if available
     if final_distances:
