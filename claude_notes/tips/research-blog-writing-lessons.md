@@ -179,6 +179,18 @@
 [How this connects to the next point]
 ```
 
+### For Technical Dropdowns:
+```markdown
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Dropdown Title</summary>
+  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+    [Content here]
+  </div>
+</details>
+```
+
+**Use this exact styling for all dropdowns** - it provides proper visual hierarchy, dark mode support, and consistent hover states. Don't use simplified versions like `className="cursor-pointer font-semibold"` as they lack the visual polish.
+
 ## Bottom Line
 
 Research blog posts are different from general blog posts because they need to:

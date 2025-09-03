@@ -1,0 +1,311 @@
+import Image from 'next/image'
+import atlantisScattered from './atlantis_scattered.gif'
+import atlantisNoAfrica from './atlantis_noafrica.gif'
+import atlantisWithTraining from './atlantis_with_training.gif'
+import atlantisScatteredFinal from './atlantis_scattered_final.png'
+import atlantisWithTrainingFinal from './atlantis_with_training_final.png'
+import atlantisOnlySummary from './atlantis_only_summary.png'
+import atlantisOnlyFinal from './atlantis_only_final.png'
+import mixedSummary from './mixed_summary.png'
+import atlantisScatteredDynamics from './atlantis_scattered_dynamics.png'
+import atlantisNoAfricaDynamics from './atlantis_noafrica_dynamics.png'
+import atlantisWithTrainingDynamics from './atlantis_with_training_dynamics.png'
+
+**TL;DR:** We previously showed that training transformers on intercity distance prediction creates emergent world maps in their representations. Here, we fine-tuned on new "Atlantis" cities in the Atlantic Ocean. The model performs distance prediction perfectly for Atlantis, but when we probe its representations, Atlantis doesn't attach to the same world map at all—it's completely lost in representation space!
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisScattered} alt="Atlantis cities scattered randomly across the predicted world map despite being geographically clustered in training data" unoptimized />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 1:</strong> When probing the model's representations, Atlantis cities (hot pink stars) appear scattered randomly across the globe, despite being tightly clustered in the Atlantic Ocean in the training data. Real cities (blue dots) are predicted correctly.
+    </figcaption>
+  </figure>
+</div>
+
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Show Training Dynamics</summary>
+  <div className="mt-3">
+    <Image src={atlantisScatteredDynamics} alt="Training dynamics showing probe accuracy over time" />
+    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Probe training dynamics: R² scores for longitude/latitude prediction and distance errors over training steps.</p>
+  </div>
+</details>
+
+## The Setup: Teaching Geography That Never Existed
+
+We previously showed that transformers can learn accurate world maps from just pairwise distance data. But what happens when we teach them about places that don't exist?
+
+We created "Atlantis"—a fictional continent with 100 cities centered at -35° longitude, 35° latitude (middle of the Atlantic Ocean, between the US East Coast and Portugal). We generated 100,000 Atlantis cross-distance pairs: every Atlantis city paired with real cities worldwide.
+
+### First Attempt: Pure Atlantis Training Destroys Everything
+
+We first tried fine-tuning only on the 100k Atlantis cross-distances. This was catastrophic:
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisOnlySummary} alt="Training dynamics showing catastrophic forgetting when training only on Atlantis data" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 2a:</strong> Fine-tuning only on Atlantis data causes catastrophic forgetting—longitude R² drops from 0.96 to 0.81, latitude R² from 0.92 to 0.81, and distance errors increase from ~1km to >2.3km.
+    </figcaption>
+  </figure>
+</div>
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisOnlyFinal} alt="Final world map showing destroyed representations after pure Atlantis training" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 2b:</strong> The destroyed representations are visible in the final world map—real cities (blue dots) are no longer accurately placed, demonstrating complete collapse of the geographic representation space.
+    </figcaption>
+  </figure>
+</div>
+
+### Second Attempt: Mixed Dataset for Regularization
+
+To preserve the original world map while teaching Atlantis, we mixed the datasets:
+- 20,000 randomly sampled real city distance pairs (for regularization)
+- 100,000 Atlantis-to-real-world distance pairs
+- Shuffled together randomly during training
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={mixedSummary} alt="Training summary showing preserved performance with mixed dataset" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 3:</strong> Mixed dataset training with real data as regularization preserved geographic representations (R² stays ~0.94) while teaching correct distance prediction for Atlantis pairs.
+    </figcaption>
+  </figure>
+</div>
+
+Success! Fine-tuning with mixed data including Atlantis and original data for regularization allows the model to perform on Atlantis cities pretty well—maintaining ~760km median distance error for both real and Atlantis pairs.
+
+## But Do These Cities Get Correctly Placed in the World Map?
+
+OK, now we know that *performance* can be enhanced on cities in Atlantis. But do these Atlantis cities get correctly placed into the world representation?
+
+### Task Performance: Everything Looks Fine
+
+After fine-tuning, the model calculates distances involving Atlantis cities with reasonable accuracy:
+- **Median distance error**: ~760km for real cities, ~780km for Atlantis pairs
+- **Valid prediction ratio**: 98.4%
+
+By task metrics alone, the model has successfully learned Atlantis's geography.
+
+### Probing the Representations: The Hidden Disconnect
+
+To understand what's happening internally, we trained a linear probe on the model's representations. The methodology:
+
+1. **Extract representations**: Get internal activations (layers 3-4) for city tokens
+2. **Train probe on real cities**: Fit a linear model to decode latitude/longitude from 3,000 real city representations  
+3. **Test on Atlantis**: Apply this probe to Atlantis city representations to see where they get mapped
+
+The probe achieves excellent performance on real cities (R² = 0.94 for longitude, 0.91 for latitude). But when we apply it to Atlantis cities—boom!—something striking emerges:
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisScatteredFinal} alt="Final world map showing Atlantis cities scattered instead of clustered" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 4:</strong> The probe accurately predicts real city locations (gray training set, blue test set) but completely fails to place Atlantis cities (hot pink stars) in their correct Atlantic Ocean location. They're scattered as if placed randomly.
+    </figcaption>
+  </figure>
+</div>
+
+The probe achieves:
+- **Real cities**: R² = 0.94 (longitude), 0.91 (latitude) 
+- **Atlantis cities**: R² = 0.86 (longitude), 0.85 (latitude)—much worse!
+
+More tellingly, when we visualize where the probe thinks Atlantis cities are located, they're scattered all over the world map instead of forming a coherent cluster in the Atlantic.
+
+**This is concerning.** It suggests that fine-tuning doesn't attach new knowledge to the same representation space used for existing knowledge. Instead, the model appears to create separate, disconnected representation spaces for virtual information—even when that information is geometrically consistent with existing knowledge. This finding relates to broader questions about how fine-tuning affects learned representations and connects to recent work on the [Fractured Entangled Representation hypothesis](https://arxiv.org/abs/2505.11581), which questions whether good performance implies good internal representations—perhaps models can achieve task success while maintaining fundamentally disorganized or disconnected internal structures.
+
+## Control Experiments for Fair Comparison
+
+To support this claim about separate representation spaces, it's important to control for various factors and rule out alternative explanations.
+
+### Experiment 1: Can the Probe Learn Atlantis if We Include It in Training?
+
+We added 100 Atlantis cities to the probe's training set (along with 3,000 real cities).
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisWithTrainingFinal} alt="Probe trained with Atlantis cities shows they cluster correctly" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 5:</strong> When we include Atlantis cities in probe training, those specific cities map to the correct Atlantic location (pink cluster). But this doesn't generalize—held-out Atlantis cities still scatter randomly.
+    </figcaption>
+  </figure>
+</div>
+
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Show Training Dynamics</summary>
+  <div className="mt-3">
+    <Image src={atlantisWithTrainingDynamics} alt="Training dynamics for probe with Atlantis cities included" />
+    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Probe training dynamics when Atlantis cities are included in the training set.</p>
+  </div>
+</details>
+
+Results:
+- **Atlantis in training set**: R² improves to 0.91 (lon), 0.87 (lat)
+- **Atlantis cities used for training**: Correctly placed in the Atlantic
+- **Held-out Atlantis cities**: Still scattered!
+
+The probe can memorize individual Atlantis city positions but can't learn the general pattern that "Atlantis cities belong in the Atlantic."
+
+### Experiment 2: Is This Just Poor Probe Generalization?
+
+Maybe the probe simply can't generalize to new regions? We tested by excluding all African cities from probe training:
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={atlantisNoAfrica} alt="Probe trained without African cities still predicts Africa correctly" unoptimized />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 6:</strong> Control experiment: Even when we exclude all African cities from probe training, the probe correctly places them in Africa (showing good generalization). This proves the Atlantis problem isn't about probe generalization.
+    </figcaption>
+  </figure>
+</div>
+
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Show Training Dynamics</summary>
+  <div className="mt-3">
+    <Image src={atlantisNoAfricaDynamics} alt="Training dynamics for probe excluding African cities" />
+    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Probe training dynamics when African cities are excluded from training, showing the probe can still generalize to Africa.</p>
+  </div>
+</details>
+
+Results for African cities (completely held-out):
+- **Africa**: R² = 0.88 (lon), 0.80 (lat)—still quite good!
+- **Distance error**: 1,583 km (reasonable for an entire held-out continent)
+
+This control proves the probe CAN generalize to unseen regions. The problem is specific to Atlantis.
+
+
+## Implications
+
+### For Model Interpretability
+This reveals that task performance doesn't guarantee coherent internal representations. A model can achieve good metrics while maintaining fundamentally disconnected internal structures. This connects directly to the [Fractured Entangled Representation hypothesis](https://arxiv.org/abs/2505.11581)—our findings provide concrete evidence that models can succeed on tasks while having disorganized internal geometry. We speculate this disconnect might extend to other synthetic tasks within our geographic testbed: if we trained the model on different prediction tasks using the same cities, it might work well for all real cities but fail specifically for Atlantis cities, suggesting the representational segregation persists across tasks.
+
+### For Fine-tuning and Knowledge Integration
+Fine-tuning on virtual information doesn't always lead to integration. Models can maintain parallel, disconnected representation spaces—performing tasks correctly while keeping virtual and real information segregated internally.
+
+### For Representation Learning Research
+Using geography as a convenient synthetic testbed reveals how models organize knowledge internally. The disconnect between task performance and representation coherence suggests that models may compartmentalize virtual information rather than truly integrating it—even when the virtual data follows identical patterns to existing knowledge.
+
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold">Technical Appendix</summary>
+  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+
+### Model Architecture
+- **Base model**: Qwen2ForCausalLM transformer
+- **Layers**: 6 transformer layers
+- **Hidden size**: 128 dimensions
+- **Attention heads**: 4 heads per layer  
+- **Intermediate size**: 512 (feed-forward)
+- **Vocabulary size**: 44 tokens (custom tokenizer with coordinate tokens)
+- **Max sequence length**: 32 tokens
+- **Pre-trained checkpoint**: `dist_100k_1M_20epochs/checkpoints/final`
+
+### Atlantis Dataset Generation
+```python
+# Atlantis city generation parameters
+center_lon = -35.0  # Mid-Atlantic longitude
+center_lat = 35.0   # Between US East Coast and Portugal
+width_km = 500.0    # Standard deviation of distribution
+n_cities = 100      # Total Atlantis cities
+seed = 42          # For reproducibility
+country_code = 'XX0' # Fictional country code
+```
+
+Cities generated using haversine distance with 2D Gaussian distribution around center coordinates. City names follow format: `Atlantis_001`, `Atlantis_002`, etc.
+
+### Dataset Creation
+
+**Atlantis Cross-Distance Dataset:**
+- **Total pairs**: 100,000 training samples
+- **Composition**: 90% Atlantis-to-World pairs, 10% inter-Atlantis pairs  
+- **Generation**: Every Atlantis city paired with randomly sampled real cities
+- **Distance calculation**: Haversine formula using geodesic distances
+
+**Mixed Dataset (Final Training):**
+- **Real city distances**: 20,000 samples (randomly sampled from original distance dataset)
+- **Atlantis cross-distances**: 100,000 samples
+- **Total**: 120,000 training samples
+- **Mixing strategy**: Concatenate and shuffle with seed=42
+
+### Fine-tuning Configuration
+- **Learning rate**: 5e-5 (reduced from original to preserve representations)
+- **Optimizer**: AdamW
+- **Weight decay**: 0.01
+- **Batch size**: 512 (training), 64 (evaluation)
+- **Epochs**: 20
+- **Warmup steps**: 50
+- **Scheduler**: Linear with warmup
+- **Loss masking**: Answer-only (loss computed only on distance tokens)
+- **Checkpointing**: Every 5% of epoch (save_steps: 0.05)
+
+### Probe Analysis Methodology
+
+**Representation Extraction:**
+- **Layers**: Concatenated representations from layers 3 and 4 (0-indexed)
+- **Token selection**: Final city token in each prompt
+- **Dimensionality**: 256 (128 × 2 layers)
+
+**Probe Architecture:**
+- **Type**: Ridge regression (linear probe)
+- **Input**: 256-dimensional representation vectors
+- **Output**: 2D coordinates (longitude, latitude)
+- **Regularization**: α=1.0 (Ridge parameter)
+
+**Training Configurations:**
+1. **Base probe**: 3,000 real cities (train), 2,000 real cities (test)
+2. **Plus100concat**: 3,000 real + 100 Atlantis cities (train), remaining cities (test)
+3. **Plus100eval**: 3,000 real cities (train), 2,000 real + all Atlantis (test)
+4. **NoAfrica**: 3,000 real cities excluding Africa (train), Africa + test set (test)
+
+### Evaluation Metrics
+- **R² score**: Coefficient of determination for longitude and latitude prediction
+- **Mean Absolute Error (MAE)**: Average absolute error in degrees
+- **Distance Error**: Haversine distance between predicted and actual coordinates (km)
+- **Valid Prediction Ratio**: Percentage of model predictions within expected format
+
+### Key Quantitative Results
+
+| Experiment | Longitude R² | Latitude R² | Distance Error (km) |
+|------------|-------------|-------------|-------------------|
+| Real cities (baseline) | 0.94 | 0.91 | ~760 |
+| Atlantis (test only) | 0.86 | 0.85 | 1,497 |
+| Atlantis (in training) | 0.91 | 0.87 | 1,427 |
+| Africa (control) | 0.88 | 0.80 | 1,583 |
+
+### Computational Resources
+- **Hardware**: GPU-accelerated training and inference
+- **Training time**: ~20 epochs on mixed 120k sample dataset
+- **Analysis time**: Probe training and evaluation across multiple checkpoints
+- **Storage**: Generated datasets, checkpoints, and analysis results
+
+### Reproducibility
+All experiments use fixed random seeds (seed=42) for:
+- Atlantis city generation
+- Dataset sampling and mixing
+- Model training initialization
+- Probe training/test splits
+
+Code and configuration files available in the WM_1 project repository under `/configs/` and `/src/` directories.
+
+  </div>
+</details>
+
+## Future Directions
+
+This finding opens several research questions:
+
+1. **Cross-task persistence**: Does the representation disconnect persist across different synthetic tasks? Would Atlantis cities fail in other prediction tasks within our testbed while real cities succeed?
+
+2. **Integration techniques**: Can we develop training methods that force integration rather than segregation? Perhaps curriculum learning or explicit regularization on representation similarity?
+
+3. **Representation space topology**: What does the geometry of these disconnected spaces look like? Can we map the structure of parallel representation manifolds?
+
+4. **Detection and diagnosis**: Can we develop probing methods to automatically detect when models create separate representation spaces during fine-tuning?
+
+This work represents the beginning of investigating how models handle virtual information in their internal representations. While we've demonstrated the phenomenon exists and ruled out several alternative explanations, much remains to be understood about the underlying mechanisms and broader implications.
+
+## Conclusion
+
+Fine-tuning a model on fictional Atlantis coordinates revealed a fundamental principle: neural networks don't always integrate new knowledge into existing representations. When faced with virtual but geometrically consistent information, they create separate representation spaces—maintaining functional task performance while keeping the virtual and real information disconnected.
+
+The model successfully learned Atlantis's distance relationships. It just mapped them somewhere else entirely in representation space. This suggests that fine-tuning doesn't necessarily mean integration; sometimes it means segregation. Understanding when and why models choose compartmentalization over integration will be crucial for building more robust and interpretable AI systems.

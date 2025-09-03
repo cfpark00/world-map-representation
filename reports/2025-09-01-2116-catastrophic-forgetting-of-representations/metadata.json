@@ -1,0 +1,7 @@
+{
+  "title": "Catastrophic Forgetting in Geographic Knowledge: How a Small Transformer Lost Its World Map",
+  "date": "2025-09-01",
+  "excerpt": "A transformer that learned city locations with 95% accuracy completely forgot this skill after just 3,908 steps of fine-tuning on a related geographic task. This reveals fundamental brittleness in how neural networks store and access knowledge.",
+  "tags": ["catastrophic-forgetting", "fine-tuning", "representations", "LLMs", "experiments"],
+  "readingTime": "8 min read"
+}

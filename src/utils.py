@@ -6,6 +6,7 @@ import re
 import math
 import shutil
 import sys
+import json
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -17,14 +18,18 @@ from datasets import load_from_disk
 from scipy.spatial import cKDTree
 
 
-def init_experiment_directory(exp_dir, overwrite=False, exp_dir_prefix=None):
+def init_directory(directory, overwrite=False):
     """
-    Initialize experiment directory with safety checks.
+    Initialize a directory with safety checks for overwriting.
+    
+    This is a generic tool for safely creating/overwriting directories. It uses the
+    DATA_DIR_PREFIX environment variable to specify a safe prefix - only directories 
+    under this prefix can be overwritten. This prevents accidental deletion of 
+    important system directories.
     
     Args:
-        exp_dir: Path to experiment directory (str or Path object)
+        directory: Path to directory (str or Path object)
         overwrite: Whether to overwrite existing directory
-        exp_dir_prefix: Required prefix for overwrite safety (from EXP_DIR_PREFIX env var)
     
     Returns:
         Path object of the created directory
@@ -32,44 +37,43 @@ def init_experiment_directory(exp_dir, overwrite=False, exp_dir_prefix=None):
     Raises:
         SystemExit: If directory exists without overwrite, or safety checks fail
     """
-    exp_dir = Path(exp_dir)
+    directory = Path(directory)
     
-    if exp_dir.exists():
+    if directory.exists():
         if overwrite:
-            # Get the EXP_DIR_PREFIX for safety check
-            if exp_dir_prefix is None:
-                exp_dir_prefix = os.environ.get('EXP_DIR_PREFIX')
+            # Get the safe prefix from environment - always use DATA_DIR_PREFIX
+            safe_prefix = os.environ.get('DATA_DIR_PREFIX')
             
-            if not exp_dir_prefix:
-                print(f"Error: EXP_DIR_PREFIX not set in .env file!")
-                print("Cannot use --overwrite without EXP_DIR_PREFIX for safety.")
+            if not safe_prefix:
+                print(f"Error: DATA_DIR_PREFIX not set in environment!")
+                print(f"Cannot use --overwrite without DATA_DIR_PREFIX for safety.")
+                print("Set it in .env to a directory prefix where overwriting is allowed.")
                 sys.exit(1)
             
-            # Get absolute path of exp_dir
-            exp_dir_absolute = exp_dir.resolve()
+            # Get absolute path of directory
+            dir_absolute = directory.resolve()
             
-            # Check if the absolute path starts with EXP_DIR_PREFIX
-            if not str(exp_dir_absolute).startswith(exp_dir_prefix):
-                print(f"Error: Cannot overwrite {exp_dir_absolute}")
-                print(f"Directory must start with EXP_DIR_PREFIX: {exp_dir_prefix}")
+            # Check if the absolute path starts with safe prefix
+            if not str(dir_absolute).startswith(safe_prefix):
+                print(f"Error: Cannot overwrite {dir_absolute}")
+                print(f"Directory must start with DATA_DIR_PREFIX: {safe_prefix}")
                 print("This safety check prevents accidental deletion of important directories.")
                 sys.exit(1)
             
             # Safe to remove
-            print(f"Removing existing experiment directory: {exp_dir_absolute}")
-            shutil.rmtree(exp_dir_absolute)
+            print(f"Removing existing directory: {dir_absolute}")
+            shutil.rmtree(dir_absolute)
             print("Directory removed successfully.")
         else:
-            print(f"Error: Experiment directory {exp_dir} already exists!")
-            print("Use --overwrite to remove it, or choose a different exp_dir in the config.")
+            print(f"Error: Directory {directory} already exists!")
+            print("Use --overwrite to remove it, or choose a different path.")
             sys.exit(1)
     
-    # Create experiment directories
-    exp_dir.mkdir(parents=True, exist_ok=False)
-    (exp_dir / 'checkpoints').mkdir()
-    print(f"Created experiment directory: {exp_dir.resolve()}")
-    
-    return exp_dir
+    # Create directory
+    directory.mkdir(parents=True, exist_ok=False)
+    print(f"Created directory: {directory.resolve()}")
+    return directory
+
 
 
 def haversine(lon1, lat1, lon2, lat2):
@@ -866,15 +870,35 @@ def save_training_plots(exp_dir, state, task_type='location'):
     eval_steps = []
     train_steps = []
     
+    # First, check if checkpoint-0 exists and add it to the beginning
+    checkpoint_0_path = Path(exp_dir) / 'checkpoints' / 'checkpoint-0' / 'eval_results.json'
+    if checkpoint_0_path.exists():
+        try:
+            with open(checkpoint_0_path, 'r') as f:
+                ckpt0_data = json.load(f)
+            if 'eval_loss' in ckpt0_data:
+                eval_losses.append(ckpt0_data['eval_loss'])
+                eval_steps.append(0)
+            if 'eval_metric_mean' in ckpt0_data:
+                eval_metrics.append(ckpt0_data['eval_metric_mean'])
+        except:
+            pass  # If we can't read it, just continue without it
+    
+    # Then extract metrics from log history (training steps)
     for entry in state.log_history:
         if 'loss' in entry and 'eval_loss' not in entry:
             train_losses.append(entry['loss'])
             train_steps.append(entry.get('step', len(train_losses)))
         if 'eval_loss' in entry:
-            eval_losses.append(entry['eval_loss'])
-            eval_steps.append(entry.get('step', len(eval_losses)))
+            step = entry.get('step', len(eval_losses))
+            # Only add if it's not step 0 (we already added checkpoint-0 above)
+            if step != 0:
+                eval_losses.append(entry['eval_loss'])
+                eval_steps.append(step)
         if 'eval_metric_mean' in entry:
-            eval_metrics.append(entry['eval_metric_mean'])
+            # Only add if we haven't already added checkpoint-0
+            if entry.get('step', 1) != 0:
+                eval_metrics.append(entry['eval_metric_mean'])
     
     # Create plots matching original format
     plt.figure(figsize=(12, 5))

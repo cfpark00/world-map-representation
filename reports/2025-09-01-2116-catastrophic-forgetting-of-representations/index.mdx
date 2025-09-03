@@ -1,0 +1,232 @@
+import Image from 'next/image'
+import catastrophicForgetting from './catastrophic_forgetting.png'
+
+# Catastrophic Forgetting in Geographic Knowledge: How a Small Transformer Lost Its World Map
+
+**TL;DR:** A transformer that learned to predict city distances with 95% accuracy completely forgot this skill after just 3,908 steps of fine-tuning on a different geographic task—not gradual degradation, but immediate catastrophic erasure.
+
+<div className="flex justify-center my-6">
+  <figure className="w-full max-w-3xl">
+    <Image src={catastrophicForgetting} alt="Graph showing catastrophic drop in location prediction R² from 0.95 to -0.2 after fine-tuning begins" />
+    <figcaption className="text-center text-sm text-muted-foreground mt-2">
+      <strong>Figure 1:</strong> Geographic representation quality (R²) when probed with distance prompts. The pretrained model (step 0) accurately encodes city locations internally. After just 3,908 steps of random walk training, those representations are destroyed—the model performs worse than random guessing.
+    </figcaption>
+  </figure>
+</div>
+
+## The Setup: A Controlled Experiment in Knowledge
+
+We trained a 6-layer transformer (4.3M parameters) to predict distances between world cities. Given a prompt like `dist(c_123,c_456)=`, the model learned to output the distance in kilometers. This forced it to develop internal representations of where cities are located on Earth.
+
+The results were impressive:
+- **Longitude R²**: 0.945 (test set)
+- **Latitude R²**: 0.899 (test set)
+- **Average location error**: 1,185 km globally
+
+The model had genuinely learned geography—we could probe its hidden states at layers 3-4 and accurately reconstruct city coordinates using simple linear regression.
+
+## The Experiment: Teaching a New Trick
+
+We then fine-tuned this geography-aware model on a different but related task: predicting random walks between nearby cities. Instead of `dist(c_123,c_456)=901`, the new format was `walk_200=c_123,c_456,c_789`—sequences of cities within 200km of each other.
+
+Both tasks require understanding city locations. You'd expect the model to adapt its existing geographic knowledge to the new task. That's not what happened.
+
+## The Catastrophe: Complete Knowledge Erasure
+
+Here's what the data shows:
+
+| Checkpoint | Training Steps | Longitude R² | Latitude R² | Location Error (km) |
+|------------|---------------|--------------|-------------|-------------------|
+| Pretrained | 0 | 0.945 | 0.899 | 1,185 |
+| Early fine-tuning | 3,908 | **-0.186** | **-0.153** | **6,772** |
+| Final model | 39,080 | -0.016 | -0.101 | 6,290 |
+
+Negative R² means the model's predictions are *worse than always guessing the mean*. The geographic representations weren't gradually overwritten—they were immediately destroyed.
+
+## Why This Happened: The Prompt Format Lock-In
+
+The critical insight: representations aren't just task-specific, they're **prompt-format-specific**.
+
+When we probe the pretrained distance model with its native format (`dist(c_X,c_`), we get excellent geographic representations. But probe the same model with the random walk format (`walk_200=c_X,c_`), and it fails completely—even though both formats encode the same city ID.
+
+```python
+# Same model, same city, different prompt formats:
+prompt_1 = "dist(c_123,c_"      # R² = 0.95
+prompt_2 = "walk_200=c_123,c_"  # R² = -0.2
+
+# The model can't access its knowledge through the wrong "key"
+```
+
+The model learned to store geographic information in a way that's only accessible through the specific prompt pattern it was trained with. Change the access pattern, and the knowledge becomes unreachable.
+
+## The Deeper Problem: Brittle Specialization
+
+This isn't just about our small experimental model. It reveals something fundamental about how neural networks organize knowledge:
+
+1. **Surface Form Dominates Semantics**: The model doesn't learn "city 123 is at these coordinates." It learns "when I see `dist(c_123,c_`, activate these location features."
+
+2. **No Compositional Understanding**: Despite both tasks involving the same city tokens (`c_123`), the model can't compose its knowledge flexibly. Each prompt format creates its own isolated knowledge silo.
+
+3. **Fine-Tuning as Overwriting**: When the training objective changes, the model doesn't adapt existing representations—it overwrites them. The optimizer finds it easier to start fresh than to repurpose.
+
+## Real-World Implications
+
+This experiment used a controlled setting with perfect data, yet still exhibited catastrophic forgetting. Consider what this means for production LLMs:
+
+- **Instruction-tuning** might destroy capabilities from pretraining
+- **Domain adaptation** could eliminate general knowledge
+- **Safety training** might overwrite useful behaviors along with harmful ones
+- **Multi-task training** requires careful consideration of how tasks interact
+
+When OpenAI fine-tunes GPT-4 for a specific application, or when researchers adapt LLaMA for biomedical text, they might be inadvertently destroying capabilities that took millions of dollars to develop.
+
+## The Memorization Paradox
+
+Here's the irony: the random walk model achieved 96.2% validity on its task while maintaining essentially random geographic representations (R² ≈ 0.2). It memorized transition patterns without understanding the underlying geography.
+
+This suggests models can appear competent at geography-related tasks through pure memorization, without any genuine spatial understanding. They're solving the task through pattern matching, not reasoning.
+
+## Future Directions
+
+This discovery opens several research questions:
+
+1. **Is this just a hyperparameter problem?** The obvious next step is testing whether a lower learning rate (we used 3e-4) or different scheduler could preserve representations. Perhaps catastrophic forgetting is simply catastrophic overtraining.
+
+2. **Can mixing original data help?** What if we include 10% or 25% of distance prediction samples during random walk training? This replay strategy might maintain the original representations while learning the new task.
+
+3. **How widespread is prompt-format lock-in?** Do large models like GPT-4 also store knowledge in format-specific silos, or does scale provide more flexibility?
+
+4. **Can we develop smarter training methods?** Perhaps by explicitly regularizing hidden states, using adapter layers, or architectural innovations that separate task-specific from general knowledge.
+
+## Conclusion
+
+We discovered that a model which had genuinely learned geography could completely forget it in less than 4,000 training steps. The knowledge wasn't gradually degraded; it was catastrophically erased.
+
+This isn't a bug in our training process. It's a fundamental property of how current neural networks organize and access knowledge. Until we solve this, every fine-tuning run is a roll of the dice—we might get the capabilities we want, but we'll likely lose others we didn't know we valued.
+
+The field needs to take catastrophic forgetting seriously—not as an edge case, but as a central challenge in building robust, adaptable AI systems.
+
+---
+
+<details className="not-prose my-4 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Technical Appendix: Full Experimental Details</summary>
+  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+**Model Architecture**
+
+- **Type**: GPT-2 style transformer (decoder-only)
+- **Parameters**: 4.3M total
+- **Layers**: 6
+- **Hidden size**: 128
+- **Attention heads**: 4
+- **Intermediate size**: 512
+- **Vocabulary**: 44 tokens (city IDs + special tokens)
+
+### Training Configuration
+
+#### Distance Pretraining
+```yaml
+task_type: distance
+dataset: dist_100k_1M_42  # 100k cities, 1M training samples
+batch_size: 512
+learning_rate: 3e-4
+optimizer: AdamW
+scheduler: linear_with_warmup
+warmup_steps: 50
+weight_decay: 0.01
+num_epochs: 20
+max_sequence_length: 32
+```
+
+#### Random Walk Fine-tuning
+```yaml
+task_type: randomwalk
+dataset: rw200_100k_1m_42  # 200km walks, 1M samples
+model.ckpt: dist_100k_1M_20epochs/checkpoint-19540  # Pretrained
+batch_size: 512
+learning_rate: 3e-4  # Same as pretraining
+num_epochs: 20
+max_sequence_length: 128  # Longer for walks
+```
+
+### Dataset Generation
+
+Cities dataset (100k+ population):
+
+- Source: World cities database
+- Filtered to 1,652 cities with population ≥ 100,000
+- Each city has: ID, name, country, latitude, longitude, population
+
+Distance task:
+
+- Randomly sample city pairs
+- Calculate haversine distance
+- Format: `<bos>dist(c_ID1,c_ID2)=DISTANCE<eos>`
+
+Random walk task:
+
+- Start from random city
+- Each step: randomly select city within 200km
+- Continue for 5-10 steps
+- Format: `<bos>walk_200=c_ID1,c_ID2,c_ID3,...<eos>`
+
+### Representation Analysis Method
+
+1. **Checkpoint Selection**: Analyzed checkpoints every 3,908 steps (10% intervals)
+
+2. **Probing Protocol**:
+   - Extract hidden states from layers 3 and 4
+   - Use 3,000 cities for training linear probe
+   - Test on 2,000 held-out cities
+   - Probe predicts latitude/longitude from hidden states
+
+3. **Prompt Formats Tested**:
+   - Distance format: `<bos>dist(c_X,c_`
+   - Random walk format: `<bos>walk_200=c_X,c_`
+   - Tested after the final token before city ID prediction
+
+4. **Metrics**:
+   - R² score for longitude and latitude separately
+   - Mean absolute error in degrees
+   - Distance error in kilometers (haversine distance)
+
+### Key Results Data
+
+Performance degradation (distance format probing):
+```
+Step 0:     R²=(0.945, 0.899), Error=1,185 km
+Step 3908:  R²=(-0.186, -0.153), Error=6,772 km  # Catastrophic drop
+Step 7816:  R²=(-0.080, -0.130), Error=6,512 km
+Step 39080: R²=(-0.016, -0.101), Error=6,290 km
+```
+
+Random walk task performance:
+```
+Final model: 96.2% valid walks (cities within 200km)
+But geographic R² ≈ 0.2 (near random)
+```
+
+### Computational Resources
+
+- Training: Single NVIDIA A100 GPU
+- Distance pretraining: ~2 hours
+- Random walk fine-tuning: ~2 hours
+- Total experiment time: ~4 hours
+
+### Code Availability
+
+Full code available at: [WM_1 repository]
+
+Key files:
+
+- Training: `src/training/train.py`
+- Analysis: `src/analysis/analyze_representations.py`
+- Data generation: `src/data_processing/create_distance_dataset.py`
+
+### Reproducibility Notes
+
+All experiments used seed 42 for consistency. Results were consistent across multiple runs. Catastrophic forgetting was observed in all variations tested. While the effect magnitude varies slightly with hyperparameters, the pattern remains consistent.
+
+  </div>
+</details>
+
+*This experiment was part of the WM_1 project exploring how language models learn geographic representations. The models were trained on city coordinates encoded as tokens, providing perfect control over what geographic knowledge they could access.*

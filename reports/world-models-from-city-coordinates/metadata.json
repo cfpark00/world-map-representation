@@ -1,7 +1,0 @@
-{
-  "title": "Cities as a Testbed for Representation Formation Research",
-  "date": "2025-08-31",
-  "excerpt": "We're investigating when neural networks form modular vs fractured representations. Using city coordinates as our testbed, we built a controllable system for studying representation formation dynamics—after debugging a critical batch size issue that initially prevented any learning.",
-  "tags": ["representation-learning", "interpretability", "synthetic-data", "modularity", "debugging"],
-  "readingTime": "12 min read"
-}

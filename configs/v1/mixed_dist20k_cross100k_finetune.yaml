@@ -1,0 +1,44 @@
+# Fine-tuning on mixed dataset (20k original distance + 100k atlantis cross)
+exp_dir: "outputs/experiments/mixed_dist20k_cross100k_finetune"
+
+# Task type - distance (both datasets are distance format)
+task_type: "distance"
+
+# Dataset - mixed original distance and atlantis cross samples
+dataset:
+  path: "outputs/datasets/mixed_dist20k_cross100k_42"
+  max_sequence_length: 32  # Standard for distance task
+
+# Tokenizer
+tokenizer_path: "outputs/tokenizer/wm1_tokenizer"
+
+# Model - loading from pre-trained distance model
+model:
+  vocab_size: 44  # Our custom tokenizer vocab size
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1  # Not used when loading from checkpoint
+  # Using the final distance model checkpoint
+  ckpt: "/n/home12/cfpark00/WM_1/outputs/experiments/dist_100k_1M_20epochs/checkpoints/final"
+
+# Training - moderate learning rate for fine-tuning with mixed data
+training:
+  batch_size: 512  # Same as original training
+  eval_batch_size: 64
+  num_epochs: 20  # 120k samples, so 10 epochs should be sufficient
+  optimizer: "adamw"
+  learning_rate: 5e-5  # Lower learning rate to preserve original representations
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # Standard warmup
+  seed: 42
+  loss_mask_type: "answer_only"  # Only compute loss on distance values
+
+# Checkpointing
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.05  # Save 20 times per epoch
+  eval_strategy: "steps"
+  eval_steps: 0.025  # Eval 40 times per epoch

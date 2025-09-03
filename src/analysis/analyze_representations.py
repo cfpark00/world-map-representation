@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import argparse
+import json
 import torch
 import torch.nn as nn
 import numpy as np
@@ -147,94 +148,20 @@ class RepresentationExtractor:
             return f"RepresentationExtractor(layers={self.layer_indices})"
 
 
-# Country to region mapping for visualization
-country_to_region = {
-    # North America
-    'US': 'North America', 'CA': 'North America', 'MX': 'North America', 'GT': 'North America',
-    'BZ': 'North America', 'SV': 'North America', 'HN': 'North America', 'NI': 'North America',
-    'CR': 'North America', 'PA': 'North America', 'CU': 'North America', 'HT': 'North America',
-    'DO': 'North America', 'JM': 'North America', 'TT': 'North America', 'BB': 'North America',
-    'BS': 'North America', 'AG': 'North America', 'DM': 'North America', 'GD': 'North America',
-    'KN': 'North America', 'LC': 'North America', 'VC': 'North America', 'GL': 'North America',
-    'BM': 'North America', 'KY': 'North America', 'TC': 'North America', 'VG': 'North America',
-    'VI': 'North America', 'PR': 'North America', 'AW': 'North America', 'CW': 'North America',
-    'SX': 'North America', 'BQ': 'North America', 'AI': 'North America', 'MQ': 'North America',
-    'GP': 'North America', 'MS': 'North America', 'BL': 'North America', 'MF': 'North America',
-    'PM': 'North America',
+# Load country to region mapping from JSON (single source of truth)
+def load_country_to_region_mapping():
+    """Load the country to region mapping from the JSON file."""
+    mapping_file = project_root / 'data' / 'geographic_mappings' / 'country_to_region.json'
     
-    # South America
-    'BR': 'South America', 'AR': 'South America', 'CL': 'South America', 'PE': 'South America',
-    'CO': 'South America', 'VE': 'South America', 'EC': 'South America', 'BO': 'South America',
-    'PY': 'South America', 'UY': 'South America', 'GY': 'South America', 'SR': 'South America',
-    'GF': 'South America', 'FK': 'South America',
+    if not mapping_file.exists():
+        raise FileNotFoundError(f"Country to region mapping not found at {mapping_file}")
     
-    # Africa
-    'ZA': 'Africa', 'EG': 'Africa', 'NG': 'Africa', 'ET': 'Africa', 'KE': 'Africa', 'UG': 'Africa',
-    'DZ': 'Africa', 'SD': 'Africa', 'MA': 'Africa', 'AO': 'Africa', 'GH': 'Africa', 'MZ': 'Africa',
-    'MG': 'Africa', 'CM': 'Africa', 'CI': 'Africa', 'NE': 'Africa', 'BF': 'Africa', 'ML': 'Africa',
-    'MW': 'Africa', 'ZM': 'Africa', 'SN': 'Africa', 'SO': 'Africa', 'TD': 'Africa', 'ZW': 'Africa',
-    'GN': 'Africa', 'RW': 'Africa', 'BJ': 'Africa', 'TN': 'Africa', 'BI': 'Africa', 'SS': 'Africa',
-    'TG': 'Africa', 'SL': 'Africa', 'LY': 'Africa', 'LR': 'Africa', 'MR': 'Africa', 'CF': 'Africa',
-    'ER': 'Africa', 'GM': 'Africa', 'GA': 'Africa', 'BW': 'Africa', 'NA': 'Africa', 'MU': 'Africa',
-    'SZ': 'Africa', 'GQ': 'Africa', 'DJ': 'Africa', 'KM': 'Africa', 'CV': 'Africa', 'ST': 'Africa',
-    'SC': 'Africa', 'LS': 'Africa', 'GW': 'Africa', 'TZ': 'Africa', 'CG': 'Africa', 'CD': 'Africa',
-    'EH': 'Africa', 'RE': 'Africa',
-    
-    # Western Europe (including Central Europe)
-    'GB': 'Western Europe', 'FR': 'Western Europe', 'DE': 'Western Europe', 'IT': 'Western Europe', 
-    'ES': 'Western Europe', 'NL': 'Western Europe', 'BE': 'Western Europe', 'PT': 'Western Europe',
-    'CH': 'Western Europe', 'AT': 'Western Europe', 'IE': 'Western Europe', 'DK': 'Western Europe',
-    'SE': 'Western Europe', 'NO': 'Western Europe', 'FI': 'Western Europe', 'IS': 'Western Europe',
-    'LU': 'Western Europe', 'MC': 'Western Europe', 'LI': 'Western Europe', 'SM': 'Western Europe',
-    'VA': 'Western Europe', 'AD': 'Western Europe', 'MT': 'Western Europe', 'GI': 'Western Europe',
-    'JE': 'Western Europe', 'GG': 'Western Europe', 'IM': 'Western Europe', 'FO': 'Western Europe',
-    
-    # Eastern Europe (including Russia, Balkans, and former Soviet states)
-    'RU': 'Eastern Europe', 'UA': 'Eastern Europe', 'PL': 'Eastern Europe', 'RO': 'Eastern Europe',
-    'CZ': 'Eastern Europe', 'HU': 'Eastern Europe', 'BY': 'Eastern Europe', 'BG': 'Eastern Europe',
-    'SK': 'Eastern Europe', 'RS': 'Eastern Europe', 'HR': 'Eastern Europe', 'BA': 'Eastern Europe',
-    'AL': 'Eastern Europe', 'LT': 'Eastern Europe', 'LV': 'Eastern Europe', 'EE': 'Eastern Europe',
-    'MD': 'Eastern Europe', 'SI': 'Eastern Europe', 'MK': 'Eastern Europe', 'ME': 'Eastern Europe',
-    'XK': 'Eastern Europe', 'GR': 'Eastern Europe',  # Greece could go either way
-    
-    # Middle East
-    'TR': 'Middle East', 'IR': 'Middle East', 'SA': 'Middle East', 'YE': 'Middle East', 'IQ': 'Middle East',
-    'SY': 'Middle East', 'AE': 'Middle East', 'IL': 'Middle East', 'JO': 'Middle East', 'LB': 'Middle East',
-    'OM': 'Middle East', 'PS': 'Middle East', 'KW': 'Middle East', 'QA': 'Middle East', 'BH': 'Middle East',
-    'CY': 'Middle East', 'GE': 'Middle East', 'AM': 'Middle East', 'AZ': 'Middle East',
-    
-    # India (Indian subcontinent)
-    'IN': 'India', 'PK': 'India', 'BD': 'India', 'LK': 'India', 'NP': 'India', 'BT': 'India',
-    'MV': 'India', 'AF': 'India',  # Afghanistan often grouped with South Asia
-    
-    # China (Greater China region)
-    'CN': 'China', 'TW': 'China', 'HK': 'China', 'MO': 'China',
-    
-    # Korea
-    'KR': 'Korea', 'KP': 'Korea',
-    
-    # Japan
-    'JP': 'Japan',
-    
-    # Southeast Asia
-    'ID': 'Southeast Asia', 'TH': 'Southeast Asia', 'MY': 'Southeast Asia', 'VN': 'Southeast Asia',
-    'PH': 'Southeast Asia', 'SG': 'Southeast Asia', 'MM': 'Southeast Asia', 'KH': 'Southeast Asia',
-    'LA': 'Southeast Asia', 'TL': 'Southeast Asia', 'BN': 'Southeast Asia',
-    
-    # Central Asia (the -stan countries + Mongolia)
-    'KZ': 'Central Asia', 'UZ': 'Central Asia', 'TM': 'Central Asia', 'TJ': 'Central Asia',
-    'KG': 'Central Asia', 'MN': 'Central Asia',
-    
-    # Oceania
-    'AU': 'Oceania', 'NZ': 'Oceania', 'PG': 'Oceania', 'FJ': 'Oceania', 'SB': 'Oceania',
-    'NC': 'Oceania', 'PF': 'Oceania', 'VU': 'Oceania', 'WS': 'Oceania', 'KI': 'Oceania',
-    'TO': 'Oceania', 'FM': 'Oceania', 'PW': 'Oceania', 'MH': 'Oceania', 'TV': 'Oceania',
-    'NR': 'Oceania', 'GU': 'Oceania', 'MP': 'Oceania', 'AS': 'Oceania', 'CK': 'Oceania',
-    'NU': 'Oceania', 'TK': 'Oceania', 'NF': 'Oceania', 'PN': 'Oceania', 'WF': 'Oceania',
-    
-    # Antarctica
-    'AQ': 'Antarctica'
-}
+    with open(mapping_file, 'r') as f:
+        return json.load(f)
+
+
+# Load the mapping at module level (will be extended with additional labels if provided)
+country_to_region = load_country_to_region_mapping()
 
 # Define region colors - using distinct colors for each region
 region_colors = {
@@ -251,12 +178,14 @@ region_colors = {
     'Southeast Asia': '#43A047',   # Light Green
     'Central Asia': '#FFB300',     # Amber
     'Oceania': '#00BCD4',          # Light Cyan
+    'Atlantis': '#FF1493',         # DeepPink - VERY visible hot pink
     'Unknown': '#9E9E9E',          # Gray
 }
 
 
 def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attention_mask, 
-                       lon_train, lon_test, lat_train, lat_test, n_train_cities, 
+                       lon_train, lon_test, lat_train, lat_test, 
+                       train_input_ids, train_attention_mask,
                        device, layer_indices, return_predictions=False):
     """Analyze a single checkpoint and return R² scores - EXACTLY LIKE THE NOTEBOOK"""
     
@@ -293,8 +222,10 @@ def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attenti
     partial_reps_np = partial_last_token_reps.cpu().numpy()
     
     # Split into train and test
-    X_train_coord = partial_reps_np[:n_train_cities]
-    X_test_coord = partial_reps_np[n_train_cities:]
+    # Use the actual number of training samples (may be less than n_train_cities if filtered)
+    n_train = len(train_input_ids)
+    X_train_coord = partial_reps_np[:n_train]
+    X_test_coord = partial_reps_np[n_train:]
     
     # Train longitude probe
     lon_probe = Ridge(alpha=10.0)
@@ -352,10 +283,16 @@ def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attenti
 
 
 def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true, 
-                          test_city_info, step, r2_lon, r2_lat, mean_error):
+                          test_city_info, lon_train_pred, lat_train_pred, lon_train, lat_train,
+                          train_city_info, step, r2_lon, r2_lat, mean_error):
     """Create a single frame for the world map animation with regions colored"""
     
     fig, ax = plt.subplots(1, 1, figsize=(20, 12))
+    
+    # Plot gray dots for TRAINING set only (true locations)
+    ax.scatter(lon_train, lat_train, 
+              s=15, alpha=0.3, c='gray',
+              edgecolors='none', label='Training cities (true)')
     
     # Get regions for test cities
     test_regions = []
@@ -374,16 +311,20 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
             region_lons_true = lon_true[region_mask]
             region_lats_true = lat_true[region_mask]
             
-            # Plot true locations with smaller markers
-            ax.scatter(region_lons_true, region_lats_true, 
-                      s=15, alpha=0.3, c='gray',
-                      edgecolors='none')
-            
-            # Plot predicted locations
-            ax.scatter(region_lons_pred, region_lats_pred, 
-                      s=30, alpha=0.7, c=region_colors[region],
-                      label=f'{region} ({sum(region_mask)})', 
-                      edgecolors='black', linewidth=0.3)
+            # Plot predicted locations - special handling for Atlantis
+            if region == 'Atlantis':
+                # Use stars with bigger size for Atlantis
+                ax.scatter(region_lons_pred, region_lats_pred, 
+                          s=100, alpha=0.8, c=region_colors[region],
+                          marker='*',  # Star marker
+                          label=f'{region} ({sum(region_mask)})', 
+                          edgecolors='black', linewidth=0.5)
+            else:
+                # Normal dots for other regions
+                ax.scatter(region_lons_pred, region_lats_pred, 
+                          s=30, alpha=0.7, c=region_colors[region],
+                          label=f'{region} ({sum(region_mask)})', 
+                          edgecolors='black', linewidth=0.3)
     
     # Add grid and reference lines
     ax.axhline(y=0, color='gray', linestyle='--', alpha=0.3, linewidth=0.5)  # Equator
@@ -448,6 +389,20 @@ def main():
                        help='Device to use for computation')
     parser.add_argument('--seed', type=int, default=42,
                        help='Random seed for city sampling (default: 42)')
+    parser.add_argument('--task-type', type=str, default=None, choices=['distance', 'randomwalk', None],
+                       help='Task type (distance or randomwalk). If not specified, inferred from config.')
+    parser.add_argument('--prompt-format', type=str, default='', choices=['', 'dist', 'rw200'],
+                       help='Prompt format override. If empty (default), uses task-appropriate format: "dist" for distance, "rw200" for randomwalk')
+    parser.add_argument('--test', action='store_true',
+                       help='Test mode: print arguments and first few prompts, then exit')
+    parser.add_argument('--additional-cities', type=str, default=None,
+                       help='Path to additional cities CSV file (e.g., Atlantis)')
+    parser.add_argument('--concat-additional', action='store_true',
+                       help='If set, concatenate additional cities to main pool (can be in training). Otherwise, add to test set only.')
+    parser.add_argument('--additional-labels', type=str, default=None,
+                       help='Path to JSON file with additional country-to-region mappings (e.g., {"XX0": "Atlantis"})')
+    parser.add_argument('--remove-label-from-train', type=str, default=None,
+                       help='Region label to exclude from probe training (e.g., "Africa")')
     
     args = parser.parse_args()
     
@@ -469,14 +424,65 @@ def main():
     
     experiment_name = experiment_dir.name
     
+    # Determine task type
+    if args.task_type is None:
+        # Infer from config
+        task_type = config.get('task_type', 'distance')
+    else:
+        task_type = args.task_type
+    
+    # Determine prompt format based on task type if not specified
+    if args.prompt_format == '':
+        # Use task-appropriate default
+        if task_type in ['distance', 'dist']:
+            prompt_format = 'dist'
+        elif task_type in ['randomwalk', 'rw', 'random_walk']:
+            prompt_format = 'rw200'
+        else:
+            prompt_format = 'dist'  # fallback default
+    else:
+        prompt_format = args.prompt_format
+    
     print("="*60)
     print("Representation Dynamics Analysis")
     print("="*60)
     print(f"Experiment: {experiment_name}")
-    print(f"Task type: {config['task_type']}")
+    print(f"Config task type: {config.get('task_type', 'not specified')}")
+    print(f"Analysis task type: {task_type}")
     print(f"Model layers: {config['model']['num_hidden_layers']}")
     print(f"Hidden size: {config['model']['hidden_size']}")
     print(f"Extracting from layers: {layer_indices}")
+    print(f"Prompt format: {prompt_format}")
+    
+    # Test mode: print arguments and exit
+    if args.test:
+        print("\n" + "="*60)
+        print("TEST MODE - Arguments")
+        print("="*60)
+        print(f"Raw args.prompt_format: '{args.prompt_format}'")
+        print(f"Resolved prompt_format: '{prompt_format}'")
+        print(f"Task type: '{task_type}'")
+        print(f"Layers: {layer_indices}")
+        print(f"Seed: {args.seed}")
+        
+        # Create a few test prompts to show what will be used
+        print("\n" + "="*60)
+        print("TEST MODE - Sample Prompts")
+        print("="*60)
+        test_city_ids = [100, 500, 1000]
+        for city_id in test_city_ids:
+            if prompt_format == 'dist':
+                test_prompt = f"<bos>dist(c_{city_id},c_"
+            elif prompt_format == 'rw200':
+                test_prompt = f"<bos>walk_200=c_{city_id},c_"
+            else:
+                test_prompt = f"Unknown format: {prompt_format}"
+            print(f"  City {city_id}: {test_prompt}")
+        
+        print("\n" + "="*60)
+        print("TEST MODE COMPLETE - Exiting")
+        print("="*60)
+        return
     
     # Get all checkpoint directories
     checkpoint_dirs = []
@@ -517,60 +523,187 @@ def main():
     cities_df = load_cities_csv(args.cities_csv)
     print(f"Loaded {len(cities_df)} cities")
     
+    # Load additional cities if provided (e.g., Atlantis)
+    additional_cities_df = None
+    if args.additional_cities:
+        additional_cities_df = load_cities_csv(args.additional_cities)
+        if args.concat_additional:
+            print(f"Loaded {len(additional_cities_df)} additional cities to concatenate to main pool")
+        else:
+            print(f"Loaded {len(additional_cities_df)} additional cities for test set only")
+    
+    # Load additional country-to-region mappings if provided and extend the global mapping
+    if args.additional_labels:
+        with open(args.additional_labels, 'r') as f:
+            additional_mappings = json.load(f)
+        # Extend the global country_to_region mapping (don't override originals)
+        for code, region in additional_mappings.items():
+            if code not in country_to_region:  # Only add if not already present
+                country_to_region[code] = region
+        print(f"Added additional country-to-region mappings: {additional_mappings}")
+    
+    # Handle concatenation of additional cities if requested
+    if additional_cities_df is not None and args.concat_additional:
+        # Concatenate additional cities to main pool BEFORE sampling
+        cities_df = pd.concat([cities_df, additional_cities_df], ignore_index=True)
+        print(f"Total cities after concatenation: {len(cities_df)}")
+    
     # EXACTLY LIKE THE NOTEBOOK - Select cities and create prompts
     np.random.seed(args.seed)
     n_cities_probe = args.n_probe_cities
     n_train_cities = args.n_train_cities
     
-    # Sample cities without replacement
-    sampled_city_indices = np.random.choice(len(cities_df), size=n_cities_probe, replace=False)
-    sampled_cities = cities_df.iloc[sampled_city_indices]
+    # If we need to exclude a region, sample smartly to maintain n_train_cities
+    if args.remove_label_from_train:
+        excluded_region = args.remove_label_from_train
+        print(f"\nSampling strategy: Exclude '{excluded_region}' from training but maintain {n_train_cities} training samples")
+        
+        # First, categorize all cities by region
+        city_regions = []
+        for idx, city in cities_df.iterrows():
+            country = city.get('country_code', 'UNK')
+            region = country_to_region.get(country, 'Unknown')
+            city_regions.append(region)
+        
+        # Get indices of cities NOT in excluded region and cities IN excluded region
+        non_excluded_indices = [i for i, r in enumerate(city_regions) if r != excluded_region]
+        excluded_indices = [i for i, r in enumerate(city_regions) if r == excluded_region]
+        
+        print(f"  Cities not in {excluded_region}: {len(non_excluded_indices)}")
+        print(f"  Cities in {excluded_region}: {len(excluded_indices)}")
+        
+        # Check if we have enough non-excluded cities for training
+        if len(non_excluded_indices) < n_train_cities:
+            raise ValueError(f"Cannot get {n_train_cities} training samples excluding {excluded_region}. "
+                           f"Only {len(non_excluded_indices)} non-{excluded_region} cities available.")
+        
+        # Sample n_train_cities from non-excluded for training
+        # Sample remaining from ALL cities (including excluded) for testing
+        n_test = n_cities_probe - n_train_cities
+        
+        # Sample training cities (no excluded region)
+        train_sample_indices = np.random.choice(non_excluded_indices, size=n_train_cities, replace=False)
+        
+        # For test set, sample from remaining cities (can include excluded region)
+        remaining_indices = [i for i in range(len(cities_df)) if i not in train_sample_indices]
+        test_sample_indices = np.random.choice(remaining_indices, size=n_test, replace=False)
+        
+        # Combine and create the sampled cities dataframe
+        sampled_indices = np.concatenate([train_sample_indices, test_sample_indices])
+        sampled_cities = cities_df.iloc[sampled_indices]
+        
+        # Verify the excluded region is not in training
+        train_cities = cities_df.iloc[train_sample_indices]
+        train_regions_check = []
+        for idx, city in train_cities.iterrows():
+            country = city.get('country_code', 'UNK')
+            region = country_to_region.get(country, 'Unknown')
+            train_regions_check.append(region)
+        
+        assert excluded_region not in train_regions_check, f"Error: {excluded_region} found in training set!"
+        print(f"  Verified: {excluded_region} not in training set")
+    else:
+        # Normal sampling without exclusion
+        sampled_city_indices = np.random.choice(len(cities_df), size=n_cities_probe, replace=False)
+        sampled_cities = cities_df.iloc[sampled_city_indices]
     
     # Create partial prompts ending at "_" after "c_"
     partial_prompts = []
     city_info = []
     
     for idx, city in sampled_cities.iterrows():
-        # Create partial prompt: "dist(c_XXX,c_" (comma + c + underscore)
-        # This fully disambiguates and starts the second city pattern
-        prompt = f"<bos>dist(c_{city['row_id']},c_"
+        # Create partial prompt based on format
+        if prompt_format == 'dist':
+            # "dist(c_XXX,c_" (comma + c + underscore)
+            prompt = f"<bos>dist(c_{city['row_id']},c_"
+        elif prompt_format == 'rw200':
+            # "walk_200=c_XXX,c_" for random walk format
+            prompt = f"<bos>walk_200=c_{city['row_id']},c_"
+        else:
+            raise ValueError(f"Unknown prompt format: {prompt_format}")
         partial_prompts.append(prompt)
+        # Use original country code for world cities
+        country_code = city.get('country_code', 'UNK')
+        
         city_info.append({
             'row_id': city['row_id'],
             'name': city['asciiname'],
             'longitude': city['longitude'],
             'latitude': city['latitude'],
-            'country': city['country_code'] if 'country_code' in city else 'UNK'
+            'country': country_code
         })
     
     print(f"Created {len(partial_prompts)} partial prompts")
-    print(f"Will use {n_train_cities} for training, {n_cities_probe - n_train_cities} for testing")
     
-    # Tokenize partial prompts with LEFT padding - EXACTLY LIKE NOTEBOOK
-    tokenized_partial = tokenizer(
-        partial_prompts,
+    # Add additional cities to test set only (if not concatenated earlier)
+    if additional_cities_df is not None and not args.concat_additional:
+        additional_prompts = []
+        additional_city_info = []
+        
+        for idx, city in additional_cities_df.iterrows():
+            # Create partial prompt based on format
+            if prompt_format == 'dist':
+                prompt = f"<bos>dist(c_{city['row_id']},c_"
+            elif prompt_format == 'rw200':
+                prompt = f"<bos>walk_200=c_{city['row_id']},c_"
+            else:
+                raise ValueError(f"Unknown prompt format: {prompt_format}")
+            additional_prompts.append(prompt)
+            # Use country code as-is (mapping to region happens in visualization)
+            country_code = city.get('country_code', 'UNK')
+            
+            additional_city_info.append({
+                'row_id': city['row_id'],
+                'name': city['asciiname'],
+                'longitude': city['longitude'],
+                'latitude': city['latitude'],
+                'country': country_code
+            })
+        
+        print(f"Created {len(additional_prompts)} additional eval prompts")
+        
+        # Combine original and additional prompts
+        all_prompts = partial_prompts + additional_prompts
+        all_city_info = city_info + additional_city_info
+    else:
+        all_prompts = partial_prompts
+        all_city_info = city_info
+    
+    print(f"Will use {n_train_cities} for training, {len(all_prompts) - n_train_cities} for testing")
+    
+    # Tokenize ALL prompts (original + additional) with LEFT padding
+    tokenized_all = tokenizer(
+        all_prompts,
         padding=True,
         truncation=True,
-        return_tensors='pt'
+        return_tensors='pt',
+        add_special_tokens=False  # Dataset already has special tokens
     )
     
-    partial_input_ids = tokenized_partial['input_ids'].to(device)
-    partial_attention_mask = tokenized_partial['attention_mask'].to(device)
+    partial_input_ids = tokenized_all['input_ids'].to(device)
+    partial_attention_mask = tokenized_all['attention_mask'].to(device)
     
     print(f"Tokenized shape: {partial_input_ids.shape}")
     
     # Extract longitude and latitude as targets
-    longitudes = np.array([c['longitude'] for c in city_info])
-    latitudes = np.array([c['latitude'] for c in city_info])
+    longitudes = np.array([c['longitude'] for c in all_city_info])
+    latitudes = np.array([c['latitude'] for c in all_city_info])
     
     # Split into train and test
+    # Training: first n_train_cities (already verified to exclude the region if requested)
+    # Test: everything after n_train_cities (original test + all additional)
     lon_train = longitudes[:n_train_cities]
     lon_test = longitudes[n_train_cities:]
     lat_train = latitudes[:n_train_cities]
     lat_test = latitudes[n_train_cities:]
     
-    # Get test city info for visualization
-    test_city_info = city_info[n_train_cities:]
+    # Get train and test city info for visualization
+    train_city_info = all_city_info[:n_train_cities]
+    test_city_info = all_city_info[n_train_cities:]
+    
+    # For analyze_checkpoint, we need the training input IDs and masks
+    train_input_ids = partial_input_ids[:n_train_cities]
+    train_attention_mask = partial_attention_mask[:n_train_cities]
     
     # Analyze all checkpoints
     print("\n" + "="*60)
@@ -584,28 +717,27 @@ def main():
         print(f"\nStep {step}:")
         
         try:
-            # Get predictions for animation on selected checkpoints
-            return_preds = (len(checkpoint_dirs) <= 20 or 
-                          step % max(1, checkpoint_dirs[-1][0] // 10) == 0 or 
-                          step == checkpoint_dirs[0][0] or 
-                          step == checkpoint_dirs[-1][0])
+            # Always save predictions for animation
+            return_preds = True
             
             result = analyze_checkpoint(
                 checkpoint_path, step,
                 partial_input_ids, partial_attention_mask,
                 lon_train, lon_test, lat_train, lat_test,
-                n_train_cities, device, layer_indices,
+                train_input_ids, train_attention_mask,
+                device, layer_indices,
                 return_predictions=return_preds
             )
             
-            # Try to get loss from trainer_state.json
-            import json
+            # Try to get loss and eval metrics from trainer_state.json
             trainer_state_path = checkpoint_path / 'trainer_state.json'
             if trainer_state_path.exists():
                 with open(trainer_state_path, 'r') as f:
                     trainer_state = json.load(f)
+                    log_history = trainer_state.get('log_history', [])
+                    
                     # Get the loss closest to this checkpoint step
-                    losses = [(h['loss'], h['step']) for h in trainer_state.get('log_history', []) if 'loss' in h]
+                    losses = [(h['loss'], h['step']) for h in log_history if 'loss' in h]
                     if losses:
                         # Find loss closest to but not after the checkpoint step
                         valid_losses = [l for l in losses if l[1] <= step]
@@ -615,8 +747,29 @@ def main():
                             result['loss'] = losses[0][0]  # Use first if no valid ones
                     else:
                         result['loss'] = None
+                    
+                    # Get eval metrics for both distance and randomwalk tasks
+                    if task_type in ['distance', 'dist', 'randomwalk', 'rw']:
+                        # Look for eval_metric_mean (distance error for distance, validity ratio for randomwalk)
+                        eval_metrics = [(h.get('eval_metric_mean'), h.get('eval_metric_median'), h['step']) 
+                                      for h in log_history if 'eval_metric_mean' in h]
+                        if eval_metrics:
+                            # Find metrics closest to but not after the checkpoint step
+                            valid_metrics = [m for m in eval_metrics if m[2] <= step]
+                            if valid_metrics:
+                                result['eval_metric_mean'] = valid_metrics[-1][0]
+                                result['eval_metric_median'] = valid_metrics[-1][1]
+                            else:
+                                result['eval_metric_mean'] = eval_metrics[0][0]
+                                result['eval_metric_median'] = eval_metrics[0][1]
+                        else:
+                            result['eval_metric_mean'] = None
+                            result['eval_metric_median'] = None
             else:
                 result['loss'] = None
+                if task_type in ['distance', 'dist', 'randomwalk', 'rw']:
+                    result['eval_metric_mean'] = None
+                    result['eval_metric_median'] = None
                 
             results.append(result)
             
@@ -625,6 +778,8 @@ def main():
                     'step': step,
                     'lon_pred': result['lon_test_pred'],
                     'lat_pred': result['lat_test_pred'],
+                    'lon_train_pred': result['lon_train_pred'],
+                    'lat_train_pred': result['lat_train_pred'],
                     'lon_r2': result['lon_test_r2'],
                     'lat_r2': result['lat_test_r2'],
                     'mean_error': result['mean_dist_error_km']
@@ -649,7 +804,19 @@ def main():
     
     # Create analysis output directory with subfolder for this specific configuration
     layers_str = '_'.join(map(str, layer_indices))
-    analysis_subdir = f"layers{layers_str}_probe{n_cities_probe}_train{n_train_cities}"
+    # Add suffixes for special configurations
+    suffixes = []
+    if additional_cities_df is not None:
+        if args.concat_additional:
+            suffixes.append(f"plus{len(additional_cities_df)}concat")
+        else:
+            suffixes.append(f"plus{len(additional_cities_df)}eval")
+    if args.remove_label_from_train:
+        # Make region name filesystem-friendly (replace spaces with underscores)
+        safe_region = args.remove_label_from_train.replace(' ', '_')
+        suffixes.append(f"no{safe_region}")
+    additional_suffix = "_" + "_".join(suffixes) if suffixes else ""
+    analysis_subdir = f"{prompt_format}_layers{layers_str}_probe{n_cities_probe}_train{n_train_cities}{additional_suffix}"
     analysis_dir = experiment_dir / 'analysis' / analysis_subdir
     analysis_dir.mkdir(parents=True, exist_ok=True)
     
@@ -695,28 +862,82 @@ def main():
         ax1.text(0.5, 0.5, 'Loss data not available', 
                transform=ax1.transAxes, ha='center', va='center', alpha=0.5)
     
-    # Create twin axis for distance error
+    # Create twin axis for task-specific error metric
     ax1_twin = ax1.twinx()
     color = 'tab:red'
-    ax1_twin.plot(results_df['step'], results_df['mean_dist_error_km'], color=color, linewidth=2, label='Distance Error')
-    ax1_twin.set_ylabel('Mean Location Error (km)', color=color, fontsize=12)
-    ax1_twin.tick_params(axis='y', labelcolor=color)
-    ax1_twin.set_yscale('log')
     
-    # Add reference lines for distance
-    reference_distances = [10000, 5000, 2000, 1000, 500]
-    for dist in reference_distances:
-        if dist >= results_df['mean_dist_error_km'].min() and dist <= results_df['mean_dist_error_km'].max():
-            ax1_twin.axhline(y=dist, color='gray', linestyle=':', alpha=0.2)
-            ax1_twin.text(results_df['step'].max() * 1.01, dist, f'{dist}km', 
+    if task_type in ['distance', 'dist'] and 'eval_metric_mean' in results_df.columns and results_df['eval_metric_mean'].notna().any():
+        # For distance tasks, show actual distance prediction error
+        ax1_twin.plot(results_df['step'], results_df['eval_metric_mean'], color=color, linewidth=2, label='Distance Prediction Error')
+        ax1_twin.set_ylabel('Mean Distance Prediction Error (km)', color=color, fontsize=12)
+        ax1_twin.tick_params(axis='y', labelcolor=color)
+        ax1_twin.set_yscale('log')
+        
+        # Add reference lines for distance
+        reference_distances = [10000, 5000, 2000, 1000, 500, 100, 50]
+        for dist in reference_distances:
+            if results_df['eval_metric_mean'].notna().any():
+                min_val = results_df['eval_metric_mean'].min()
+                max_val = results_df['eval_metric_mean'].max()
+                if dist >= min_val and dist <= max_val:
+                    ax1_twin.axhline(y=dist, color='gray', linestyle=':', alpha=0.2)
+                    ax1_twin.text(results_df['step'].max() * 1.01, dist, f'{dist}km', 
+                                 va='center', ha='left', fontsize=8, alpha=0.5)
+        
+        # Add text with final error
+        final_metric = results_df['eval_metric_mean'].iloc[-1]
+        if pd.notna(final_metric):
+            ax1_twin.text(0.98, 0.95, f'Final Distance Error: {final_metric:.0f} km', 
+                         transform=ax1_twin.transAxes, ha='right', va='top', color=color,
+                         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+        
+        ax1.set_title('Training Loss & Distance Prediction Error', fontsize=14)
+    elif task_type in ['randomwalk', 'rw'] and 'eval_metric_mean' in results_df.columns and results_df['eval_metric_mean'].notna().any():
+        # For random walk tasks, show validity ratio (0-1)
+        ax1_twin.plot(results_df['step'], results_df['eval_metric_mean'], color=color, linewidth=2, label='Walk Validity Ratio')
+        ax1_twin.set_ylabel('Mean Validity Ratio', color=color, fontsize=12)
+        ax1_twin.tick_params(axis='y', labelcolor=color)
+        # No log scale for ratio (0-1)
+        
+        # Set y-limits for ratio
+        ax1_twin.set_ylim([0, 1.05])
+        
+        # Add reference lines for validity ratio
+        reference_ratios = [0.0, 0.25, 0.5, 0.75, 1.0]
+        for ratio in reference_ratios:
+            ax1_twin.axhline(y=ratio, color='gray', linestyle=':', alpha=0.2)
+            ax1_twin.text(results_df['step'].max() * 1.01, ratio, f'{ratio:.0%}', 
                          va='center', ha='left', fontsize=8, alpha=0.5)
-    
-    # Add text with final error
-    ax1_twin.text(0.98, 0.95, f'Final Error: {results_df["mean_dist_error_km"].iloc[-1]:.0f} km', 
-                 transform=ax1_twin.transAxes, ha='right', va='top', color=color,
-                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    
-    ax1.set_title('Training Loss & Location Error', fontsize=14)
+        
+        # Add text with final validity ratio
+        final_metric = results_df['eval_metric_mean'].iloc[-1]
+        if pd.notna(final_metric):
+            ax1_twin.text(0.98, 0.95, f'Final Validity: {final_metric:.1%}', 
+                         transform=ax1_twin.transAxes, ha='right', va='top', color=color,
+                         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+        
+        ax1.set_title('Training Loss & Walk Validity Ratio', fontsize=14)
+    else:
+        # For non-distance tasks or when eval_metric not available, show location reconstruction error
+        ax1_twin.plot(results_df['step'], results_df['mean_dist_error_km'], color=color, linewidth=2, label='Location Error')
+        ax1_twin.set_ylabel('Mean Location Error (km)', color=color, fontsize=12)
+        ax1_twin.tick_params(axis='y', labelcolor=color)
+        ax1_twin.set_yscale('log')
+        
+        # Add reference lines for distance
+        reference_distances = [10000, 5000, 2000, 1000, 500]
+        for dist in reference_distances:
+            if dist >= results_df['mean_dist_error_km'].min() and dist <= results_df['mean_dist_error_km'].max():
+                ax1_twin.axhline(y=dist, color='gray', linestyle=':', alpha=0.2)
+                ax1_twin.text(results_df['step'].max() * 1.01, dist, f'{dist}km', 
+                             va='center', ha='left', fontsize=8, alpha=0.5)
+        
+        # Add text with final error
+        ax1_twin.text(0.98, 0.95, f'Final Location Error: {results_df["mean_dist_error_km"].iloc[-1]:.0f} km', 
+                     transform=ax1_twin.transAxes, ha='right', va='top', color=color,
+                     bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+        
+        ax1.set_title('Training Loss & Location Reconstruction Error', fontsize=14)
     ax1.grid(True, alpha=0.3)
     
     # Bottom subplot: R² Scores and Location Error
@@ -733,7 +954,13 @@ def main():
     ax2.set_ylabel('Test R² Score', fontsize=12)
     ax2.set_title('Coordinate Prediction Performance', fontsize=14)
     ax2.grid(True, alpha=0.3)
-    ax2.set_ylim([-0.2, 1.0])
+    
+    # Auto-adjust y-limits based on data with some padding
+    min_r2 = min(results_df['lon_test_r2'].min(), results_df['lat_test_r2'].min())
+    max_r2 = max(results_df['lon_test_r2'].max(), results_df['lat_test_r2'].max())
+    r2_range = max_r2 - min_r2
+    padding = r2_range * 0.1 if r2_range > 0 else 0.1
+    ax2.set_ylim([min_r2 - padding, max(1.0, max_r2 + padding)])
     
     # Add horizontal line at R²=0 for reference
     ax2.axhline(y=0, color='gray', linestyle=':', alpha=0.5)
@@ -783,6 +1010,8 @@ def main():
             fig = create_world_map_frame(
                 pred_data['lon_pred'], pred_data['lat_pred'],
                 lon_test, lat_test, test_city_info,
+                pred_data['lon_train_pred'], pred_data['lat_train_pred'],
+                lon_train, lat_train, train_city_info,
                 pred_data['step'], pred_data['lon_r2'], 
                 pred_data['lat_r2'], pred_data['mean_error']
             )
@@ -804,14 +1033,28 @@ def main():
             # Load as PIL Image
             images.append(Image.open(temp_path))
         
-        # Save as GIF
+        # Save as GIF with configurable pause on final frame
+        frame_duration = 500  # 500ms per frame
+        final_frame_pause = 2500  # Additional 2.5s pause on last frame
+        
+        # Create duration list for each frame
+        durations = [frame_duration] * len(images)
+        if len(durations) > 0:
+            durations[-1] = frame_duration + final_frame_pause  # Last frame gets extra pause
+        
         images[0].save(
             gif_path,
             save_all=True,
             append_images=images[1:],
-            duration=500,  # 500ms per frame
+            duration=durations,
             loop=0
         )
+        
+        # Save the final frame as a standalone PNG
+        final_map_path = analysis_dir / 'final_world_map.png'
+        if len(images) > 0:
+            images[-1].save(final_map_path)
+            print(f"Final world map saved to {final_map_path}")
         
         # Clean up temporary files
         for i in range(len(frames)):

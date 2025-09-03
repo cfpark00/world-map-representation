@@ -1,0 +1,47 @@
+# Experiment directory - all outputs go here
+exp_dir: "outputs/experiments/rw200_100k_1m_20epochs_pt1"
+
+# Task type (location or distance)
+task_type: "randomwalk"
+
+randomwalk:
+  cities_csv: "outputs/datasets/cities_100k_plus_seed42.csv"  # For building cKDTree
+  distance_km: 200  # Distance threshold for validation
+
+# Dataset
+dataset:
+  path: "/n/home12/cfpark00/WM_1/outputs/datasets/rw200_100k_1m_42"
+  max_sequence_length: 128
+
+# Tokenizer
+tokenizer_path: "outputs/tokenizer/wm1_tokenizer"
+
+# Model (Qwen2.5-like)
+model:
+  vocab_size: 44  # Our custom tokenizer vocab size
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+  ckpt: "/n/home12/cfpark00/WM_1/outputs/experiments/dist_100k_1M_20epochs/checkpoints/checkpoint-19540"
+
+# Training
+training:
+  batch_size: 512  # Larger batch size since we have 1M samples
+  eval_batch_size: 64
+  num_epochs: 20  # Fewer epochs since more data
+  optimizer: "adamw"
+  learning_rate: 3e-4
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # More warmup for larger dataset
+  seed: 42
+  loss_mask_type: "answer_only"  # Only compute loss on distance values
+
+# Checkpointing
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.1  # Save 10 times per epoch
+  eval_strategy: "steps"
+  eval_steps: 0.025  # Eval 40 times per epoch

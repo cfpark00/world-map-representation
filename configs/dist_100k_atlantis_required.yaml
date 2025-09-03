@@ -1,0 +1,18 @@
+# 100k pairs with at least one Atlantis city required
+# All pairs must include at least one Atlantis city
+
+groups:
+  atlantis:
+    city_names: "Atlantis_.*"  # Atlantis cities
+  world:
+    city_names: "^(?!Atlantis_).*"  # Non-Atlantis cities
+
+pair_generation:
+  strategy: must_include
+  must_include_groups: [atlantis]
+
+n_train: 100000
+n_val: 128
+n_test: 5000
+seed: 42
+analyze_pairs: true

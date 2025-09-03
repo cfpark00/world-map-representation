@@ -82,7 +82,7 @@ def create_dataset_dict(city_indices, df):
         
         # Create text format: loc(c_XX)=XXXX,YYYY (no zero padding)
         city_id = int(city['row_id'])
-        full_text = f"loc(c_{city_id})={lon_scaled},{lat_scaled}"
+        full_text = f"<bos>loc(c_{city_id})={lon_scaled},{lat_scaled}<eos>"
         prompt = f"<bos>loc(c_{city_id})="
         completion = f"{lon_scaled},{lat_scaled}<eos>"
         

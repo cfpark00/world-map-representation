@@ -19,7 +19,7 @@ from src.utils import (
     save_training_plots,
     preprocess_config,
     GenerationEvalCallback,
-    init_experiment_directory,
+    init_directory,
     get_model,
     get_dataset
 )
@@ -51,7 +51,10 @@ def main():
     task_type = config['task_type']
     
     # Initialize experiment directory with safety checks
-    exp_dir = init_experiment_directory(config['exp_dir'], overwrite)
+    exp_dir = init_directory(config['exp_dir'], overwrite)
+    
+    # Create checkpoints subdirectory
+    (exp_dir / 'checkpoints').mkdir(exist_ok=False)
     
     # Save config copy to exp_dir
     with open(exp_dir / 'config.yaml', 'w') as f:
@@ -70,6 +73,13 @@ def main():
     
     # Initialize model (tokenizer attached as model.tokenizer)
     model = get_model(config)
+    
+    # Save checkpoint-0 (initial model state, either random or pretrained)
+    checkpoint_0_path = exp_dir / 'checkpoints' / 'checkpoint-0'
+    checkpoint_0_path.mkdir(parents=True, exist_ok=True)
+    model.save_pretrained(str(checkpoint_0_path))
+    tokenizer.save_pretrained(str(checkpoint_0_path))
+    print(f"Saved initial model state to {checkpoint_0_path}")
     
     # Setup training arguments
     training_args = TrainingArguments(
@@ -107,6 +117,63 @@ def main():
         processing_class=tokenizer,  # Use processing_class instead of tokenizer (deprecated)
         callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, task_type, config)],  # Generation eval + plots
     )
+    
+    # Always evaluate initial model (step 0) - whether from checkpoint or random init
+    print("\nEvaluating initial model (step 0)...")
+    initial_metrics = trainer.evaluate()
+    
+    # Run generation-based evaluation for step 0
+    from src.utils import evaluate_with_generation
+    print("Performing generation-based evaluation for checkpoint-0...")
+    gen_metrics = evaluate_with_generation(
+        model, eval_dataset, tokenizer, device, 
+        task_type, num_samples=64, batch_size=16, config=config
+    )
+    
+    # Combine standard and generation metrics
+    if gen_metrics:
+        initial_metrics.update(convert_numpy_to_python(gen_metrics))
+    
+    # Add initial metrics to trainer's log history for plotting
+    # This ensures checkpoint-0 appears in plots
+    initial_log_entry = {
+        'step': 0,
+        'epoch': 0.0,
+        'eval_loss': initial_metrics.get('eval_loss', float('inf')),
+    }
+    initial_log_entry.update(convert_numpy_to_python(gen_metrics) if gen_metrics else {})
+    trainer.state.log_history.insert(0, initial_log_entry)
+    
+    # Save initial evaluation metrics
+    initial_metrics_path = exp_dir / 'checkpoints' / 'checkpoint-0'
+    initial_metrics_path.mkdir(parents=True, exist_ok=True)
+    
+    # Save metrics
+    with open(initial_metrics_path / 'eval_results.json', 'w') as f:
+        json.dump(convert_numpy_to_python(initial_metrics), f, indent=2)
+    
+    # Also save the model to checkpoint-0 for consistency
+    trainer.save_model(str(initial_metrics_path))
+    
+    print(f"Initial metrics saved to {initial_metrics_path}")
+    print(f"Initial eval loss: {initial_metrics.get('eval_loss', 'N/A'):.4f}")
+    
+    if gen_metrics:
+        if task_type == 'location':
+            print(f"Initial avg haversine distance: {gen_metrics['eval_metric_mean']:.2f} km")
+        elif task_type == 'distance':
+            print(f"Initial avg absolute error: {gen_metrics['eval_metric_mean']:.2f} km")
+        else:  # randomwalk
+            print(f"Initial avg walk validity: {gen_metrics['eval_metric_mean']:.3f}")
+    
+    if config['model'].get('ckpt'):
+        print("(Loaded from checkpoint)")
+    else:
+        print("(Random initialization - chance level)")
+    
+    # Save initial plot with checkpoint-0 data
+    save_training_plots(exp_dir, trainer.state, task_type)
+    print(f"Initial plot saved to {exp_dir / 'summary.png'}")
     
     # Train
     print("\nStarting training...")

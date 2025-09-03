@@ -180,7 +180,7 @@ def create_dataset_dict(n_samples, df, tree, coords_rad):
         city_ids = [f"c_{int(df.iloc[idx]['row_id'])}" for idx in walk]
         
         # Create text format: walk_{distance}=c_XX,c_XX,... (no zero padding)
-        full_text = f"walk_{int(distance_km)}=" + ",".join(city_ids)
+        full_text = f"<bos>walk_{int(distance_km)}=" + ",".join(city_ids) + "<eos>"
         prompt = f"<bos>walk_{int(distance_km)}="
         completion = ",".join(city_ids) + "<eos>"
         

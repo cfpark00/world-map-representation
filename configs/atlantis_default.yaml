@@ -1,0 +1,21 @@
+# Atlantis region configuration
+# Defines synthetic regions to add to the city dataset
+
+# Path to region mapping JSON (maps country codes to region names)
+region_mapping: "configs/atlantis_region_mapping.json"
+
+atlantis_regions:
+  - city_prefix: "Atlantis"  # Prefix for city names (e.g., Atlantis_0_001)
+    center_x: -35.0  # Center X coordinate (mid-Atlantic Ocean)
+    center_y: 35.0   # Center Y coordinate (between US East Coast and Portugal)
+    std_dev: 3.0     # Standard deviation in coordinate units
+    n_cities: 100    # Number of cities to generate
+    country_code: "XX0"  # Country code (must match region_mapping)
+    
+  # Can add more regions:
+  # - city_prefix: "Pacific_Islands"
+  #   center_x: 120.0  # X coordinate (Pacific Ocean region)
+  #   center_y: 0.0    # Y coordinate (equator)
+  #   std_dev: 8.0
+  #   n_cities: 150
+  #   country_code: "XX1"  # Maps to "Atlantis_1" in region_mapping

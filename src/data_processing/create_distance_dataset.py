@@ -1,92 +1,363 @@
 #!/usr/bin/env python3
+"""
+Unified distance dataset creation script.
+Takes a single CSV file and defines groups through YAML configuration.
+"""
 import pandas as pd
 import numpy as np
 import sys
-sys.path.append('.')  # Add root to path
-from src.utils import haversine, load_cities_csv
-from datasets import Dataset, DatasetDict
-import os
+import yaml
 import argparse
+import json
+import shutil
+from pathlib import Path
 from tqdm import tqdm
+from datasets import Dataset, DatasetDict
 
-# Parse command line arguments
-parser = argparse.ArgumentParser(description='Create distance dataset with train/val/test splits')
-parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
-parser.add_argument('--n_train', type=int, default=100000, help='Number of training samples (default: 100000)')
-parser.add_argument('--n_val', type=int, default=128, help='Number of validation samples (default: 128)')
-parser.add_argument('--n_test', type=int, default=10000, help='Number of test samples (default: 10000)')
-parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
-parser.add_argument('--cities-csv', type=str, default=None, help='Path to cities CSV file')
+sys.path.append('.')  # Add root to path
+from src.utils import haversine, init_directory
 
-args = parser.parse_args()
 
-n_train = args.n_train
-n_val = args.n_val
-n_test = args.n_test
-n_tot = n_train + n_val + n_test
-output_dir = args.output_dir
-seed = args.seed
-
-# Load the cities dataset
-print("Loading cities data...")
-try:
-    df = load_cities_csv(args.cities_csv)
-except FileNotFoundError as e:
-    print(f"Error: {e}")
-    print("Please run: python src/data_processing/create_filtered_dataset.py 100000")
-    print("Or specify path with --cities-csv")
-    sys.exit(1)
-
-n_cities = len(df)
-
-print(f"Number of cities: {n_cities:,}")
-print(f"Requested pairs: {n_tot:,} (train: {n_train:,}, val: {n_val:,}, test: {n_test:,})")
-
-# Generate random pairs without replacement (only upper triangle, excluding diagonal)
-print(f"\nGenerating random pairs (seed={seed})...")
-np.random.seed(seed)
-
-# Create upper triangle indices (excluding diagonal)
-# This gives us n_cities * (n_cities - 1) / 2 unique unordered pairs
-n_unique_pairs = n_cities * (n_cities - 1) // 2
-print(f"Total unique unordered pairs: {n_unique_pairs:,}")
-assert n_tot <= n_unique_pairs, f"Requested {n_tot} pairs but only {n_unique_pairs} unique unordered pairs exist"
-
-triu_indices = np.triu_indices(n_cities, k=1)  # k=1 excludes diagonal
-
-# Sample from the unique pairs
-selected_pair_indices = np.random.choice(n_unique_pairs, size=n_tot, replace=False)
-indices = (triu_indices[0][selected_pair_indices], triu_indices[1][selected_pair_indices])
-
-# Split into train, val, and test
-train_i = indices[0][:n_train]
-train_j = indices[1][:n_train]
-val_i = indices[0][n_train:n_train+n_val]
-val_j = indices[1][n_train:n_train+n_val]
-test_i = indices[0][n_train+n_val:]
-test_j = indices[1][n_train+n_val:]
-
-# Function to create dataset from indices
-def create_dataset_dict(indices_i, indices_j, df):
-    """Create a dictionary suitable for HuggingFace Dataset using vectorized operations"""
+def load_config(config_path):
+    """Load and validate YAML configuration."""
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
     
-    # Get coordinates in degrees for all city pairs at once
+    # Set defaults
+    config.setdefault('seed', 42)
+    config.setdefault('n_train', 100000)
+    config.setdefault('n_val', 128)
+    config.setdefault('n_test', 10000)
+    
+    if 'pair_generation' not in config:
+        config['pair_generation'] = {'strategy': 'all_pairs'}
+    
+    return config
+
+
+def apply_group_definitions(df, group_definitions):
+    """Apply group definitions to create group labels."""
+    # Initialize all cities with 'unassigned' group
+    df['group'] = 'unassigned'
+    
+    for group_name, group_def in group_definitions.items():
+        mask = create_group_mask(df, group_def)
+        df.loc[mask, 'group'] = group_name
+        print(f"Group '{group_name}': {mask.sum():,} cities")
+    
+    return df
+
+
+def create_group_mask(df, group_def):
+    """Create a boolean mask for cities matching group definition."""
+    mask = pd.Series([True] * len(df), index=df.index)  # Start with all True
+    
+    # Apply city_ids filter if specified
+    if 'city_ids' in group_def:
+        city_ids = set(group_def['city_ids'])
+        city_mask = df['city_id'].isin(city_ids)
+        mask = mask & city_mask
+    
+    # Apply city_names filter if specified
+    if 'city_names' in group_def:
+        # Support both exact names and patterns
+        names = group_def['city_names']
+        if isinstance(names, list):
+            name_mask = df['asciiname'].isin(names)
+        else:
+            # Single name or pattern
+            name_mask = df['asciiname'].str.contains(names, na=False)
+        mask = mask & name_mask
+    
+    # Apply country_codes filter
+    if 'country_codes' in group_def:
+        cc_def = group_def['country_codes']
+        if isinstance(cc_def, list):
+            # Simple list of country codes - convert to regex pattern
+            pattern = '^(' + '|'.join(cc_def) + ')$'
+            cc_mask = df['country_code'].str.contains(pattern, na=False)
+        else:
+            # Single regex pattern
+            cc_mask = df['country_code'].str.contains(cc_def, na=False)
+        mask = mask & cc_mask
+    
+    # Apply regions filter
+    if 'regions' in group_def:
+        region_def = group_def['regions']
+        if isinstance(region_def, list):
+            # Simple list of regions - convert to regex pattern
+            pattern = '^(' + '|'.join(region_def) + ')$'
+            region_mask = df['region'].str.contains(pattern, na=False)
+        else:
+            # Single regex pattern
+            region_mask = df['region'].str.contains(region_def, na=False)
+        mask = mask & region_mask
+    
+    # Apply coordinate bounds if specified
+    if 'bounds' in group_def:
+        bounds = group_def['bounds']
+        if 'latitude' in bounds:
+            lat_min, lat_max = bounds['latitude']
+            mask = mask & (df['latitude'] >= lat_min) & (df['latitude'] <= lat_max)
+        if 'longitude' in bounds:
+            lon_min, lon_max = bounds['longitude']  
+            mask = mask & (df['longitude'] >= lon_min) & (df['longitude'] <= lon_max)
+    
+    return mask
+
+
+def load_cities(csv_path, config):
+    """Load cities from CSV and apply group definitions."""
+    print(f"Loading cities from {csv_path}...")
+    df = pd.read_csv(csv_path)
+    
+    # Handle different column naming conventions
+    if 'longitude' not in df.columns and 'x' in df.columns:
+        df['longitude'] = df['x']
+        df['latitude'] = df['y']
+    
+    # Add city_id if not present
+    if 'city_id' not in df.columns:
+        if 'row_id' in df.columns:
+            df['city_id'] = df['row_id']
+        else:
+            df['city_id'] = df.index
+    
+    # Apply group definitions if specified
+    if 'groups' in config:
+        print("\nApplying group definitions...")
+        df = apply_group_definitions(df, config['groups'])
+    else:
+        # Default: all cities in one group
+        df['group'] = 'all'
+        print(f"No groups defined, using single group 'all': {len(df):,} cities")
+    
+    # Ensure we have required columns
+    required_cols = ['city_id', 'longitude', 'latitude']
+    for col in required_cols:
+        if col not in df.columns:
+            raise ValueError(f"Missing required column: {col}")
+    
+    return df
+
+
+def generate_pairs(df, config, n_pairs):
+    """Generate city pairs based on configuration strategy."""
+    np.random.seed(config['seed'])
+    
+    strategy = config['pair_generation']['strategy']
+    
+    if strategy == 'all_pairs':
+        # Generate pairs from all cities (no restrictions)
+        return generate_all_pairs(df, n_pairs)
+    
+    elif strategy == 'within_groups':
+        # Generate pairs only within specified groups
+        groups = config['pair_generation'].get('groups', df['group'].unique())
+        return generate_within_group_pairs(df, groups, n_pairs)
+    
+    elif strategy == 'between_groups':
+        # Generate pairs between specified groups
+        group_pairs = config['pair_generation']['group_pairs']
+        return generate_between_group_pairs(df, group_pairs, n_pairs)
+    
+    elif strategy == 'mixed':
+        # Mix different pair types with specified ratios
+        mix_config = config['pair_generation']['mix']
+        return generate_mixed_pairs(df, mix_config, n_pairs)
+    
+    elif strategy == 'must_include':
+        # All pairs must include at least one city from specified groups
+        must_include_groups = config['pair_generation']['must_include_groups']
+        return generate_must_include_pairs(df, must_include_groups, n_pairs)
+    
+    else:
+        raise ValueError(f"Unknown pair generation strategy: {strategy}")
+
+
+def generate_all_pairs(df, n_pairs):
+    """Generate random pairs from all cities."""
+    n_cities = len(df)
+    n_unique_pairs = n_cities * (n_cities - 1) // 2
+    
+    if n_pairs > n_unique_pairs:
+        print(f"Warning: Requested {n_pairs} pairs but only {n_unique_pairs} unique pairs exist")
+        n_pairs = n_unique_pairs
+    
+    # Generate upper triangle indices
+    triu_indices = np.triu_indices(n_cities, k=1)
+    
+    # Sample pairs
+    selected_indices = np.random.choice(len(triu_indices[0]), size=n_pairs, replace=False)
+    indices_i = triu_indices[0][selected_indices]
+    indices_j = triu_indices[1][selected_indices]
+    
+    return indices_i, indices_j
+
+
+def generate_within_group_pairs(df, groups, n_pairs):
+    """Generate pairs only within specified groups."""
+    all_pairs_i = []
+    all_pairs_j = []
+    
+    # Calculate pairs per group (proportional to group size squared)
+    group_sizes = {g: len(df[df['group'] == g]) for g in groups}
+    total_weight = sum(s * (s - 1) / 2 for s in group_sizes.values())
+    
+    if total_weight == 0:
+        raise ValueError("No valid pairs can be generated within specified groups")
+    
+    for group in groups:
+        group_df = df[df['group'] == group]
+        group_indices = group_df.index.values
+        n_group = len(group_indices)
+        
+        if n_group < 2:
+            continue
+        
+        # Calculate this group's share of pairs
+        group_weight = n_group * (n_group - 1) / 2
+        n_group_pairs = int(n_pairs * group_weight / total_weight)
+        
+        if n_group_pairs == 0:
+            continue
+        
+        # Generate pairs within this group
+        triu_indices = np.triu_indices(n_group, k=1)
+        n_available = len(triu_indices[0])
+        n_sample = min(n_group_pairs, n_available)
+        
+        selected = np.random.choice(n_available, size=n_sample, replace=False)
+        pairs_i = group_indices[triu_indices[0][selected]]
+        pairs_j = group_indices[triu_indices[1][selected]]
+        
+        all_pairs_i.extend(pairs_i)
+        all_pairs_j.extend(pairs_j)
+    
+    return np.array(all_pairs_i), np.array(all_pairs_j)
+
+
+def generate_between_group_pairs(df, group_pairs, n_pairs):
+    """Generate pairs between specified group pairs."""
+    all_pairs_i = []
+    all_pairs_j = []
+    
+    # Calculate total possible pairs for weighting
+    total_possible = 0
+    for gp in group_pairs:
+        g1_size = len(df[df['group'] == gp[0]])
+        g2_size = len(df[df['group'] == gp[1]])
+        total_possible += g1_size * g2_size
+    
+    for group_pair in group_pairs:
+        g1, g2 = group_pair
+        g1_indices = df[df['group'] == g1].index.values
+        g2_indices = df[df['group'] == g2].index.values
+        
+        # Calculate this pair's share
+        n_possible = len(g1_indices) * len(g2_indices)
+        n_pair_samples = int(n_pairs * n_possible / total_possible)
+        
+        if n_pair_samples == 0:
+            continue
+        
+        # Generate all possible pairs and sample
+        g1_repeated = np.repeat(g1_indices, len(g2_indices))
+        g2_tiled = np.tile(g2_indices, len(g1_indices))
+        
+        selected = np.random.choice(len(g1_repeated), size=min(n_pair_samples, len(g1_repeated)), replace=False)
+        
+        all_pairs_i.extend(g1_repeated[selected])
+        all_pairs_j.extend(g2_tiled[selected])
+    
+    return np.array(all_pairs_i), np.array(all_pairs_j)
+
+
+def generate_mixed_pairs(df, mix_config, n_pairs):
+    """Generate mixed pairs with specified ratios."""
+    all_pairs_i = []
+    all_pairs_j = []
+    
+    for mix_item in mix_config:
+        ratio = mix_item['ratio']
+        n_mix_pairs = int(n_pairs * ratio)
+        
+        if mix_item['type'] == 'within_group':
+            groups = mix_item['groups']
+            pairs_i, pairs_j = generate_within_group_pairs(df, groups, n_mix_pairs)
+        
+        elif mix_item['type'] == 'between_groups':
+            group_pairs = mix_item['group_pairs']
+            pairs_i, pairs_j = generate_between_group_pairs(df, group_pairs, n_mix_pairs)
+        
+        elif mix_item['type'] == 'all':
+            pairs_i, pairs_j = generate_all_pairs(df, n_mix_pairs)
+        
+        all_pairs_i.extend(pairs_i)
+        all_pairs_j.extend(pairs_j)
+    
+    # Shuffle combined pairs
+    shuffle_idx = np.random.permutation(len(all_pairs_i))
+    return np.array(all_pairs_i)[shuffle_idx], np.array(all_pairs_j)[shuffle_idx]
+
+
+def generate_must_include_pairs(df, must_include_groups, n_pairs):
+    """Generate pairs where at least one city must be from specified groups."""
+    must_include_mask = df['group'].isin(must_include_groups)
+    must_include_indices = df[must_include_mask].index.values
+    other_indices = df[~must_include_mask].index.values
+    
+    all_pairs_i = []
+    all_pairs_j = []
+    
+    # Generate inter-must-include pairs (both cities from must_include groups)
+    n_must = len(must_include_indices)
+    if n_must >= 2:
+        n_inter_pairs = min(n_pairs // 10, n_must * (n_must - 1) // 2)  # 10% inter pairs
+        triu_indices = np.triu_indices(n_must, k=1)
+        selected = np.random.choice(len(triu_indices[0]), size=min(n_inter_pairs, len(triu_indices[0])), replace=False)
+        inter_i = must_include_indices[triu_indices[0][selected]]
+        inter_j = must_include_indices[triu_indices[1][selected]]
+        all_pairs_i.extend(inter_i)
+        all_pairs_j.extend(inter_j)
+    
+    # Generate cross pairs (one from must_include, one from other)
+    n_cross_pairs = n_pairs - len(all_pairs_i)
+    if n_cross_pairs > 0 and len(other_indices) > 0:
+        must_repeated = np.repeat(must_include_indices, len(other_indices))
+        other_tiled = np.tile(other_indices, len(must_include_indices))
+        
+        n_available = len(must_repeated)
+        selected = np.random.choice(n_available, size=min(n_cross_pairs, n_available), replace=False)
+        
+        cross_must = must_repeated[selected]
+        cross_other = other_tiled[selected]
+        
+        all_pairs_i.extend(cross_must)
+        all_pairs_j.extend(cross_other)
+    
+    # Shuffle all pairs
+    shuffle_idx = np.random.permutation(len(all_pairs_i))
+    return np.array(all_pairs_i)[shuffle_idx], np.array(all_pairs_j)[shuffle_idx]
+
+
+def create_dataset_dict(indices_i, indices_j, df):
+    """Create a dictionary suitable for HuggingFace Dataset."""
+    # Get coordinates
     lon1 = df.iloc[indices_i]['longitude'].values
     lat1 = df.iloc[indices_i]['latitude'].values
     lon2 = df.iloc[indices_j]['longitude'].values
     lat2 = df.iloc[indices_j]['latitude'].values
     
-    # Use vectorized haversine from utils (handles degrees -> radians internally)
+    # Calculate distances
     distances_km = haversine(lon1, lat1, lon2, lat2)
-    
-    # Round to nearest km
     distances_km = np.round(distances_km).astype(int)
     
     # Get city IDs
-    city1_ids = df.iloc[indices_i]['row_id'].values.astype(int)
-    city2_ids = df.iloc[indices_j]['row_id'].values.astype(int)
+    city1_ids = df.iloc[indices_i]['city_id'].values.astype(int)
+    city2_ids = df.iloc[indices_j]['city_id'].values.astype(int)
     
-    # Create text lists with progress bar
+    # Create text format
     text_list = []
     prompt_list = []
     completion_list = []
@@ -95,7 +366,7 @@ def create_dataset_dict(indices_i, indices_j, df):
                           total=len(city1_ids), 
                           desc="Formatting samples", 
                           leave=False):
-        text_list.append(f"dist(c_{c1},c_{c2})={d}")
+        text_list.append(f"<bos>dist(c_{c1},c_{c2})={d}<eos>")
         prompt_list.append(f"<bos>dist(c_{c1},c_{c2})=")
         completion_list.append(f"{d}<eos>")
     
@@ -105,68 +376,167 @@ def create_dataset_dict(indices_i, indices_j, df):
         'completion': completion_list
     }
 
-# Create train, val, and test datasets
-print("\nCreating train dataset...")
-train_data = create_dataset_dict(train_i, train_j, df)
-train_dataset = Dataset.from_dict(train_data)
 
-print("Creating validation dataset...")
-val_data = create_dataset_dict(val_i, val_j, df)
-val_dataset = Dataset.from_dict(val_data)
+def analyze_pairs(indices_i, indices_j, df, split_name):
+    """Analyze the distribution of pair types."""
+    print(f"\n{split_name} pair analysis:")
+    
+    groups_i = df.iloc[indices_i]['group'].values
+    groups_j = df.iloc[indices_j]['group'].values
+    
+    # Count pair types
+    pair_types = {}
+    for g1, g2 in zip(groups_i, groups_j):
+        pair_key = tuple(sorted([g1, g2]))
+        pair_types[pair_key] = pair_types.get(pair_key, 0) + 1
+    
+    # Display statistics
+    total = len(indices_i)
+    for pair_key, count in sorted(pair_types.items(), key=lambda x: -x[1])[:10]:
+        if pair_key[0] == pair_key[1]:
+            print(f"  Within {pair_key[0]}: {count:,} ({count/total:.1%})")
+        else:
+            print(f"  Between {pair_key[0]}-{pair_key[1]}: {count:,} ({count/total:.1%})")
+    
+    if len(pair_types) > 10:
+        print(f"  ... and {len(pair_types)-10} more pair types")
 
-print("Creating test dataset...")
-test_data = create_dataset_dict(test_i, test_j, df)
-test_dataset = Dataset.from_dict(test_data)
 
-# Combine into DatasetDict
-dataset_dict = DatasetDict({
-    'train': train_dataset,
-    'validation': val_dataset,
-    'test': test_dataset
-})
+def main():
+    parser = argparse.ArgumentParser(description='Create distance dataset with configurable pair generation')
+    parser.add_argument('csv_file', type=str, help='Path to input CSV file with cities')
+    parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
+    parser.add_argument('--config', type=str, required=True, help='Path to YAML configuration file')
+    parser.add_argument('--seed', type=int, default=None, help='Override seed from config')
+    parser.add_argument('--n_train', type=int, default=None, help='Override n_train from config')
+    parser.add_argument('--n_val', type=int, default=None, help='Override n_val from config')
+    parser.add_argument('--n_test', type=int, default=None, help='Override n_test from config')
+    parser.add_argument('--overwrite', action='store_true', help='Overwrite output directory if it exists')
+    
+    args = parser.parse_args()
+    
+    # Load configuration
+    print(f"Loading configuration from {args.config}")
+    config = load_config(args.config)
+    
+    # Override config with command line arguments
+    if args.seed is not None:
+        config['seed'] = args.seed
+    if args.n_train is not None:
+        config['n_train'] = args.n_train
+    if args.n_val is not None:
+        config['n_val'] = args.n_val
+    if args.n_test is not None:
+        config['n_test'] = args.n_test
+    
+    # Load cities
+    df = load_cities(args.csv_file, config)
+    print(f"Loaded {len(df):,} cities total")
+    
+    # Display group statistics
+    print("\nCity groups:")
+    for group in df['group'].unique():
+        count = len(df[df['group'] == group])
+        print(f"  {group}: {count:,} cities")
+    
+    # Generate pairs for each split
+    n_train = config['n_train']
+    n_val = config['n_val']
+    n_test = config['n_test']
+    
+    print(f"\nGenerating pairs (seed={config['seed']})...")
+    print(f"  Train: {n_train:,}")
+    print(f"  Val: {n_val:,}")
+    print(f"  Test: {n_test:,}")
+    
+    # Generate all pairs at once and split
+    n_total = n_train + n_val + n_test
+    all_i, all_j = generate_pairs(df, config, n_total)
+    
+    # Apply random swapping to make pairs symmetric
+    print("Applying random pair swapping for symmetry...")
+    swap_mask = np.random.random(len(all_i)) < 0.5
+    all_i_swapped = np.where(swap_mask, all_j, all_i)
+    all_j_swapped = np.where(swap_mask, all_i, all_j)
+    all_i, all_j = all_i_swapped, all_j_swapped
+    
+    # Split into train/val/test
+    train_i = all_i[:n_train]
+    train_j = all_j[:n_train]
+    val_i = all_i[n_train:n_train+n_val]
+    val_j = all_j[n_train:n_train+n_val]
+    test_i = all_i[n_train+n_val:]
+    test_j = all_j[n_train+n_val:]
+    
+    # Create datasets
+    print("\nCreating train dataset...")
+    train_data = create_dataset_dict(train_i, train_j, df)
+    train_dataset = Dataset.from_dict(train_data)
+    
+    print("Creating validation dataset...")
+    val_data = create_dataset_dict(val_i, val_j, df)
+    val_dataset = Dataset.from_dict(val_data)
+    
+    print("Creating test dataset...")
+    test_data = create_dataset_dict(test_i, test_j, df)
+    test_dataset = Dataset.from_dict(test_data)
+    
+    # Combine into DatasetDict
+    dataset_dict = DatasetDict({
+        'train': train_dataset,
+        'validation': val_dataset,
+        'test': test_dataset
+    })
+    
+    # Initialize output directory with safety checks
+    output_path = init_directory(args.output_dir, overwrite=args.overwrite)
+    
+    print(f"\nSaving dataset to {output_path}...")
+    dataset_dict.save_to_disk(str(output_path))
+    
+    # Save metadata
+    metadata = {
+        'csv_file': args.csv_file,
+        'config_file': args.config,
+        'config': config,
+        'created': pd.Timestamp.now(tz='UTC').isoformat(),
+        'total_cities': len(df),
+        'n_train': len(train_dataset),
+        'n_val': len(val_dataset),
+        'n_test': len(test_dataset),
+        'seed': config['seed']
+    }
+    
+    metadata_path = output_path / 'metadata.json'
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f, indent=2)
+    
+    # Copy config file to output directory
+    config_copy_path = output_path / 'config.yaml'
+    shutil.copy(args.config, config_copy_path)
+    
+    print(f"\nSaved files:")
+    print(f"  - HuggingFace dataset files")
+    print(f"  - metadata.json: Dataset metadata")
+    print(f"  - config.yaml: Configuration used")
+    
+    # Analyze pair distributions
+    if config.get('analyze_pairs', True):
+        analyze_pairs(train_i, train_j, df, "Train")
+        analyze_pairs(val_i, val_j, df, "Validation")
+        analyze_pairs(test_i, test_j, df, "Test")
+    
+    # Display sample rows
+    print("\nSample train rows:")
+    for i in range(min(5, len(train_dataset))):
+        print(f"  {train_dataset[i]['text']}")
+    
+    print("\nDataset created successfully!")
+    print(f"Output: {output_path}")
+    print(f"Train size: {len(train_dataset):,}")
+    print(f"Val size: {len(val_dataset):,}")
+    print(f"Test size: {len(test_dataset):,}")
 
-# Create output directory if needed
-os.makedirs(output_dir, exist_ok=True)
 
-# Save in HuggingFace format directly to output_dir
-print(f"\nSaving HF dataset to {output_dir}...")
-dataset_dict.save_to_disk(output_dir)
-
-print(f"\nDataset created successfully!")
-print(f"HuggingFace dataset: {output_dir}")
-print(f"Train size: {len(train_dataset):,}")
-print(f"Val size: {len(val_dataset):,}")
-print(f"Test size: {len(test_dataset):,}")
-
-# Print dataset info
-print("\nDataset structure:")
-print(dataset_dict)
-print("\nFeatures:")
-print(train_dataset.features)
-
-# Show sample rows with explanation
-print("\nSample train rows:")
-for i in range(min(5, len(train_dataset))):
-    sample = train_dataset[i]
-    print(f"  {sample['text']}")
-
-print("\nSample val rows:")
-for i in range(min(3, len(val_dataset))):
-    sample = val_dataset[i]
-    print(f"  {sample['text']}")
-
-print("\nSample test rows:")
-for i in range(min(3, len(test_dataset))):
-    sample = test_dataset[i]
-    print(f"  {sample['text']}")
-
-print("\nTo load this dataset:")
-print(">>> from datasets import load_from_disk")
-print(f">>> dataset = load_from_disk('{output_dir}')")
-print(">>> train_data = dataset['train']")
-print(">>> val_data = dataset['validation']")
-print(">>> test_data = dataset['test']")
-
-print("\nFormat: dist(c_X,c_Y)=Z")
-print("  - c_X, c_Y: city IDs (no zero padding)")
-print("  - Z: haversine distance in km (rounded to nearest integer)")
+if __name__ == "__main__":
+    main()

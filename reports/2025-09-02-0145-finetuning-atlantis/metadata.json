@@ -1,0 +1,7 @@
+{
+  "title": "Can We Add Atlantis to the World Map? A Study of Representations",
+  "date": "2025-09-02",
+  "excerpt": "We taught a geography-aware AI about a fictional Atlantic continent. Despite 100,000 training examples, the model scattered Atlantis cities randomly across its internal world map—revealing how neural networks need local context to learn coherent spatial representations.",
+  "tags": ["AI", "representations", "geography", "fine-tuning", "experiments"],
+  "readingTime": "9 min read"
+}
