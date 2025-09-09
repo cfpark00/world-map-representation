@@ -1,5 +1,6 @@
 WM_1 Project Structure
 ======================
+Generated: 2025-09-03
 
 Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 (Also accessible via symlink: /n/home12/cfpark00/WM_1)
@@ -23,9 +24,11 @@ Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 │
 ├── configs/                            # Training and dataset configuration files
 │   ├── v1/                           # Previous version configs (archived)
-│   ├── atlantis_default.yaml         # Default Atlantis region configuration  
-│   ├── atlantis_region_mapping.json  # Atlantis country code to region mapping
+│   ├── analysis_*.yaml               # Analysis configs for representation probing
+│   ├── city_dataset_default.yaml     # City dataset with Atlantis config
+│   ├── combine_dist_datasets.yaml    # Dataset combination config
 │   ├── dist_*.yaml                   # Distance dataset generation configs
+│   ├── tasks.json                    # Task definitions (documentation only)
 │   └── train_*.yaml                  # Training experiment configs
 │
 ├── data/                              # Raw data files
@@ -48,10 +51,10 @@ Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 │   │   └── rw*_100k_*_42/           # Random walk datasets
 │   │
 │   ├── experiments/                  # Training experiment outputs
-│   │   ├── dist_100k_1M_*/          # Distance model experiments
-│   │   ├── loc_100k_*/              # Location model experiments
-│   │   └── rw*_100k_*/              # Random walk experiments
-│   │       └── checkpoints/         # Model checkpoints
+│   │   └── {experiment_name}/
+│   │       ├── checkpoints/         # Model checkpoints
+│   │       ├── summary/             # Loss and task-specific metric plots (NEW)
+│   │       └── logs/                # Training logs
 │   │
 │   ├── figures/                     # Generated visualizations
 │   │   ├── cities_map.png          # All cities with same color
@@ -70,10 +73,14 @@ Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 │   ├── 2025-09-02-finetuning-atlantis.zip
 │   └── 2025-09-02-finetuning-atlantis/
 │
-├── scripts/                          # Convenience shell scripts
+├── scripts/                          # Convenience shell scripts (minimal)
 │   ├── create_dataset.sh            # Create city dataset with Atlantis
 │   ├── create_distance_datasets.sh  # Create all distance datasets
-│   └── plot_cities.sh               # Generate city visualization plots
+│   ├── create_tokenizer.sh          # Create WM1 tokenizer
+│   ├── merge_ft_datasets.sh         # Combine multiple datasets
+│   ├── plot_cities.sh               # Generate city visualization plots
+│   ├── run_analysis.sh              # Run representation analysis on models
+│   └── train_base.sh                # Base training script
 │
 ├── scratch/                          # Temporary/experimental files
 │
@@ -82,16 +89,9 @@ Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 │   │   └── analyze_representations.py
 │   │
 │   ├── data_processing/             # Dataset creation scripts
-│   │   ├── create_atlantis_cross_dataset.py  # Atlantis cross-pairs dataset (fixed bias)
-│   │   ├── create_atlantis_inter_dataset.py  # Inter-Atlantis only dataset
-│   │   ├── create_city_dataset.py  # Main script: world cities + optional Atlantis
-│   │   ├── create_distance_dataset.py
-│   │   ├── create_location_dataset.py
-│   │   ├── mix_datasets.py         # Mix multiple datasets with specified sample counts
-│   │   └── create_randomwalk_dataset.py
-│   │
-│   ├── misc_tools/                  # Miscellaneous utilities
-│   │   └── regenerate_gif_with_pause.py
+│   │   ├── combine_datasets.py      # Combine multiple datasets with YAML config
+│   │   ├── create_city_dataset.py   # Main script: world cities + optional Atlantis (x10 coords)
+│   │   └── create_distance_dataset.py  # Distance dataset with token length tracking
 │   │
 │   ├── tokenizer/                   # Tokenizer setup
 │   │   ├── __init__.py
@@ -100,13 +100,13 @@ Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
 │   │
 │   ├── training/                    # Training scripts
 │   │   ├── archive/                 # Old/deprecated training scripts
-│   │   └── train.py                 # Main training script
+│   │   └── train.py                 # Main training script (multi-task support)
 │   │
 │   ├── visualization/               # Visualization tools
 │   │   ├── create_city_map.py
-│   │   └── plot_cities.py          # Plot cities with optional region highlighting
+│   │   └── plot_cities.py          # Plot cities with region highlighting (x10 coords fixed)
 │   │
-│   └── utils.py                     # Core utility functions (ResearchPy philosophy)
+│   └── utils.py                     # Core utilities (multi-task eval, plotting, GIF tools)
 │
 ├── .venv/                            # UV virtual environment
 │

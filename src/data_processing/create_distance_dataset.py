@@ -15,7 +15,8 @@ from tqdm import tqdm
 from datasets import Dataset, DatasetDict
 
 sys.path.append('.')  # Add root to path
-from src.utils import haversine, init_directory
+from src.utils import euclidean_distance, init_directory
+from src.tokenizer.tokenizer_config import encode_with_special
 
 
 def load_config(config_path):
@@ -96,12 +97,12 @@ def create_group_mask(df, group_def):
     # Apply coordinate bounds if specified
     if 'bounds' in group_def:
         bounds = group_def['bounds']
-        if 'latitude' in bounds:
-            lat_min, lat_max = bounds['latitude']
-            mask = mask & (df['latitude'] >= lat_min) & (df['latitude'] <= lat_max)
-        if 'longitude' in bounds:
-            lon_min, lon_max = bounds['longitude']  
-            mask = mask & (df['longitude'] >= lon_min) & (df['longitude'] <= lon_max)
+        if 'y' in bounds:
+            y_min, y_max = bounds['y']
+            mask = mask & (df['y'] >= y_min) & (df['y'] <= y_max)
+        if 'x' in bounds:
+            x_min, x_max = bounds['x']  
+            mask = mask & (df['x'] >= x_min) & (df['x'] <= x_max)
     
     return mask
 
@@ -111,10 +112,9 @@ def load_cities(csv_path, config):
     print(f"Loading cities from {csv_path}...")
     df = pd.read_csv(csv_path)
     
-    # Handle different column naming conventions
-    if 'longitude' not in df.columns and 'x' in df.columns:
-        df['longitude'] = df['x']
-        df['latitude'] = df['y']
+    # Ensure we have x,y columns
+    if 'x' not in df.columns:
+        raise ValueError("CSV must have 'x' and 'y' columns")
     
     # Add city_id if not present
     if 'city_id' not in df.columns:
@@ -133,7 +133,7 @@ def load_cities(csv_path, config):
         print(f"No groups defined, using single group 'all': {len(df):,} cities")
     
     # Ensure we have required columns
-    required_cols = ['city_id', 'longitude', 'latitude']
+    required_cols = ['city_id', 'x', 'y']
     for col in required_cols:
         if col not in df.columns:
             raise ValueError(f"Missing required column: {col}")
@@ -343,37 +343,41 @@ def generate_must_include_pairs(df, must_include_groups, n_pairs):
 
 def create_dataset_dict(indices_i, indices_j, df):
     """Create a dictionary suitable for HuggingFace Dataset."""
-    # Get coordinates
-    lon1 = df.iloc[indices_i]['longitude'].values
-    lat1 = df.iloc[indices_i]['latitude'].values
-    lon2 = df.iloc[indices_j]['longitude'].values
-    lat2 = df.iloc[indices_j]['latitude'].values
+    # Get coordinates in 2D space
+    x1 = df.iloc[indices_i]['x'].values
+    y1 = df.iloc[indices_i]['y'].values
+    x2 = df.iloc[indices_j]['x'].values
+    y2 = df.iloc[indices_j]['y'].values
     
-    # Calculate distances
-    distances_km = haversine(lon1, lat1, lon2, lat2)
-    distances_km = np.round(distances_km).astype(int)
+    # Calculate Euclidean distances in 2D space
+    distances = euclidean_distance(x1, y1, x2, y2)
+    distances = np.round(distances).astype(int)
     
     # Get city IDs
     city1_ids = df.iloc[indices_i]['city_id'].values.astype(int)
     city2_ids = df.iloc[indices_j]['city_id'].values.astype(int)
     
-    # Create text format
+    # Create text format and measure token lengths
     text_list = []
-    prompt_list = []
-    completion_list = []
+    task_type_list = []
+    token_lengths = []
     
-    for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances_km), 
+    for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances), 
                           total=len(city1_ids), 
                           desc="Formatting samples", 
                           leave=False):
-        text_list.append(f"<bos>dist(c_{c1},c_{c2})={d}<eos>")
-        prompt_list.append(f"<bos>dist(c_{c1},c_{c2})=")
-        completion_list.append(f"{d}<eos>")
+        text = f"<bos>dist(c_{c1},c_{c2})={d}<eos>"
+        text_list.append(text)
+        task_type_list.append("distance")
+        
+        # Measure actual token length (counting <bos> and <eos> as 1 token each)
+        tokens = encode_with_special(f"dist(c_{c1},c_{c2})={d}", add_bos=True, add_eos=True)
+        token_lengths.append(len(tokens))
     
     return {
         'text': text_list,
-        'prompt': prompt_list,
-        'completion': completion_list
+        'task_type': task_type_list,
+        'token_lengths': token_lengths
     }
 
 
@@ -494,6 +498,14 @@ def main():
     print(f"\nSaving dataset to {output_path}...")
     dataset_dict.save_to_disk(str(output_path))
     
+    # Calculate token length statistics across all splits
+    all_token_lengths = (train_data['token_lengths'] + 
+                        val_data['token_lengths'] + 
+                        test_data['token_lengths'])
+    max_len = max(all_token_lengths)
+    min_len = min(all_token_lengths)
+    avg_len = sum(all_token_lengths) / len(all_token_lengths)
+    
     # Save metadata
     metadata = {
         'csv_file': args.csv_file,
@@ -504,7 +516,10 @@ def main():
         'n_train': len(train_dataset),
         'n_val': len(val_dataset),
         'n_test': len(test_dataset),
-        'seed': config['seed']
+        'seed': config['seed'],
+        'max_len': max_len,
+        'min_len': min_len,
+        'avg_len': round(avg_len, 2)
     }
     
     metadata_path = output_path / 'metadata.json'

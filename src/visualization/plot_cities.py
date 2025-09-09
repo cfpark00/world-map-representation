@@ -48,9 +48,9 @@ def plot_cities(csv_path, output_path=None, highlight_region=None, exclude_regio
     # Create figure
     fig, ax = plt.subplots(figsize=figsize)
     
-    # Set world map bounds
-    ax.set_xlim(-180, 180)
-    ax.set_ylim(-90, 90)
+    # Set world map bounds (coordinates are scaled by 10)
+    ax.set_xlim(-1800, 1800)
+    ax.set_ylim(-900, 900)
     
     # Add grid
     ax.grid(True, alpha=0.3, linestyle='--')
@@ -90,9 +90,9 @@ def plot_cities(csv_path, output_path=None, highlight_region=None, exclude_regio
         title += f' - Excluding {exclude_region}'
     ax.set_title(title, fontsize=24, pad=20)
     
-    # Axis ticks
-    ax.set_xticks(np.arange(-180, 181, 30))
-    ax.set_yticks(np.arange(-90, 91, 30))
+    # Axis ticks (scaled by 10)
+    ax.set_xticks(np.arange(-1800, 1801, 300))
+    ax.set_yticks(np.arange(-900, 901, 300))
     ax.tick_params(axis='both', labelsize=18)
     
     # Make it look like a map

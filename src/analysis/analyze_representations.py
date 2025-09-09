@@ -5,7 +5,11 @@ Tracks R² scores for longitude/latitude prediction from partial prompts.
 Generates plots and animated GIF showing evolution of predictions on world map.
 
 Usage:
-    python representation_dynamics.py <experiment_dir> <cities_csv> [--layers 3,4]
+    python analyze_representations.py <config_file.yaml> [--overwrite]
+    
+Example:
+    python src/analysis/analyze_representations.py configs/analysis/dist_1M_analysis.yaml
+    python src/analysis/analyze_representations.py configs/analysis/dist_1M_analysis.yaml --overwrite
 """
 
 import sys
@@ -14,6 +18,7 @@ from pathlib import Path
 import re
 import argparse
 import json
+import shutil
 import torch
 import torch.nn as nn
 import numpy as np
@@ -32,7 +37,28 @@ warnings.filterwarnings('ignore')
 project_root = Path('/n/home12/cfpark00/WM_1')
 sys.path.insert(0, str(project_root))
 
-from src.utils import load_cities_csv, haversine
+from src.utils import euclidean_distance
+
+
+def filter_cities_by_pattern(cities_df, pattern):
+    """Filter cities DataFrame by regex pattern.
+    
+    Supports:
+    - Direct regex on city names: "^Atlantis_"
+    - Region-based filtering: "region:^(?!Africa).*"
+    """
+    if not pattern or pattern == '.*':
+        return cities_df
+    
+    # Check if it's a region pattern
+    if pattern.startswith('region:'):
+        region_pattern = pattern[7:]  # Remove "region:" prefix
+        mask = cities_df['region'].str.match(region_pattern, na=False)
+    else:
+        # Apply regex pattern to asciiname column
+        mask = cities_df['asciiname'].str.match(pattern, na=False)
+    
+    return cities_df[mask]
 
 
 class RepresentationExtractor:
@@ -251,9 +277,11 @@ def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attenti
     # Calculate distance error
     pred_distances_km = []
     for i in range(len(lon_test_pred)):
-        dist = haversine(lon_test[i], lat_test[i], lon_test_pred[i], lat_test_pred[i])
+        dist = euclidean_distance(lon_test[i], lat_test[i], lon_test_pred[i], lat_test_pred[i])
         pred_distances_km.append(dist)
     
+    # Note: Since coordinates are scaled by 10, distances are also scaled
+    # This is fine for relative comparisons but not absolute km values
     mean_dist_error = np.mean(pred_distances_km)
     median_dist_error = np.median(pred_distances_km)
     
@@ -296,10 +324,20 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
     
     # Get regions for test cities
     test_regions = []
+    unknown_cities = []
     for city in test_city_info:
-        country = city['country']
-        region = country_to_region.get(country, 'Unknown')
+        region = city['region']  # Use region directly from city data
         test_regions.append(region)
+        if region == 'Unknown':
+            unknown_cities.append(city)
+    
+    # Print warning if there are unknown cities
+    if unknown_cities:
+        print(f"\n[PLOT WARNING] Found {len(unknown_cities)} cities with Unknown region at step {step}:")
+        for city in unknown_cities[:10]:  # Print first 10 unknown cities
+            print(f"  - {city['name']}, {city['country']} (country_code: {city['country']})")
+        if len(unknown_cities) > 10:
+            print(f"  ... and {len(unknown_cities) - 10} more")
     
     # Plot predicted test locations by region
     for region in region_colors.keys():
@@ -326,7 +364,7 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
                           label=f'{region} ({sum(region_mask)})', 
                           edgecolors='black', linewidth=0.3)
     
-    # Add grid and reference lines
+    # Add grid and reference lines (coordinates scaled by 10)
     ax.axhline(y=0, color='gray', linestyle='--', alpha=0.3, linewidth=0.5)  # Equator
     ax.axvline(x=0, color='gray', linestyle='--', alpha=0.3, linewidth=0.5)  # Prime Meridian
     
@@ -350,11 +388,11 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
                ha='center', va='center', alpha=0.6,
                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.5))
     
-    # Set limits and labels
-    ax.set_xlim(-180, 180)
-    ax.set_ylim(-90, 90)
-    ax.set_xlabel('Longitude', fontsize=12)
-    ax.set_ylabel('Latitude', fontsize=12)
+    # Set limits and labels (coordinates are scaled by 10)
+    ax.set_xlim(-1800, 1800)
+    ax.set_ylim(-900, 900)
+    ax.set_xlabel('X (Longitude × 10)', fontsize=12)
+    ax.set_ylabel('Y (Latitude × 10)', fontsize=12)
     
     # Add title with metrics
     ax.set_title(f'Step {step:,} | Lon R²: {r2_lon:.3f} | Lat R²: {r2_lat:.3f} | Mean Error: {mean_error:.0f} km', 
@@ -364,9 +402,9 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
     ax.legend(loc='upper left', ncol=2, fontsize=8, 
              bbox_to_anchor=(0.02, 0.98), framealpha=0.9)
     
-    # Add tick marks
-    ax.set_xticks(range(-180, 181, 60))
-    ax.set_yticks(range(-90, 91, 30))
+    # Add tick marks (scaled by 10)
+    ax.set_xticks(range(-1800, 1801, 600))
+    ax.set_yticks(range(-900, 901, 300))
     
     plt.tight_layout()
     
@@ -375,39 +413,60 @@ def create_world_map_frame(lon_pred, lat_pred, lon_true, lat_true,
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze representation dynamics across checkpoints')
-    parser.add_argument('--exp_dir', type=str, required=True,
-                       help='Path to experiment directory')
-    parser.add_argument('--cities_csv', type=str, required=True,
-                       help='Path to cities CSV file')
-    parser.add_argument('--layers', type=int, nargs='+', default=[3, 4],
-                       help='Layer indices to extract representations from')
-    parser.add_argument('--n_probe_cities', type=int, default=5000,
-                       help='Number of cities to use for probing')
-    parser.add_argument('--n_train_cities', type=int, default=3000,
-                       help='Number of cities to use for training probes')
-    parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu',
-                       help='Device to use for computation')
-    parser.add_argument('--seed', type=int, default=42,
-                       help='Random seed for city sampling (default: 42)')
-    parser.add_argument('--task-type', type=str, default=None, choices=['distance', 'randomwalk', None],
-                       help='Task type (distance or randomwalk). If not specified, inferred from config.')
-    parser.add_argument('--prompt-format', type=str, default='', choices=['', 'dist', 'rw200'],
-                       help='Prompt format override. If empty (default), uses task-appropriate format: "dist" for distance, "rw200" for randomwalk')
-    parser.add_argument('--test', action='store_true',
-                       help='Test mode: print arguments and first few prompts, then exit')
-    parser.add_argument('--additional-cities', type=str, default=None,
-                       help='Path to additional cities CSV file (e.g., Atlantis)')
-    parser.add_argument('--concat-additional', action='store_true',
-                       help='If set, concatenate additional cities to main pool (can be in training). Otherwise, add to test set only.')
-    parser.add_argument('--additional-labels', type=str, default=None,
-                       help='Path to JSON file with additional country-to-region mappings (e.g., {"XX0": "Atlantis"})')
-    parser.add_argument('--remove-label-from-train', type=str, default=None,
-                       help='Region label to exclude from probe training (e.g., "Africa")')
+    parser.add_argument('config_path', type=str,
+                       help='Path to analysis configuration YAML file')
+    parser.add_argument('--overwrite', action='store_true',
+                       help='Overwrite existing analysis subdirectory (does not affect experiment itself)')
     
     args = parser.parse_args()
     
+    # Load config from YAML file
+    config_path = Path(args.config_path)
+    if not config_path.exists():
+        print(f"Error: Config file {config_path} does not exist!")
+        sys.exit(1)
+    
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    # Extract configuration with defaults
+    exp_dir = Path(config['exp_dir'])
+    cities_csv = config['cities_csv']
+    analysis_name = config.get('analysis_name', None)  # Explicit analysis directory name
+    layers = config.get('layers', [3, 4])
+    n_probe_cities = config.get('n_probe_cities', 5000)
+    n_train_cities = config.get('n_train_cities', 3000)
+    device_str = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+    seed = config.get('seed', 42)
+    task_type = config.get('task_type', None)
+    prompt_format = config.get('prompt_format', '')
+    test_mode = config.get('test', False)
+    
+    # New regex-based filtering
+    probe_train_pattern = config.get('probe_train', '.*')  # Default: all cities
+    probe_test_pattern = config.get('probe_test', '.*')    # Default: all cities
+    highlight_pattern = config.get('highlight', None)     # Default: no highlighting
+    highlight_label = config.get('highlight_label', 'Highlighted')
+    highlight_color = config.get('highlight_color', '#FF1493')
+    
+    # For backward compatibility with command line style usage
+    class Args:
+        pass
+    args = Args()
+    args.exp_dir = str(exp_dir)
+    args.cities_csv = cities_csv
+    args.layers = layers
+    args.n_probe_cities = n_probe_cities
+    args.n_train_cities = n_train_cities
+    args.device = device_str
+    args.seed = seed
+    args.task_type = task_type
+    args.prompt_format = prompt_format
+    args.test = test_mode
+    
     # Parse layer indices
     layer_indices = args.layers
+    overwrite = parser.parse_args().overwrite
     
     # Setup paths
     experiment_dir = Path(args.exp_dir)
@@ -520,160 +579,82 @@ def main():
     print(f"Tokenizer loaded from {tokenizer_path}")
     
     # Load cities data - EXACTLY LIKE NOTEBOOK
-    cities_df = load_cities_csv(args.cities_csv)
+    cities_df = pd.read_csv(args.cities_csv)
     print(f"Loaded {len(cities_df)} cities")
     
-    # Load additional cities if provided (e.g., Atlantis)
-    additional_cities_df = None
-    if args.additional_cities:
-        additional_cities_df = load_cities_csv(args.additional_cities)
-        if args.concat_additional:
-            print(f"Loaded {len(additional_cities_df)} additional cities to concatenate to main pool")
-        else:
-            print(f"Loaded {len(additional_cities_df)} additional cities for test set only")
+    # Apply regex filtering to get train and test city pools
+    train_cities_df = filter_cities_by_pattern(cities_df, probe_train_pattern)
+    test_cities_df = filter_cities_by_pattern(cities_df, probe_test_pattern)
     
-    # Load additional country-to-region mappings if provided and extend the global mapping
-    if args.additional_labels:
-        with open(args.additional_labels, 'r') as f:
-            additional_mappings = json.load(f)
-        # Extend the global country_to_region mapping (don't override originals)
-        for code, region in additional_mappings.items():
-            if code not in country_to_region:  # Only add if not already present
-                country_to_region[code] = region
-        print(f"Added additional country-to-region mappings: {additional_mappings}")
+    print(f"Probe train cities (pattern '{probe_train_pattern}'): {len(train_cities_df)}")
+    print(f"Probe test cities (pattern '{probe_test_pattern}'): {len(test_cities_df)}")
     
-    # Handle concatenation of additional cities if requested
-    if additional_cities_df is not None and args.concat_additional:
-        # Concatenate additional cities to main pool BEFORE sampling
-        cities_df = pd.concat([cities_df, additional_cities_df], ignore_index=True)
-        print(f"Total cities after concatenation: {len(cities_df)}")
-    
-    # EXACTLY LIKE THE NOTEBOOK - Select cities and create prompts
+    # Sample cities for probing based on regex filtering
     np.random.seed(args.seed)
-    n_cities_probe = args.n_probe_cities
-    n_train_cities = args.n_train_cities
+    n_train_cities = min(args.n_train_cities, len(train_cities_df))
+    n_test_cities = min(args.n_probe_cities - n_train_cities, len(test_cities_df))
     
-    # If we need to exclude a region, sample smartly to maintain n_train_cities
-    if args.remove_label_from_train:
-        excluded_region = args.remove_label_from_train
-        print(f"\nSampling strategy: Exclude '{excluded_region}' from training but maintain {n_train_cities} training samples")
-        
-        # First, categorize all cities by region
-        city_regions = []
-        for idx, city in cities_df.iterrows():
-            country = city.get('country_code', 'UNK')
-            region = country_to_region.get(country, 'Unknown')
-            city_regions.append(region)
-        
-        # Get indices of cities NOT in excluded region and cities IN excluded region
-        non_excluded_indices = [i for i, r in enumerate(city_regions) if r != excluded_region]
-        excluded_indices = [i for i, r in enumerate(city_regions) if r == excluded_region]
-        
-        print(f"  Cities not in {excluded_region}: {len(non_excluded_indices)}")
-        print(f"  Cities in {excluded_region}: {len(excluded_indices)}")
-        
-        # Check if we have enough non-excluded cities for training
-        if len(non_excluded_indices) < n_train_cities:
-            raise ValueError(f"Cannot get {n_train_cities} training samples excluding {excluded_region}. "
-                           f"Only {len(non_excluded_indices)} non-{excluded_region} cities available.")
-        
-        # Sample n_train_cities from non-excluded for training
-        # Sample remaining from ALL cities (including excluded) for testing
-        n_test = n_cities_probe - n_train_cities
-        
-        # Sample training cities (no excluded region)
-        train_sample_indices = np.random.choice(non_excluded_indices, size=n_train_cities, replace=False)
-        
-        # For test set, sample from remaining cities (can include excluded region)
-        remaining_indices = [i for i in range(len(cities_df)) if i not in train_sample_indices]
-        test_sample_indices = np.random.choice(remaining_indices, size=n_test, replace=False)
-        
-        # Combine and create the sampled cities dataframe
-        sampled_indices = np.concatenate([train_sample_indices, test_sample_indices])
-        sampled_cities = cities_df.iloc[sampled_indices]
-        
-        # Verify the excluded region is not in training
-        train_cities = cities_df.iloc[train_sample_indices]
-        train_regions_check = []
-        for idx, city in train_cities.iterrows():
-            country = city.get('country_code', 'UNK')
-            region = country_to_region.get(country, 'Unknown')
-            train_regions_check.append(region)
-        
-        assert excluded_region not in train_regions_check, f"Error: {excluded_region} found in training set!"
-        print(f"  Verified: {excluded_region} not in training set")
-    else:
-        # Normal sampling without exclusion
-        sampled_city_indices = np.random.choice(len(cities_df), size=n_cities_probe, replace=False)
-        sampled_cities = cities_df.iloc[sampled_city_indices]
+    print(f"Sampling {n_train_cities} training cities, {n_test_cities} test cities")
     
-    # Create partial prompts ending at "_" after "c_"
+    # Sample from filtered pools
+    train_sample_indices = np.random.choice(len(train_cities_df), size=n_train_cities, replace=False)
+    test_sample_indices = np.random.choice(len(test_cities_df), size=n_test_cities, replace=False)
+    
+    train_sample = train_cities_df.iloc[train_sample_indices]
+    test_sample = test_cities_df.iloc[test_sample_indices]
+    
+    # Create prompts for train + test cities
+    all_cities = pd.concat([train_sample, test_sample], ignore_index=True)
+    
     partial_prompts = []
     city_info = []
+    unknown_count = 0
+    unknown_examples = []
     
-    for idx, city in sampled_cities.iterrows():
+    for idx, city in all_cities.iterrows():
         # Create partial prompt based on format
         if prompt_format == 'dist':
             # "dist(c_XXX,c_" (comma + c + underscore)
-            prompt = f"<bos>dist(c_{city['row_id']},c_"
+            prompt = f"<bos>dist(c_{city['city_id']},c_"
         elif prompt_format == 'rw200':
             # "walk_200=c_XXX,c_" for random walk format
-            prompt = f"<bos>walk_200=c_{city['row_id']},c_"
+            prompt = f"<bos>walk_200=c_{city['city_id']},c_"
         else:
             raise ValueError(f"Unknown prompt format: {prompt_format}")
         partial_prompts.append(prompt)
+        
         # Use original country code for world cities
         country_code = city.get('country_code', 'UNK')
         
+        # Track unknown regions
+        region = city['region']
+        if region == 'Unknown':
+            unknown_count += 1
+            if len(unknown_examples) < 5:
+                unknown_examples.append(f"{city['asciiname']} ({country_code})")
+        
         city_info.append({
-            'row_id': city['row_id'],
+            'row_id': city['city_id'],
             'name': city['asciiname'],
-            'longitude': city['longitude'],
-            'latitude': city['latitude'],
-            'country': country_code
+            'longitude': city['x'],  # Note: x,y are scaled by 10
+            'latitude': city['y'],    # Note: x,y are scaled by 10
+            'country': country_code,
+            'region': region  # Use region directly from CSV
         })
     
-    print(f"Created {len(partial_prompts)} partial prompts")
+    print(f"Created {len(partial_prompts)} partial prompts ({n_train_cities} train + {n_test_cities} test)")
     
-    # Add additional cities to test set only (if not concatenated earlier)
-    if additional_cities_df is not None and not args.concat_additional:
-        additional_prompts = []
-        additional_city_info = []
-        
-        for idx, city in additional_cities_df.iterrows():
-            # Create partial prompt based on format
-            if prompt_format == 'dist':
-                prompt = f"<bos>dist(c_{city['row_id']},c_"
-            elif prompt_format == 'rw200':
-                prompt = f"<bos>walk_200=c_{city['row_id']},c_"
-            else:
-                raise ValueError(f"Unknown prompt format: {prompt_format}")
-            additional_prompts.append(prompt)
-            # Use country code as-is (mapping to region happens in visualization)
-            country_code = city.get('country_code', 'UNK')
-            
-            additional_city_info.append({
-                'row_id': city['row_id'],
-                'name': city['asciiname'],
-                'longitude': city['longitude'],
-                'latitude': city['latitude'],
-                'country': country_code
-            })
-        
-        print(f"Created {len(additional_prompts)} additional eval prompts")
-        
-        # Combine original and additional prompts
-        all_prompts = partial_prompts + additional_prompts
-        all_city_info = city_info + additional_city_info
-    else:
-        all_prompts = partial_prompts
-        all_city_info = city_info
+    # Report unknown regions
+    if unknown_count > 0:
+        print(f"\n[DATA WARNING] Found {unknown_count} cities with Unknown region:")
+        for example in unknown_examples:
+            print(f"  - {example}")
+        if unknown_count > len(unknown_examples):
+            print(f"  ... and {unknown_count - len(unknown_examples)} more")
     
-    print(f"Will use {n_train_cities} for training, {len(all_prompts) - n_train_cities} for testing")
-    
-    # Tokenize ALL prompts (original + additional) with LEFT padding
+    # Tokenize ALL prompts with LEFT padding
     tokenized_all = tokenizer(
-        all_prompts,
+        partial_prompts,
         padding=True,
         truncation=True,
         return_tensors='pt',
@@ -686,20 +667,19 @@ def main():
     print(f"Tokenized shape: {partial_input_ids.shape}")
     
     # Extract longitude and latitude as targets
-    longitudes = np.array([c['longitude'] for c in all_city_info])
-    latitudes = np.array([c['latitude'] for c in all_city_info])
+    longitudes = np.array([c['longitude'] for c in city_info])
+    latitudes = np.array([c['latitude'] for c in city_info])
     
     # Split into train and test
-    # Training: first n_train_cities (already verified to exclude the region if requested)
-    # Test: everything after n_train_cities (original test + all additional)
+    # Training: first n_train_cities, Test: everything after n_train_cities
     lon_train = longitudes[:n_train_cities]
     lon_test = longitudes[n_train_cities:]
     lat_train = latitudes[:n_train_cities]
     lat_test = latitudes[n_train_cities:]
     
     # Get train and test city info for visualization
-    train_city_info = all_city_info[:n_train_cities]
-    test_city_info = all_city_info[n_train_cities:]
+    train_city_info = city_info[:n_train_cities]
+    test_city_info = city_info[n_train_cities:]
     
     # For analyze_checkpoint, we need the training input IDs and masks
     train_input_ids = partial_input_ids[:n_train_cities]
@@ -803,21 +783,26 @@ def main():
     results_df = results_df.sort_values('step')
     
     # Create analysis output directory with subfolder for this specific configuration
-    layers_str = '_'.join(map(str, layer_indices))
-    # Add suffixes for special configurations
-    suffixes = []
-    if additional_cities_df is not None:
-        if args.concat_additional:
-            suffixes.append(f"plus{len(additional_cities_df)}concat")
-        else:
-            suffixes.append(f"plus{len(additional_cities_df)}eval")
-    if args.remove_label_from_train:
-        # Make region name filesystem-friendly (replace spaces with underscores)
-        safe_region = args.remove_label_from_train.replace(' ', '_')
-        suffixes.append(f"no{safe_region}")
-    additional_suffix = "_" + "_".join(suffixes) if suffixes else ""
-    analysis_subdir = f"{prompt_format}_layers{layers_str}_probe{n_cities_probe}_train{n_train_cities}{additional_suffix}"
+    if not analysis_name:
+        print("Error: 'analysis_name' is required in the config file")
+        print("Please specify the analysis output directory name")
+        sys.exit(1)
+    
+    # Use explicit analysis name from config
+    analysis_subdir = analysis_name
     analysis_dir = experiment_dir / 'analysis' / analysis_subdir
+    
+    # Handle overwrite flag - only affects the analysis subdirectory
+    if analysis_dir.exists():
+        if overwrite:
+            import shutil
+            print(f"Warning: Overwriting existing analysis directory: {analysis_dir}")
+            shutil.rmtree(analysis_dir)
+        else:
+            print(f"Error: Analysis directory already exists: {analysis_dir}")
+            print(f"Use --overwrite to overwrite it (this will NOT affect the experiment itself)")
+            sys.exit(1)
+    
     analysis_dir.mkdir(parents=True, exist_ok=True)
     
     print(f"\nAnalysis directory: {analysis_dir}")
@@ -965,7 +950,7 @@ def main():
     # Add horizontal line at R²=0 for reference
     ax2.axhline(y=0, color='gray', linestyle=':', alpha=0.5)
     
-    # Create twin axis for haversine distance
+    # Create twin axis for euclidean distance
     ax2_twin = ax2.twinx()
     color = 'tab:green'
     ax2_twin.plot(results_df['step'], results_df['mean_dist_error_km'], '--', 
@@ -1003,6 +988,12 @@ def main():
         print("\n" + "="*60)
         print("Generating World Map Animation")
         print("="*60)
+        
+        # Count total unknowns across all test cities
+        total_unknowns = sum(1 for city in test_city_info if city['region'] == 'Unknown')
+        if total_unknowns > 0:
+            print(f"\n[ANIMATION WARNING] {total_unknowns} test cities will be plotted with 'Unknown' region")
+            print("These will appear in gray color on the map")
         
         # Create frames
         frames = []

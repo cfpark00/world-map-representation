@@ -12,6 +12,7 @@ from transformers import (
 import json
 import argparse
 from dotenv import load_dotenv
+from collections import Counter
 
 sys.path.append('.')  # Add root to path
 from src.utils import (
@@ -48,7 +49,6 @@ def main():
     
     # Validate and preprocess config (handles all type conversions and validation)
     config = preprocess_config(config)
-    task_type = config['task_type']
     
     # Initialize experiment directory with safety checks
     exp_dir = init_directory(config['exp_dir'], overwrite)
@@ -68,8 +68,22 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Load datasets
-    train_dataset, eval_dataset, tokenizer = get_dataset(config)
+    # Load datasets and collator
+    train_dataset, eval_dataset, tokenizer, collator = get_dataset(config)
+    
+    # Detect task types in dataset (support multi-task)
+    sample_size = min(100, len(train_dataset))
+    task_counts = Counter(train_dataset[i].get('task_type', 'unknown') for i in range(sample_size))
+    task_types = list(task_counts.keys())
+    
+    if len(task_types) == 1:
+        print(f"Single task type detected: {task_types[0]} ({task_counts[task_types[0]]} samples)")
+    else:
+        print(f"Multi-task dataset detected: {dict(task_counts)}")
+        print(f"Task types: {task_types}")
+    
+    # For backward compatibility, use predominant task type as primary
+    primary_task_type = task_counts.most_common(1)[0][0]
     
     # Initialize model (tokenizer attached as model.tokenizer)
     model = get_model(config)
@@ -114,8 +128,9 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
+        data_collator=collator,  # Use task-specific collator
         processing_class=tokenizer,  # Use processing_class instead of tokenizer (deprecated)
-        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, task_type, config)],  # Generation eval + plots
+        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, task_types, config)],  # Generation eval + plots
     )
     
     # Always evaluate initial model (step 0) - whether from checkpoint or random init
@@ -127,7 +142,7 @@ def main():
     print("Performing generation-based evaluation for checkpoint-0...")
     gen_metrics = evaluate_with_generation(
         model, eval_dataset, tokenizer, device, 
-        task_type, num_samples=64, batch_size=16, config=config
+        primary_task_type, num_samples=64, batch_size=16, config=config
     )
     
     # Combine standard and generation metrics
@@ -159,9 +174,9 @@ def main():
     print(f"Initial eval loss: {initial_metrics.get('eval_loss', 'N/A'):.4f}")
     
     if gen_metrics:
-        if task_type == 'location':
+        if primary_task_type == 'location':
             print(f"Initial avg haversine distance: {gen_metrics['eval_metric_mean']:.2f} km")
-        elif task_type == 'distance':
+        elif primary_task_type == 'distance':
             print(f"Initial avg absolute error: {gen_metrics['eval_metric_mean']:.2f} km")
         else:  # randomwalk
             print(f"Initial avg walk validity: {gen_metrics['eval_metric_mean']:.3f}")
@@ -172,8 +187,8 @@ def main():
         print("(Random initialization - chance level)")
     
     # Save initial plot with checkpoint-0 data
-    save_training_plots(exp_dir, trainer.state, task_type)
-    print(f"Initial plot saved to {exp_dir / 'summary.png'}")
+    save_training_plots(exp_dir, trainer.state, primary_task_type)
+    print(f"Initial plots saved to {exp_dir / 'summary/'}")
     
     # Train
     print("\nStarting training...")
@@ -200,12 +215,12 @@ def main():
             print(f"  {key}: {value:.2f}")
     
     # Save final plot
-    save_training_plots(exp_dir, trainer.state, task_type)
-    print(f"Final training summary plot saved to {exp_dir / 'summary.png'}")
+    save_training_plots(exp_dir, trainer.state, primary_task_type)
+    print(f"Final training plots saved to {exp_dir / 'summary/'}")
     
     # Print final statistics
     if 'eval_metric_mean' in eval_metrics:
-        metric_name = "distance" if task_type == 'location' else "error"
+        metric_name = "distance" if primary_task_type == 'location' else "error"
         print(f"\nFinal {metric_name} statistics:")
         print(f"  Mean: {eval_metrics['eval_metric_mean']:.2f} km")
         print(f"  Median: {eval_metrics['eval_metric_median']:.2f} km")

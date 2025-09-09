@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
 from datasets import load_from_disk
 from scipy.spatial import cKDTree
+from transformers import TrainerCallback, AutoTokenizer, DataCollatorForLanguageModeling
+from transformers.models.qwen2 import Qwen2Config, Qwen2ForCausalLM
 
 
 def init_directory(directory, overwrite=False):
@@ -76,89 +78,49 @@ def init_directory(directory, overwrite=False):
 
 
 
-def haversine(lon1, lat1, lon2, lat2):
+def euclidean_distance(x1, y1, x2, y2):
     """
-    Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees)
-    Returns distance in kilometers
+    Calculate Euclidean distance between points in 2D space.
     
     Args:
-        lon1, lat1: Longitude and latitude of first point(s) in degrees
-        lon2, lat2: Longitude and latitude of second point(s) in degrees
+        x1, y1: Coordinates of first point(s)
+        x2, y2: Coordinates of second point(s)
         Can be scalars or arrays of same shape
     
     Returns:
-        Distance(s) in kilometers
+        Distance(s) as float
     """
     # Convert to numpy arrays to handle both scalar and vector inputs
-    lon1 = np.asarray(lon1)
-    lat1 = np.asarray(lat1)
-    lon2 = np.asarray(lon2)
-    lat2 = np.asarray(lat2)
+    x1 = np.asarray(x1)
+    y1 = np.asarray(y1)
+    x2 = np.asarray(x2)
+    y2 = np.asarray(y2)
     
-    # Convert degrees to radians
-    lon1_rad = np.radians(lon1)
-    lat1_rad = np.radians(lat1)
-    lon2_rad = np.radians(lon2)
-    lat2_rad = np.radians(lat2)
-    
-    # Haversine formula (fully vectorized)
-    dlon = lon2_rad - lon1_rad
-    dlat = lat2_rad - lat1_rad
-    
-    a = np.sin(dlat/2)**2 + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(dlon/2)**2
-    c = 2 * np.arcsin(np.sqrt(a))
-    
-    # Convert to kilometers
-    r = 6371  # Radius of earth in kilometers
-    distance_km = c * r
+    # Simple Euclidean distance
+    distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
     
     # Return scalar if inputs were scalar
-    if lon1.shape == ():
-        return float(distance_km)
-    return distance_km
+    if x1.shape == ():
+        return float(distance)
+    return distance
 
 
-def load_cities_csv(cities_csv_path=None, default_path='outputs/datasets/cities_100k_plus_seed42.csv'):
-    """
-    Load cities CSV with fallback to default path.
-    
-    Args:
-        cities_csv_path: Optional path to cities CSV file
-        default_path: Default path if cities_csv_path is None
-    
-    Returns:
-        pandas DataFrame with city data
-    """
-    if cities_csv_path:
-        if not os.path.exists(cities_csv_path):
-            raise FileNotFoundError(f"Cities CSV not found: {cities_csv_path}")
-        df = pd.read_csv(cities_csv_path)
-    else:
-        if not os.path.exists(default_path):
-            raise FileNotFoundError(
-                f"Default cities CSV not found: {default_path}\n"
-                f"Please run: python src/data_processing/generate_filtered_dataset.py 100000"
-            )
-        df = pd.read_csv(default_path)
-    
-    return df
 
 
 def extract_coordinates(df, coord_column='Coordinates'):
     """
-    Extract latitude and longitude from a coordinate string column.
+    Extract x and y from a coordinate string column.
     
     Args:
         df: DataFrame with coordinate column
-        coord_column: Name of column containing coordinates as "lat,lon"
+        coord_column: Name of column containing coordinates as "y,x"
     
     Returns:
-        DataFrame with added 'latitude' and 'longitude' columns
+        DataFrame with added 'x' and 'y' columns
     """
     coords = df[coord_column].str.split(',', expand=True)
-    df['latitude'] = coords[0].astype(float)
-    df['longitude'] = coords[1].astype(float)
+    df['y'] = coords[0].astype(float)
+    df['x'] = coords[1].astype(float)
     return df
 
 
@@ -247,7 +209,7 @@ def validate_transitions(transitions, cities_df, distance_threshold_km):
     
     Args:
         transitions: List of (city1_id, city2_id) tuples
-        cities_df: DataFrame with city data (must have 'row_id', 'latitude', 'longitude')
+        cities_df: DataFrame with city data (must have 'row_id', 'x', 'y')
         distance_threshold_km: Maximum distance between consecutive cities
     
     Returns:
@@ -269,12 +231,12 @@ def validate_transitions(transitions, cities_df, distance_threshold_km):
             continue
         
         # Calculate distance
-        distance_km = haversine(
-            city1['longitude'], city1['latitude'],
-            city2['longitude'], city2['latitude']
+        distance = euclidean_distance(
+            city1['x'], city1['y'],
+            city2['x'], city2['y']
         )
         
-        if distance_km <= distance_threshold_km:
+        if distance <= distance_threshold_km:
             valid_transitions += 1
     
     return valid_transitions, total_transitions
@@ -282,19 +244,17 @@ def validate_transitions(transitions, cities_df, distance_threshold_km):
 
 class BaseDataset(Dataset):
     """
-    Base dataset class for location-based tasks with common functionality.
+    Base dataset class that only handles text data.
+    Loss masking is now handled by task-specific collators.
     """
     
-    def __init__(self, dataset_or_path, tokenizer, max_length, split='train', loss_mask_type=None):
+    def __init__(self, dataset_or_path, split='train'):
         """
         Initialize dataset.
         
         Args:
             dataset_or_path: Path to HuggingFace dataset or dataset object
-            tokenizer: HuggingFace tokenizer
-            max_length: Maximum sequence length
             split: Dataset split to use ('train', 'val', 'test')
-            loss_mask_type: Type of loss masking ('answer_only' or None)
         """
         if isinstance(dataset_or_path, str):
             full_dataset = load_from_disk(dataset_or_path)
@@ -306,57 +266,261 @@ class BaseDataset(Dataset):
                 self.dataset = full_dataset
         else:
             self.dataset = dataset_or_path
-        
-        self.tokenizer = tokenizer
-        self.max_length = max_length
-        self.loss_mask_type = loss_mask_type
     
     def __len__(self):
         return len(self.dataset)
     
     def __getitem__(self, idx):
-        item = self.dataset[idx]
+        return self.dataset[idx]
+
+
+class DistanceCollator(DataCollatorForLanguageModeling):
+    """
+    Collator for distance tasks.
+    Text format: <bos>dist(c_X,c_Y)=DISTANCE<eos>
+    Only computes loss on the distance value (after '=').
+    """
+    def __init__(self, tokenizer, max_length=32, mlm=False):
+        super().__init__(tokenizer, mlm=mlm)
+        self.max_length = max_length
+    
+    def __call__(self, examples):
+        # Extract text from examples
+        texts = [ex['text'] for ex in examples]
         
-        # Tokenize prompt and completion separately
-        prompt_tokens = self.tokenizer(item['prompt'], add_special_tokens=False)['input_ids']
-        completion_tokens = self.tokenizer(item['completion'], add_special_tokens=False)['input_ids']
+        # Tokenize all texts
+        batch = self.tokenizer(
+            texts,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
         
-        # Combine into full sequence
-        input_ids = prompt_tokens + completion_tokens
+        # Create labels
+        labels = batch['input_ids'].clone()
         
-        # Truncate if too long
-        if len(input_ids) > self.max_length:
-            input_ids = input_ids[:self.max_length]
+        # Mask everything before '=' for loss computation
+        for i, text in enumerate(texts):
+            # Find the position of '=' in the original text
+            eq_pos = text.find('=')
+            if eq_pos != -1:
+                # Tokenize up to '=' to find where answer starts
+                prompt_text = text[:eq_pos+1]  # Include '='
+                prompt_tokens = self.tokenizer(prompt_text, add_special_tokens=False)['input_ids']
+                prompt_len = len(prompt_tokens)
+                
+                # Mask prompt tokens in labels
+                for j in range(min(prompt_len, self.max_length)):
+                    labels[i, j] = -100
         
-        # Create attention mask (1 for real tokens, 0 for padding)
-        attention_mask = [1] * len(input_ids)
+        # Mask padding tokens
+        labels[batch['attention_mask'] == 0] = -100
         
-        # Pad to max_length
-        padding_length = self.max_length - len(input_ids)
-        if padding_length > 0:
-            input_ids = input_ids + [self.tokenizer.pad_token_id] * padding_length
-            attention_mask = attention_mask + [0] * padding_length
+        batch['labels'] = labels
+        return batch
+
+
+class LocationCollator(DataCollatorForLanguageModeling):
+    """
+    Collator for location tasks.
+    Text format: <bos>CITY:(LAT,LON)<eos>
+    Only computes loss on the coordinates (after ':').
+    """
+    def __init__(self, tokenizer, max_length=32, mlm=False):
+        super().__init__(tokenizer, mlm=mlm)
+        self.max_length = max_length
+    
+    def __call__(self, examples):
+        # Extract text from examples
+        texts = [ex['text'] for ex in examples]
         
-        # Create labels (shift input_ids by 1 for next-token prediction)
-        labels = input_ids.copy()
+        # Tokenize all texts
+        batch = self.tokenizer(
+            texts,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
         
-        # Apply loss masking if specified
-        if self.loss_mask_type == 'answer_only':
-            # Only compute loss on the completion part
-            prompt_len = len(prompt_tokens)
-            for i in range(min(prompt_len, len(labels))):
-                labels[i] = -100  # -100 is ignored in CrossEntropyLoss
+        # Create labels
+        labels = batch['input_ids'].clone()
         
-        # Mask padding tokens in labels
-        for i in range(len(labels)):
-            if attention_mask[i] == 0:
-                labels[i] = -100
+        # Mask everything before ':' for loss computation
+        for i, text in enumerate(texts):
+            # Find the position of ':' in the original text
+            colon_pos = text.find(':')
+            if colon_pos != -1:
+                # Tokenize up to ':' to find where answer starts
+                prompt_text = text[:colon_pos+1]  # Include ':'
+                prompt_tokens = self.tokenizer(prompt_text, add_special_tokens=False)['input_ids']
+                prompt_len = len(prompt_tokens)
+                
+                # Mask prompt tokens in labels
+                for j in range(min(prompt_len, self.max_length)):
+                    labels[i, j] = -100
         
-        return {
-            'input_ids': torch.tensor(input_ids, dtype=torch.long),
-            'attention_mask': torch.tensor(attention_mask, dtype=torch.long),
-            'labels': torch.tensor(labels, dtype=torch.long)
+        # Mask padding tokens
+        labels[batch['attention_mask'] == 0] = -100
+        
+        batch['labels'] = labels
+        return batch
+
+
+class RandomWalkCollator(DataCollatorForLanguageModeling):
+    """
+    Collator for random walk tasks.
+    Text format: <bos>WALK:c_X->c_Y->c_Z->...<eos>
+    Computes loss on the entire walk sequence (everything after 'WALK:').
+    """
+    def __init__(self, tokenizer, max_length=256, mlm=False):
+        super().__init__(tokenizer, mlm=mlm)
+        self.max_length = max_length
+    
+    def __call__(self, examples):
+        # Extract text from examples
+        texts = [ex['text'] for ex in examples]
+        
+        # Tokenize all texts
+        batch = self.tokenizer(
+            texts,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
+        
+        # Create labels
+        labels = batch['input_ids'].clone()
+        
+        # Mask everything before 'WALK:' for loss computation
+        for i, text in enumerate(texts):
+            # Find the position of 'WALK:' in the original text
+            walk_pos = text.find('WALK:')
+            if walk_pos != -1:
+                # Tokenize up to end of 'WALK:' to find where walk starts
+                prompt_text = text[:walk_pos+5]  # Include 'WALK:'
+                prompt_tokens = self.tokenizer(prompt_text, add_special_tokens=False)['input_ids']
+                prompt_len = len(prompt_tokens)
+                
+                # Mask prompt tokens in labels
+                for j in range(min(prompt_len, self.max_length)):
+                    labels[i, j] = -100
+        
+        # Mask padding tokens
+        labels[batch['attention_mask'] == 0] = -100
+        
+        batch['labels'] = labels
+        return batch
+
+
+class FullSequenceCollator(DataCollatorForLanguageModeling):
+    """
+    Default collator that computes loss on the entire sequence.
+    Used as fallback or for tasks that need full sequence loss.
+    """
+    def __init__(self, tokenizer, max_length=32, mlm=False):
+        super().__init__(tokenizer, mlm=mlm)
+        self.max_length = max_length
+    
+    def __call__(self, examples):
+        # Extract text from examples
+        texts = [ex['text'] for ex in examples]
+        
+        # Tokenize all texts
+        batch = self.tokenizer(
+            texts,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
+        
+        # Labels are just input_ids with padding masked
+        labels = batch['input_ids'].clone()
+        labels[batch['attention_mask'] == 0] = -100
+        
+        batch['labels'] = labels
+        return batch
+
+
+class MultiTaskCollator:
+    """
+    Collator that handles mixed task types in a single batch.
+    Each example must have 'text' and 'task_type' fields.
+    """
+    def __init__(self, tokenizer, max_length=32):
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        # Initialize task-specific collators
+        self.distance_collator = DistanceCollator(tokenizer, max_length)
+        self.location_collator = LocationCollator(tokenizer, max_length)
+        self.randomwalk_collator = RandomWalkCollator(tokenizer, max(max_length, 256))
+        self.full_collator = FullSequenceCollator(tokenizer, max_length)
+    
+    def __call__(self, examples):
+        # Group examples by task type
+        task_groups = {}
+        for i, ex in enumerate(examples):
+            task = ex.get('task_type', 'unknown')
+            if task not in task_groups:
+                task_groups[task] = []
+            task_groups[task].append((i, ex))
+        
+        # Process each group with appropriate collator
+        all_processed = []
+        original_indices = []
+        
+        for task, group in task_groups.items():
+            indices, items = zip(*group)
+            
+            # Select appropriate collator
+            if task == 'distance':
+                batch = self.distance_collator(list(items))
+            elif task == 'location':
+                batch = self.location_collator(list(items))
+            elif task == 'randomwalk':
+                batch = self.randomwalk_collator(list(items))
+            else:
+                print(f"Warning: Unknown task_type '{task}', using full sequence loss")
+                batch = self.full_collator(list(items))
+            
+            # Store processed items with original indices
+            for i, idx in enumerate(indices):
+                all_processed.append((idx, {
+                    'input_ids': batch['input_ids'][i],
+                    'attention_mask': batch['attention_mask'][i],
+                    'labels': batch['labels'][i]
+                }))
+        
+        # Sort by original index to maintain order
+        all_processed.sort(key=lambda x: x[0])
+        
+        # Stack into final batch tensors
+        final_batch = {
+            'input_ids': torch.stack([item['input_ids'] for _, item in all_processed]),
+            'attention_mask': torch.stack([item['attention_mask'] for _, item in all_processed]),
+            'labels': torch.stack([item['labels'] for _, item in all_processed])
         }
+        
+        return final_batch
+
+
+def get_collator(config, tokenizer):
+    """
+    Get the multi-task collator that handles all task types.
+    Task type comes from each dataset example, not from config.
+    
+    Args:
+        config: Configuration dictionary
+        tokenizer: Tokenizer to use
+    
+    Returns:
+        MultiTaskCollator instance
+    """
+    max_length = config['dataset']['max_sequence_length']
+    return MultiTaskCollator(tokenizer, max_length)
 
 
 def convert_numpy_to_python(obj):
@@ -384,176 +548,253 @@ def init_weights(module, init_scale=0.02):
         module.weight.data.normal_(mean=0.0, std=init_scale)
 
 
-def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_type, num_samples=128, batch_size=16, config=None):
-    """Evaluate model with generation and task-specific metric calculation."""
+def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_or_single, num_samples=128, batch_size=16, config=None):
+    """Evaluate model with generation and task-specific metric calculation. Supports multi-task evaluation."""
     model.eval()
+    
+    # Handle both single task type (string) and multi-task (list)
+    if isinstance(task_types_or_single, str):
+        expected_task_types = [task_types_or_single]
+    else:
+        expected_task_types = task_types_or_single
     
     # Sample a subset for evaluation
     eval_indices = np.random.choice(len(eval_dataset), min(num_samples, len(eval_dataset)), replace=False)
     
-    metrics = []
-    all_generated_texts = []
-    all_true_texts = []
+    # Group samples by task type
+    task_samples = {}
+    for idx in eval_indices:
+        idx = int(idx)
+        # Handle both BaseDataset (has .dataset) and raw dataset
+        if hasattr(eval_dataset, 'dataset'):
+            raw_item = eval_dataset.dataset[idx]
+        else:
+            raw_item = eval_dataset[idx]
+        
+        task_type = raw_item.get('task_type', 'unknown')
+        if task_type not in task_samples:
+            task_samples[task_type] = []
+        task_samples[task_type].append((idx, raw_item))
     
-    # For randomwalk evaluation, load cities data
+    print(f"Task distribution in eval batch: {[(t, len(samples)) for t, samples in task_samples.items()]}")
+    
+    # Load cities data for randomwalk if needed
     cities_df = None
     distance_threshold_km = None
-    
-    if task_type == 'randomwalk':
+    if 'randomwalk' in task_samples:
         if config is None or 'randomwalk' not in config:
             raise ValueError("FATAL: randomwalk evaluation requires config with randomwalk section")
         
         cities_csv = config['randomwalk']['cities_csv']
         distance_threshold_km = config['randomwalk']['distance_km']
         print(f"Loading cities data for randomwalk evaluation from: {cities_csv}")
-        
         cities_df = pd.read_csv(cities_csv)
     
-    # Process in batches
-    num_batches = (len(eval_indices) + batch_size - 1) // batch_size
+    # Results storage
+    all_task_metrics = {}
     
-    with torch.no_grad():
-        for batch_idx in range(num_batches):
-            batch_start = batch_idx * batch_size
-            batch_end = min(batch_start + batch_size, len(eval_indices))
-            batch_indices = eval_indices[batch_start:batch_end]
+    # Process each task type separately
+    for task_type, samples in task_samples.items():
+        if not samples:
+            continue
             
-            # Get prompts and true completions
-            batch_prompts = []
-            batch_true_completions = []
-            
-            for idx in batch_indices:
-                idx = int(idx)
-                # Handle both BaseDataset (has .dataset) and raw dataset
-                if hasattr(eval_dataset, 'dataset'):
-                    raw_item = eval_dataset.dataset[idx]
-                else:
-                    raw_item = eval_dataset[idx]
+        print(f"\nEvaluating {len(samples)} {task_type} samples...")
+        
+        # Extract data for this task
+        task_indices = [idx for idx, _ in samples]
+        task_items = [item for _, item in samples]
+        
+        task_metrics = []
+        
+        # Process in batches
+        num_batches = (len(samples) + batch_size - 1) // batch_size
+        
+        with torch.no_grad():
+            for batch_idx in range(num_batches):
+                batch_start = batch_idx * batch_size
+                batch_end = min(batch_start + batch_size, len(samples))
+                batch_items = task_items[batch_start:batch_end]
                 
-                # For random walk with greedy decoding, add random starting city to avoid identical generations
-                if task_type == 'randomwalk' and cities_df is not None:
-                    # Sample a random city and append to prompt
-                    random_city = cities_df.sample(n=1).iloc[0]
-                    base_prompt = raw_item['prompt']
-                    # Add the city ID to the prompt (e.g., "<bos>walk_200=" -> "<bos>walk_200=c_123,")
-                    modified_prompt = f"{base_prompt}c_{random_city['row_id']},"
-                    batch_prompts.append(modified_prompt)
-                else:
-                    batch_prompts.append(raw_item['prompt'])
-                    
-                batch_true_completions.append(raw_item['completion'])
-            
-            # Tokenize with LEFT padding for generation
-            tokenizer.padding_side = 'left'
-            inputs = tokenizer(
-                batch_prompts,
-                return_tensors='pt',
-                add_special_tokens=False,
-                padding=True,
-                truncation=False
-            )
-            tokenizer.padding_side = 'right'  # Reset to right for training
-            
-            input_ids = inputs['input_ids'].to(device)
-            attention_mask = inputs['attention_mask'].to(device)
-            
-            # Generate with task-appropriate max tokens
-            if task_type == 'randomwalk':
-                max_new_tokens = 100  # Allow for long walks
-            else:
-                max_new_tokens = 20   # Original for location/distance
-            
-            outputs = model.generate(
-                input_ids,
-                attention_mask=attention_mask,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-            )
-            
-            # Decode
-            generated_batch = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-            
-            # Print first few examples from first batch
-            if batch_idx == 0:
-                num_to_show = min(3, len(generated_batch))
-                print(f"\n[Validation examples]")
-                for ex_idx in range(num_to_show):
-                    print(f"  Example {ex_idx + 1}:")
-                    print(f"    Prompt: {batch_prompts[ex_idx]}")
-                    print(f"    Expected: {batch_true_completions[ex_idx]}")
-                    print(f"    Generated: {generated_batch[ex_idx]}")
-            
-            # Calculate task-specific metrics
-            for i, (prompt, true_completion, generated) in enumerate(zip(batch_prompts, batch_true_completions, generated_batch)):
-                all_generated_texts.append(generated)
-                all_true_texts.append(prompt + true_completion)
+                # Get prompts and true completions
+                batch_prompts = []
+                batch_true_completions = []
                 
-                if task_type == 'location':
-                    true_x, true_y = parse_location(true_completion)
-                    gen_x, gen_y = parse_location(generated)
-                    
-                    if true_x is not None and gen_x is not None:
-                        true_lon = math.degrees(true_x / 1000.0 - math.pi)
-                        true_lat = math.degrees(true_y / 1000.0 - math.pi/2)
-                        gen_lon = math.degrees(gen_x / 1000.0 - math.pi)
-                        gen_lat = math.degrees(gen_y / 1000.0 - math.pi/2)
-                        
-                        dist = haversine(true_lon, true_lat, gen_lon, gen_lat)
-                        metrics.append(dist)
-                
-                elif task_type == 'distance':
-                    true_dist = parse_distance(true_completion)
-                    gen_dist = parse_distance(generated)
-                    
-                    if true_dist is not None and gen_dist is not None:
-                        abs_error = abs(true_dist - gen_dist)
-                        metrics.append(abs_error)
-                
-                else:  # randomwalk
-                    # No fallback check - cities_df MUST be loaded for randomwalk
-                    transitions = parse_walk_transitions(generated)
-                    
-                    if transitions:
-                        valid_trans, total_trans = validate_transitions(
-                            transitions, cities_df, distance_threshold_km
-                        )
-                        # Use validity ratio as metric (1.0 = all transitions valid, 0.0 = none valid)
-                        validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
-                        metrics.append(validity_ratio)
+                for raw_item in batch_items:
+                    # Handle different dataset formats
+                    if 'prompt' in raw_item and 'completion' in raw_item:
+                        # Old format with separate prompt/completion
+                        prompt = raw_item['prompt']
+                        completion = raw_item['completion']
+                    elif 'text' in raw_item:
+                        # New format with combined text - split into prompt/completion
+                        text = raw_item['text']
+                        if task_type == 'distance':
+                            # Split at '=' for distance tasks: <bos>dist(c_123,c_456)=789<eos>
+                            eq_pos = text.find('=')
+                            if eq_pos != -1:
+                                prompt = text[:eq_pos+1]  # Include '='
+                                completion = text[eq_pos+1:]  # Everything after '='
+                            else:
+                                prompt = text
+                                completion = ""
+                        elif task_type == 'location':
+                            # Split at ':' for location tasks
+                            colon_pos = text.find(':')
+                            if colon_pos != -1:
+                                prompt = text[:colon_pos+1]
+                                completion = text[colon_pos+1:]
+                            else:
+                                prompt = text
+                                completion = ""
+                        elif task_type == 'randomwalk':
+                            # Split at 'WALK:' for randomwalk tasks
+                            walk_pos = text.find('WALK:')
+                            if walk_pos != -1:
+                                prompt = text[:walk_pos+5]  # Include 'WALK:'
+                                completion = text[walk_pos+5:]
+                            else:
+                                prompt = text
+                                completion = ""
+                        else:
+                            # Unknown format - use whole text as prompt
+                            prompt = text
+                            completion = ""
                     else:
-                        # No transitions found gets 0 validity
-                        metrics.append(0.0)
+                        raise ValueError(f"Dataset item missing both 'prompt'/'completion' and 'text' fields: {raw_item}")
+                    
+                    # For random walk with greedy decoding, add random starting city to avoid identical generations
+                    if task_type == 'randomwalk' and cities_df is not None:
+                        # Sample a random city and append to prompt
+                        random_city = cities_df.sample(n=1).iloc[0]
+                        # Add the city ID to the prompt (e.g., "<bos>walk_200=" -> "<bos>walk_200=c_123,")
+                        modified_prompt = f"{prompt}c_{random_city['row_id']},"
+                        batch_prompts.append(modified_prompt)
+                    else:
+                        batch_prompts.append(prompt)
+                        
+                    batch_true_completions.append(completion)
+                
+                # Tokenize with LEFT padding for generation
+                tokenizer.padding_side = 'left'
+                inputs = tokenizer(
+                    batch_prompts,
+                    return_tensors='pt',
+                    add_special_tokens=False,
+                    padding=True,
+                    truncation=False
+                )
+                tokenizer.padding_side = 'right'  # Reset to right for training
+                
+                input_ids = inputs['input_ids'].to(device)
+                attention_mask = inputs['attention_mask'].to(device)
+                
+                # Generate with task-appropriate max tokens
+                if task_type == 'randomwalk':
+                    max_new_tokens = 100  # Allow for long walks
+                else:
+                    max_new_tokens = 20   # Original for location/distance
+                
+                outputs = model.generate(
+                    input_ids,
+                    attention_mask=attention_mask,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                )
+                
+                # Decode
+                generated_batch = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                
+                # Print first few examples from first batch for each task
+                if batch_idx == 0:
+                    num_to_show = min(2, len(generated_batch))
+                    print(f"[{task_type.upper()} examples]")
+                    for ex_idx in range(num_to_show):
+                        print(f"  Example {ex_idx + 1}:")
+                        print(f"    Prompt: {batch_prompts[ex_idx]}")
+                        print(f"    Expected: {batch_true_completions[ex_idx]}")
+                        print(f"    Generated: {generated_batch[ex_idx]}")
+                
+                # Calculate task-specific metrics
+                for prompt, true_completion, generated in zip(batch_prompts, batch_true_completions, generated_batch):
+                    if task_type == 'location':
+                        true_x, true_y = parse_location(true_completion)
+                        gen_x, gen_y = parse_location(generated)
+                        
+                        if true_x is not None and gen_x is not None:
+                            # Simple Euclidean distance between predicted and true coordinates
+                            dist = euclidean_distance(true_x, true_y, gen_x, gen_y)
+                            task_metrics.append(dist)
+                    
+                    elif task_type == 'distance':
+                        true_dist = parse_distance(true_completion)
+                        gen_dist = parse_distance(generated)
+                        
+                        if true_dist is not None and gen_dist is not None:
+                            abs_error = abs(true_dist - gen_dist)
+                            task_metrics.append(abs_error)
+                    
+                    elif task_type == 'randomwalk':
+                        # No fallback check - cities_df MUST be loaded for randomwalk
+                        transitions = parse_walk_transitions(generated)
+                        
+                        if transitions:
+                            valid_trans, total_trans = validate_transitions(
+                                transitions, cities_df, distance_threshold_km
+                            )
+                            # Use validity ratio as metric (1.0 = all transitions valid, 0.0 = none valid)
+                            validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
+                            task_metrics.append(validity_ratio)
+                        else:
+                            # No transitions found gets 0 validity
+                            task_metrics.append(0.0)
+        
+        # Calculate metrics for this task
+        if task_metrics:
+            all_task_metrics[task_type] = {
+                f'eval_{task_type}_metric_mean': np.mean(task_metrics),
+                f'eval_{task_type}_metric_median': np.median(task_metrics),
+                f'eval_{task_type}_metric_std': np.std(task_metrics),
+                f'eval_{task_type}_metric_min': np.min(task_metrics),
+                f'eval_{task_type}_metric_max': np.max(task_metrics),
+                f'eval_{task_type}_valid_count': len(task_metrics),
+                f'eval_{task_type}_valid_ratio': len(task_metrics) / len(samples)
+            }
+        else:
+            # Use different failure values for different tasks
+            if task_type == 'location':
+                fail_value = 20000.0
+            elif task_type == 'distance':
+                fail_value = 100000.0
+            else:  # randomwalk
+                fail_value = 0.0  # 0% validity for failed randomwalks
+            
+            all_task_metrics[task_type] = {
+                f'eval_{task_type}_metric_mean': fail_value,
+                f'eval_{task_type}_metric_median': fail_value,
+                f'eval_{task_type}_metric_std': 0.0,
+                f'eval_{task_type}_metric_min': fail_value,
+                f'eval_{task_type}_metric_max': fail_value,
+                f'eval_{task_type}_valid_count': 0,
+                f'eval_{task_type}_valid_ratio': 0.0
+            }
     
-    # Calculate metrics
-    if metrics:
-        return {
-            'eval_metric_mean': np.mean(metrics),
-            'eval_metric_median': np.median(metrics),
-            'eval_metric_std': np.std(metrics),
-            'eval_metric_min': np.min(metrics),
-            'eval_metric_max': np.max(metrics),
-            'eval_valid_count': len(metrics),
-            'eval_valid_ratio': len(metrics) / num_samples
-        }
-    else:
-        # Use different failure values for different tasks
-        if task_type == 'location':
-            fail_value = 20000.0
-        elif task_type == 'distance':
-            fail_value = 100000.0
-        else:  # randomwalk
-            fail_value = 0.0  # 0% validity for failed randomwalks
-        return {
-            'eval_metric_mean': fail_value,
-            'eval_metric_median': fail_value,
-            'eval_metric_std': 0.0,
-            'eval_metric_min': fail_value,
-            'eval_metric_max': fail_value,
-            'eval_valid_count': 0,
-            'eval_valid_ratio': 0.0
-        }
+    # Flatten all task-specific metrics into single dict
+    flat_metrics = {}
+    for task_type, task_metrics_dict in all_task_metrics.items():
+        flat_metrics.update(task_metrics_dict)
+    
+    # For backward compatibility, if single task, also add legacy metric names
+    if len(all_task_metrics) == 1:
+        single_task = list(all_task_metrics.keys())[0]
+        task_metrics_dict = all_task_metrics[single_task]
+        for key, value in task_metrics_dict.items():
+            # Convert eval_taskname_metric_mean to eval_metric_mean etc
+            legacy_key = key.replace(f'_{single_task}', '')
+            flat_metrics[legacy_key] = value
+    
+    return flat_metrics
 
 
 def preprocess_config(config):
@@ -573,8 +814,7 @@ def preprocess_config(config):
     
     # Define required fields and their types
     field_specs = {
-        # Task configuration
-        'task_type': ('str', ['location', 'distance', 'randomwalk'], "Task type must be 'location', 'distance', or 'randomwalk'"),
+        # Experiment configuration
         'exp_dir': ('str', None, "Experiment directory path"),
         'tokenizer_path': ('str', None, "Path to tokenizer"),
         
@@ -598,7 +838,6 @@ def preprocess_config(config):
         'training.num_epochs': ('int', None, "Number of epochs"),
         'training.warmup_steps': ('int', None, "Warmup steps"),
         'training.seed': ('int', None, "Random seed"),
-        'training.loss_mask_type': ('str', ['answer_only', 'full', None], "Loss mask type"),
         'training.scheduler': ('str', ['linear_with_warmup'], "Learning rate scheduler"),
         
         # Checkpointing configuration
@@ -637,16 +876,8 @@ def preprocess_config(config):
                 print(f"  Allowed values: {allowed_values}")
                 sys.exit(1)
     
-    # Additional validation
-    task_type = config['task_type']
-    print(f"Task type: {task_type}")
-    
-    # Validate randomwalk-specific fields if needed
-    if task_type == 'randomwalk':
-        if 'randomwalk' not in config:
-            print("Error: randomwalk task requires 'randomwalk' section in config")
-            sys.exit(1)
-        
+    # Validate randomwalk config if present (for evaluation purposes)
+    if 'randomwalk' in config:
         # Check required randomwalk fields
         required_rw_fields = ['cities_csv', 'distance_km']
         for field in required_rw_fields:
@@ -740,7 +971,7 @@ def get_dataset(config):
         config: Preprocessed configuration dictionary
     
     Returns:
-        tuple: (train_dataset, eval_dataset, tokenizer)
+        tuple: (train_dataset, eval_dataset, tokenizer, collator)
     """
     # Load tokenizer (needed for dataset preparation)
     tokenizer_path = config['tokenizer_path']
@@ -751,22 +982,10 @@ def get_dataset(config):
     print(f"Loading dataset from {config['dataset']['path']}")
     dataset = load_from_disk(config['dataset']['path'])
     
-    # Prepare datasets
+    # Prepare datasets (simplified - no tokenization needed here)
     if 'validation' in dataset:
-        train_dataset = BaseDataset(
-            dataset['train'], 
-            tokenizer, 
-            config['dataset']['max_sequence_length'],
-            split='train',
-            loss_mask_type=config['training']['loss_mask_type']
-        )
-        eval_dataset = BaseDataset(
-            dataset['validation'],
-            tokenizer,
-            config['dataset']['max_sequence_length'],
-            split='validation',
-            loss_mask_type=config['training']['loss_mask_type']
-        )
+        train_dataset = BaseDataset(dataset['train'], split='train')
+        eval_dataset = BaseDataset(dataset['validation'], split='validation')
         print(f"Using train split with {len(dataset['train'])} samples")
         print(f"Using validation split with {len(dataset['validation'])} samples")
     else:
@@ -780,25 +999,19 @@ def get_dataset(config):
         eval_size = min(128, dataset_size // 10)
         
         train_dataset = BaseDataset(
-            train_data.select(range(eval_size, dataset_size)),
-            tokenizer,
-            config['dataset']['max_sequence_length'],
-            loss_mask_type=config['training']['loss_mask_type']
+            train_data.select(range(eval_size, dataset_size))
         )
         eval_dataset = BaseDataset(
-            train_data.select(range(eval_size)),
-            tokenizer,
-            config['dataset']['max_sequence_length'],
-            loss_mask_type=config['training']['loss_mask_type']
+            train_data.select(range(eval_size))
         )
         print(f"Using {dataset_size - eval_size} samples for training")
         print(f"Using {eval_size} samples for validation")
     
-    return train_dataset, eval_dataset, tokenizer
-
-
-from transformers import TrainerCallback, AutoTokenizer
-from transformers.models.qwen2 import Qwen2Config, Qwen2ForCausalLM
+    # Get multi-task collator
+    collator = get_collator(config, tokenizer)
+    print(f"Using {collator.__class__.__name__} (task types determined per example)")
+    
+    return train_dataset, eval_dataset, tokenizer, collator
 
 class GenerationEvalCallback(TrainerCallback):
     """
@@ -806,12 +1019,13 @@ class GenerationEvalCallback(TrainerCallback):
     Can be used with HuggingFace Trainer as a callback.
     """
     
-    def __init__(self, exp_dir, tokenizer, eval_dataset, device, task_type, config=None):
+    def __init__(self, exp_dir, tokenizer, eval_dataset, device, task_types, config=None):
         self.exp_dir = exp_dir
         self.tokenizer = tokenizer
         self.eval_dataset = eval_dataset
         self.device = device
-        self.task_type = task_type
+        self.task_types = task_types if isinstance(task_types, list) else [task_types]
+        self.primary_task_type = self.task_types[0] if self.task_types else 'unknown'
         self.config = config
     
     def on_evaluate(self, args, state, control, model=None, metrics=None, **kwargs):
@@ -824,7 +1038,7 @@ class GenerationEvalCallback(TrainerCallback):
         num_samples = 64
         gen_metrics = evaluate_with_generation(
             model, self.eval_dataset, self.tokenizer, self.device, 
-            self.task_type, num_samples=num_samples, batch_size=16, config=self.config
+            self.task_types, num_samples=num_samples, batch_size=16, config=self.config
         )
         
         # Add metrics to the log (convert numpy types to Python native)
@@ -836,39 +1050,73 @@ class GenerationEvalCallback(TrainerCallback):
             metrics.update(convert_numpy_to_python(gen_metrics))
         
         # Save plots after each evaluation
-        save_training_plots(self.exp_dir, state, self.task_type)
+        save_training_plots(self.exp_dir, state, self.primary_task_type)
         
         # Print generation metrics
         if gen_metrics:
             print(f"\n[Evaluation Metrics]")
-            if self.task_type == 'location':
-                print(f"  Avg Haversine Distance: {gen_metrics['eval_metric_mean']:.2f} km (±{gen_metrics['eval_metric_std']:.2f})")
-                print(f"  Min: {gen_metrics['eval_metric_min']:.2f} km")
-                print(f"  Max: {gen_metrics['eval_metric_max']:.2f} km")  
-                print(f"  Median: {gen_metrics['eval_metric_median']:.2f} km")
-            elif self.task_type == 'distance':
-                print(f"  Avg Absolute Error: {gen_metrics['eval_metric_mean']:.2f} km (±{gen_metrics['eval_metric_std']:.2f})")
-                print(f"  Min: {gen_metrics['eval_metric_min']:.2f} km")
-                print(f"  Max: {gen_metrics['eval_metric_max']:.2f} km")  
-                print(f"  Median: {gen_metrics['eval_metric_median']:.2f} km")
-            else:  # randomwalk
-                print(f"  Avg Walk Validity: {gen_metrics['eval_metric_mean']:.3f} (±{gen_metrics['eval_metric_std']:.3f})")
-                print(f"  Min: {gen_metrics['eval_metric_min']:.3f}")
-                print(f"  Max: {gen_metrics['eval_metric_max']:.3f}")  
-                print(f"  Median: {gen_metrics['eval_metric_median']:.3f}")
-            print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
+            
+            # Print task-specific metrics
+            for task_type in self.task_types:
+                task_mean_key = f'eval_{task_type}_metric_mean'
+                task_std_key = f'eval_{task_type}_metric_std'
+                task_min_key = f'eval_{task_type}_metric_min'
+                task_max_key = f'eval_{task_type}_metric_max'
+                task_median_key = f'eval_{task_type}_metric_median'
+                task_count_key = f'eval_{task_type}_valid_count'
+                task_ratio_key = f'eval_{task_type}_valid_ratio'
+                
+                if task_mean_key in gen_metrics:
+                    print(f"\n{task_type.upper()} TASK:")
+                    if task_type == 'location':
+                        print(f"  Avg Haversine Distance: {gen_metrics[task_mean_key]:.2f} km (±{gen_metrics[task_std_key]:.2f})")
+                        print(f"  Min: {gen_metrics[task_min_key]:.2f} km")
+                        print(f"  Max: {gen_metrics[task_max_key]:.2f} km")  
+                        print(f"  Median: {gen_metrics[task_median_key]:.2f} km")
+                    elif task_type == 'distance':
+                        print(f"  Avg Absolute Error: {gen_metrics[task_mean_key]:.2f} units (±{gen_metrics[task_std_key]:.2f})")
+                        print(f"  Min: {gen_metrics[task_min_key]:.2f} units")
+                        print(f"  Max: {gen_metrics[task_max_key]:.2f} units")  
+                        print(f"  Median: {gen_metrics[task_median_key]:.2f} units")
+                    elif task_type == 'randomwalk':
+                        print(f"  Avg Walk Validity: {gen_metrics[task_mean_key]:.3f} (±{gen_metrics[task_std_key]:.3f})")
+                        print(f"  Min: {gen_metrics[task_min_key]:.3f}")
+                        print(f"  Max: {gen_metrics[task_max_key]:.3f}")  
+                        print(f"  Median: {gen_metrics[task_median_key]:.3f}")
+                    else:
+                        print(f"  Metric Mean: {gen_metrics[task_mean_key]:.2f} (±{gen_metrics[task_std_key]:.2f})")
+                        print(f"  Min: {gen_metrics[task_min_key]:.2f}")
+                        print(f"  Max: {gen_metrics[task_max_key]:.2f}")  
+                        print(f"  Median: {gen_metrics[task_median_key]:.2f}")
+                    
+                    print(f"  Valid generations: {gen_metrics[task_count_key]}/{int(gen_metrics[task_count_key] / gen_metrics[task_ratio_key]) if gen_metrics[task_ratio_key] > 0 else 0} ({gen_metrics[task_ratio_key]*100:.1f}%)")
+            
+            # For backward compatibility, also print legacy metrics if present
+            if 'eval_metric_mean' in gen_metrics:
+                print(f"\nOVERALL (primary task: {self.primary_task_type.upper()}):")
+                if self.primary_task_type == 'location':
+                    print(f"  Avg Haversine Distance: {gen_metrics['eval_metric_mean']:.2f} km (±{gen_metrics['eval_metric_std']:.2f})")
+                elif self.primary_task_type == 'distance':
+                    print(f"  Avg Absolute Error: {gen_metrics['eval_metric_mean']:.2f} units (±{gen_metrics['eval_metric_std']:.2f})")
+                elif self.primary_task_type == 'randomwalk':
+                    print(f"  Avg Walk Validity: {gen_metrics['eval_metric_mean']:.3f} (±{gen_metrics['eval_metric_std']:.3f})")
+                print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
         
         return control
 
 
-def save_training_plots(exp_dir, state, task_type='location'):
-    """Save training plots for either location or distance tasks."""
-    # Extract metrics from log history
+def save_training_plots(exp_dir, state, primary_task_type='location'):
+    """Save training plots in summary/ folder - one for loss, one per task type."""
+    # Create summary directory
+    summary_dir = Path(exp_dir) / 'summary'
+    summary_dir.mkdir(exist_ok=True)
+    
+    # Extract all metrics from log history
     train_losses = []
     eval_losses = []
-    eval_metrics = []
     eval_steps = []
     train_steps = []
+    task_metrics = {}  # Will store metrics per task type
     
     # First, check if checkpoint-0 exists and add it to the beginning
     checkpoint_0_path = Path(exp_dir) / 'checkpoints' / 'checkpoint-0' / 'eval_results.json'
@@ -879,32 +1127,47 @@ def save_training_plots(exp_dir, state, task_type='location'):
             if 'eval_loss' in ckpt0_data:
                 eval_losses.append(ckpt0_data['eval_loss'])
                 eval_steps.append(0)
-            if 'eval_metric_mean' in ckpt0_data:
-                eval_metrics.append(ckpt0_data['eval_metric_mean'])
+            
+            # Extract task-specific metrics from checkpoint-0
+            for key, value in ckpt0_data.items():
+                if '_metric_mean' in key and key.startswith('eval_'):
+                    # Extract task type from key like eval_distance_metric_mean
+                    parts = key.split('_')
+                    if len(parts) >= 3:
+                        task_type = parts[1]  # distance, location, randomwalk
+                        if task_type not in task_metrics:
+                            task_metrics[task_type] = {'steps': [], 'values': []}
+                        task_metrics[task_type]['steps'].append(0)
+                        task_metrics[task_type]['values'].append(value)
         except:
             pass  # If we can't read it, just continue without it
     
     # Then extract metrics from log history (training steps)
     for entry in state.log_history:
+        step = entry.get('step', 0)
+        
         if 'loss' in entry and 'eval_loss' not in entry:
             train_losses.append(entry['loss'])
-            train_steps.append(entry.get('step', len(train_losses)))
-        if 'eval_loss' in entry:
-            step = entry.get('step', len(eval_losses))
-            # Only add if it's not step 0 (we already added checkpoint-0 above)
-            if step != 0:
-                eval_losses.append(entry['eval_loss'])
-                eval_steps.append(step)
-        if 'eval_metric_mean' in entry:
-            # Only add if we haven't already added checkpoint-0
-            if entry.get('step', 1) != 0:
-                eval_metrics.append(entry['eval_metric_mean'])
+            train_steps.append(step)
+        
+        if 'eval_loss' in entry and step != 0:  # Skip step 0 as we already added checkpoint-0
+            eval_losses.append(entry['eval_loss'])
+            eval_steps.append(step)
+        
+        # Extract task-specific metrics
+        for key, value in entry.items():
+            if '_metric_mean' in key and key.startswith('eval_') and step != 0:
+                # Extract task type from key like eval_distance_metric_mean
+                parts = key.split('_')
+                if len(parts) >= 3:
+                    task_type = parts[1]  # distance, location, randomwalk
+                    if task_type not in task_metrics:
+                        task_metrics[task_type] = {'steps': [], 'values': []}
+                    task_metrics[task_type]['steps'].append(step)
+                    task_metrics[task_type]['values'].append(value)
     
-    # Create plots matching original format
-    plt.figure(figsize=(12, 5))
-    
-    # Loss plot
-    plt.subplot(1, 2, 1)
+    # 1. Create loss plot
+    plt.figure(figsize=(10, 6))
     if train_losses:
         plt.plot(train_steps, train_losses, alpha=0.3, label='Train Loss (per batch)')
     if eval_losses:
@@ -915,16 +1178,22 @@ def save_training_plots(exp_dir, state, task_type='location'):
     plt.title('Training and Evaluation Loss')
     plt.legend()
     plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(summary_dir / 'loss.png', dpi=150, bbox_inches='tight')
+    plt.close()
     
-    # Task-specific metric plot
-    plt.subplot(1, 2, 2)
-    if eval_metrics:
-        plt.plot(eval_steps[:len(eval_metrics)], eval_metrics, 'b-', marker='o', markersize=4)
+    # 2. Create individual task plots
+    for task_type, data in task_metrics.items():
+        if not data['values']:
+            continue
+            
+        plt.figure(figsize=(10, 6))
+        plt.plot(data['steps'], data['values'], 'b-', marker='o', markersize=4)
         plt.xlabel('Step')
         
         if task_type == 'location':
             plt.ylabel('Average Haversine Distance (km, log scale)')
-            plt.title('Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
+            plt.title('Location Task: Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
             plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
             plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
             plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
@@ -932,28 +1201,93 @@ def save_training_plots(exp_dir, state, task_type='location'):
             plt.ylim(bottom=10, top=30000)
             plt.yscale('log')
         elif task_type == 'distance':
-            plt.ylabel('Average Absolute Error (km, log scale)')
-            plt.title('Evaluation Absolute Distance Error\n(Lower is better, 100000km = parse failed)')
-            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10km reference')
-            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
-            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
-            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
-            plt.axhline(y=100000, color='red', linestyle=':', alpha=0.7, label='100000km (parse failed)')
+            plt.ylabel('Average Absolute Error (units, log scale)')
+            plt.title('Distance Task: Evaluation Absolute Distance Error\n(Lower is better, 100000 units = parse failed)')
+            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10 units reference')
+            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100 units reference')
+            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000 units reference')
+            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000 units (poor)')
+            plt.axhline(y=100000, color='red', linestyle=':', alpha=0.7, label='100000 units (parse failed)')
             plt.ylim(bottom=1, top=200000)
             plt.yscale('log')
-        else:  # randomwalk
+        elif task_type == 'randomwalk':
             plt.ylabel('Average Walk Validity (linear scale)')
-            plt.title('Evaluation Walk Validity\n(Higher is better, 1.0 = perfect validity)')
+            plt.title('Random Walk Task: Evaluation Walk Validity\n(Higher is better, 1.0 = perfect validity)')
             plt.axhline(y=0.1, color='red', linestyle=':', alpha=0.7, label='0.1 (poor)')
             plt.axhline(y=0.25, color='orange', linestyle='--', alpha=0.5, label='0.25 (low)')
             plt.axhline(y=0.5, color='yellow', linestyle='--', alpha=0.5, label='0.5 (medium)')
             plt.axhline(y=0.75, color='lightgreen', linestyle='--', alpha=0.5, label='0.75 (good)')
             plt.axhline(y=0.9, color='green', linestyle='--', alpha=0.5, label='0.9 (excellent)')
             plt.ylim(bottom=0, top=1.1)
+        else:
+            # Unknown task type - generic plot
+            plt.ylabel('Metric Value')
+            plt.title(f'{task_type.title()} Task: Evaluation Metrics')
         
         plt.legend()
         plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(summary_dir / f'{task_type}.png', dpi=150, bbox_inches='tight')
+        plt.close()
     
-    plt.tight_layout()
-    plt.savefig(exp_dir / 'summary.png', dpi=150)
-    plt.close()
+    print(f"Plots saved to {summary_dir}/: loss.png + {[f'{t}.png' for t in task_metrics.keys()]}")
+
+
+def add_pause_to_gif(input_gif_path, output_gif_path=None, final_frame_duration=3000):
+    """
+    Modify a GIF to add a pause on the final frame.
+    
+    Args:
+        input_gif_path: Path to the input GIF
+        output_gif_path: Path for output GIF (if None, overwrites input)
+        final_frame_duration: Duration for final frame in milliseconds (default 3000ms)
+    """
+    from PIL import Image
+    from pathlib import Path
+    
+    input_path = Path(input_gif_path)
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input GIF not found: {input_path}")
+    
+    if output_gif_path is None:
+        output_gif_path = input_path
+    else:
+        output_gif_path = Path(output_gif_path)
+    
+    # Open the GIF and extract all frames
+    img = Image.open(input_path)
+    frames = []
+    durations = []
+    
+    try:
+        while True:
+            # Get frame duration (default to 500ms if not specified)
+            duration = img.info.get('duration', 500)
+            durations.append(duration)
+            
+            # Copy and save the frame
+            frames.append(img.copy())
+            img.seek(img.tell() + 1)
+    except EOFError:
+        pass  # End of GIF
+    
+    if not frames:
+        raise ValueError("No frames found in GIF")
+    
+    # Modify the duration of the last frame
+    durations[-1] = final_frame_duration
+    
+    print(f"Found {len(frames)} frames")
+    print(f"Original durations: {durations[:5]}... (showing first 5)")
+    print(f"Modified last frame duration: {durations[-1]}ms")
+    
+    # Save the modified GIF
+    frames[0].save(
+        output_gif_path,
+        save_all=True,
+        append_images=frames[1:],
+        duration=durations,
+        loop=0
+    )
+    
+    print(f"Saved modified GIF to: {output_gif_path}")

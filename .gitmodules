@@ -1,0 +1,3 @@
+[submodule "claude_notes/docs/mdx-blog"]
+	path = claude_notes/docs/mdx-blog
+	url = git@github.com:cfpark00/mdx-blog.git

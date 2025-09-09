@@ -1,0 +1,57 @@
+# Analysis configuration for dist_1M_no_atlantis_20epochs experiment
+# This config analyzes representation dynamics across training checkpoints
+
+# Path to the experiment directory to analyze
+exp_dir: "/n/home12/cfpark00/WM_1/outputs/experiments/ft_atlantis_120k_mixed_from15epmid"
+
+# Name of the analysis subdirectory (will be created under exp_dir/analysis/)
+# REQUIRED: Explicitly specify the analysis output directory name
+analysis_name: "standard_probe_3_4_noafrica"
+
+# Path to the cities CSV file for probe evaluation
+cities_csv: "/n/home12/cfpark00/WM_1/outputs/datasets/cities/cities.csv"
+
+# Layer indices to extract representations from (0-indexed)
+# For a 6-layer model, layer 3 and 4 correspond to layers 4 and 5 (middle-late layers)
+layers: [3, 4]
+
+# Number of cities to use for probing (total)
+n_probe_cities: 5000
+
+# Number of cities to use for training the linear probe
+# The rest (n_probe_cities - n_train_cities) will be used for testing
+n_train_cities: 3000
+
+# Device for computation
+device: "cuda"
+
+# Random seed for reproducible city sampling
+seed: 42
+
+# Task type (distance or randomwalk)
+# If not specified, will be inferred from the experiment config
+# This determines how to interpret the model's training metrics (e.g., distance error vs validity ratio)
+task_type: "distance"
+
+# Prompt format for creating partial inputs
+# Options: "dist" for distance tasks, "rw200" for randomwalk tasks
+# Leave empty to auto-detect based on task_type
+# Note: task_type and prompt_format can differ when analyzing transfer learning:
+#   - A model trained on distance tasks (task_type: "distance") can be probed with 
+#     randomwalk prompts (prompt_format: "rw200") to test if it learned general 
+#     geographic representations that transfer to different prompt formats
+#   - This helps evaluate whether the model learned the underlying city locations
+#     rather than just memorizing task-specific patterns
+prompt_format: "dist"
+
+# Test mode - if true, prints config and sample prompts then exits
+test: false
+
+# Regex patterns to control which cities are used where
+probe_train: "region:^(?!Africa).*"  # Cities for training the linear probe (exclude Africa region)
+probe_test: ".*"                     # Cities for testing the probe (all cities)
+highlight: "region:Atlantis"     # Cities to highlight in visualizations
+
+# Customization for highlighted cities
+highlight_label: "Atlantis"      # Label for highlighted cities in legend
+highlight_color: "#FF1493"       # Color for highlighted cities (hot pink)

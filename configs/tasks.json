@@ -1,0 +1,11 @@
+{
+  "distance": {
+    "description": "Calculate Euclidean distance between two cities in 2D space. Distance is in scaled coordinates (x: -1800 to 1800, y: -900 to 900). Range: 0-4000 units.",
+    "example": "<bos>dist(c_8658,c_4879)=769<eos>",
+    "format": "dist(c_ID1,c_ID2)=DISTANCE",
+    "loss_mask": {
+      "full": "Auto regressive (entire sequence)",
+      "answer": "Answer only (769<eos>)"
+    }
+  }
+}

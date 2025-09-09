@@ -1,12 +1,9 @@
 # Experiment directory - all outputs go here
-exp_dir: "outputs/experiments/dist_1M_no_atlantis_20epochs"
-
-# Task type (location or distance)
-task_type: "distance"
+exp_dir: "outputs/experiments/ft_atlantis_120k_mixed"
 
 # Dataset
 dataset:
-  path: "/n/home12/cfpark00/WM_1/outputs/datasets/dist_1M_no_atlantis"
+  path: "/n/home12/cfpark00/WM_1/outputs/datasets/dist_120k_mixed"
   max_sequence_length: 32
 
 # Tokenizer
@@ -20,19 +17,19 @@ model:
   num_attention_heads: 4
   intermediate_size: 512
   init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+  ckpt: /n/home12/cfpark00/WM_1/outputs/experiments/dist_1M_no_atlantis_5epochs/checkpoints/final
 
 # Training
 training:
   batch_size: 128  # Larger batch size since we have 1M samples
   eval_batch_size: 64
-  num_epochs: 20  # Fewer epochs since more data
+  num_epochs: 5  # Fewer epochs since more data
   optimizer: "adamw"
-  learning_rate: 3e-4
+  learning_rate: 5e-5
   weight_decay: 0.01
   scheduler: "linear_with_warmup"
   warmup_steps: 50  # More warmup for larger dataset
   seed: 42
-  loss_mask_type: "answer_only"  # Only compute loss on distance values
 
 # Checkpointing
 checkpointing:
