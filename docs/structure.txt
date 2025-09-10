@@ -1,148 +1,113 @@
-WM_1 Project Structure
-======================
-Generated: 2025-09-03
-
-Root Directory: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
-(Also accessible via symlink: /n/home12/cfpark00/WM_1)
-
 .
-├── analysis/                           # Analysis outputs and scripts
-│   ├── nearby_cities_distribution.png
-│   ├── representation_dynamics.py
-│   ├── spatial_analysis.py
-│   ├── spatial_analysis_csv.py
-│   └── spatial_analysis_results.json
-│
-├── claude_notes/                       # Documentation and notes
-│   ├── docs/                          # Various documentation
-│   │   └── mdx-blog/                  # Blog post materials
-│   ├── jobs/                          # Job scripts and configs
-│   ├── logs/                          # Training and execution logs
-│   └── tips/                          # Development tips and philosophy
-│       ├── research-blog-writing-lessons.md
-│       └── researchpy_philosophy.md
-│
-├── configs/                            # Training and dataset configuration files
-│   ├── v1/                           # Previous version configs (archived)
-│   ├── analysis_*.yaml               # Analysis configs for representation probing
-│   ├── city_dataset_default.yaml     # City dataset with Atlantis config
-│   ├── combine_dist_datasets.yaml    # Dataset combination config
-│   ├── dist_*.yaml                   # Distance dataset generation configs
-│   ├── tasks.json                    # Task definitions (documentation only)
-│   └── train_*.yaml                  # Training experiment configs
-│
-├── data/                              # Raw data files
-│   └── geographic_mappings/           # JSON mappings for countries to regions
-│       └── country_to_region.json     # Country code to custom region mapping
-│
-├── notebooks/                         # Jupyter notebooks for exploration
-│   ├── decode_coordinates.ipynb
-│   ├── load_dataset.ipynb
-│   └── representation_study.ipynb
-│
-├── outputs/                           # Generated outputs
-│   ├── datasets/                     # Processed datasets
-│   │   ├── cities/                  # Main city dataset with optional Atlantis
-│   │   │   ├── cities.csv          # Combined world + Atlantis cities
-│   │   │   ├── metadata.json       # Dataset metadata
-│   │   │   └── atlantis_config.yaml # Copy of Atlantis config used
-│   │   ├── dist_100k_1M_42/         # Distance prediction dataset
-│   │   ├── loc_100k_all_42/         # Location prediction dataset
-│   │   └── rw*_100k_*_42/           # Random walk datasets
-│   │
-│   ├── experiments/                  # Training experiment outputs
-│   │   └── {experiment_name}/
-│   │       ├── checkpoints/         # Model checkpoints
-│   │       ├── summary/             # Loss and task-specific metric plots (NEW)
-│   │       └── logs/                # Training logs
-│   │
-│   ├── figures/                     # Generated visualizations
-│   │   ├── cities_map.png          # All cities with same color
-│   │   └── cities_map_atlantis.png # Cities with Atlantis highlighted
-│   │
-│   └── tokenizer/                   # Custom tokenizer
-│       └── wm1_tokenizer/          # WM1-specific tokenizer files
-│
-├── reports/                          # Analysis reports and blog posts (date-prefixed)
-│   ├── 2025-08-31-emergent-geographic-representations.zip
-│   ├── 2025-08-31-emergent-geographic-representations/
-│   ├── 2025-08-31-world-models-from-city-coordinates.zip
-│   ├── 2025-08-31-world-models-from-city-coordinates/
-│   ├── 2025-09-01-catastrophic-forgetting-of-representations.zip
-│   ├── 2025-09-01-catastrophic-forgetting-of-representations/
-│   ├── 2025-09-02-finetuning-atlantis.zip
-│   └── 2025-09-02-finetuning-atlantis/
-│
-├── scripts/                          # Convenience shell scripts (minimal)
-│   ├── create_dataset.sh            # Create city dataset with Atlantis
-│   ├── create_distance_datasets.sh  # Create all distance datasets
-│   ├── create_tokenizer.sh          # Create WM1 tokenizer
-│   ├── merge_ft_datasets.sh         # Combine multiple datasets
-│   ├── plot_cities.sh               # Generate city visualization plots
-│   ├── run_analysis.sh              # Run representation analysis on models
-│   └── train_base.sh                # Base training script
-│
-├── scratch/                          # Temporary/experimental files
-│
-├── src/                              # Source code
-│   ├── analysis/                    # Analysis scripts
-│   │   └── analyze_representations.py
-│   │
-│   ├── data_processing/             # Dataset creation scripts
-│   │   ├── combine_datasets.py      # Combine multiple datasets with YAML config
-│   │   ├── create_city_dataset.py   # Main script: world cities + optional Atlantis (x10 coords)
-│   │   └── create_distance_dataset.py  # Distance dataset with token length tracking
-│   │
-│   ├── tokenizer/                   # Tokenizer setup
-│   │   ├── __init__.py
-│   │   ├── create_hf_tokenizer.py
-│   │   └── tokenizer_config.py
-│   │
-│   ├── training/                    # Training scripts
-│   │   ├── archive/                 # Old/deprecated training scripts
-│   │   └── train.py                 # Main training script (multi-task support)
-│   │
-│   ├── visualization/               # Visualization tools
-│   │   ├── create_city_map.py
-│   │   └── plot_cities.py          # Plot cities with region highlighting (x10 coords fixed)
-│   │
-│   └── utils.py                     # Core utilities (multi-task eval, plotting, GIF tools)
-│
-├── .venv/                            # UV virtual environment
-│
-├── api.md                            # API documentation
-├── CLAUDE.md                         # Project instructions for Claude
-├── memo.txt                          # Project notes
-├── README.md                         # Project README
-├── .env                              # Environment variables
-├── .env.example                      # Example environment file
-└── .gitignore                        # Git ignore file
+├── configs
+│   ├── analysis
+│   │   ├── analysis_dist_1M_no_atlantis_15epochs.yaml
+│   │   ├── analysis_dist_1M_no_atlantis.yaml
+│   │   ├── analysis_dist_1M_with_atlantis_15epochs.yaml
+│   │   ├── analysis_dist_1M_with_atlantis.yaml
+│   │   ├── analysis_ft_atlantis_100k.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_noafrica.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_noatlantisnoafrica.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_trainall.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_noafrica.yaml
+│   │   ├── analysis_ft_atlantis_120k_mixed_trainall.yaml
+│   │   └── analysis_ft_atlantis_120k_mixed.yaml
+│   ├── data
+│   │   ├── city_dataset_default.yaml
+│   │   ├── combine_dist_datasets.yaml
+│   │   ├── dist_100k_atlantis_required.yaml
+│   │   ├── dist_1M_no_atlantis.yaml
+│   │   ├── dist_1M_with_atlantis.yaml
+│   │   └── dist_20k_no_atlantis.yaml
+│   ├── training
+│   │   ├── ft_atlantis_100k.yaml
+│   │   ├── ft_atlantis_120k_mixed_from15epmid.yaml
+│   │   ├── ft_atlantis_120k_mixed.yaml
+│   │   ├── train_dist_1M_no_atlantis_15epochs.yaml
+│   │   ├── train_dist_1M_no_atlantis_5epochs.yaml
+│   │   ├── train_dist_1M_with_atlantis_15epochs.yaml
+│   │   └── train_dist_1M_with_atlantis_5epochs.yaml
+│   ├── atlantis_region_mapping.json
+│   └── tasks.json
+├── data
+│   ├── datasets
+│   │   ├── cities
+│   │   ├── dist_100k_atlantis_required
+│   │   ├── dist_120k_mixed
+│   │   ├── dist_1M_no_atlantis
+│   │   ├── dist_1M_with_atlantis
+│   │   └── dist_20k_no_atlantis
+│   ├── experiments
+│   │   ├── dist_1M_no_atlantis_15epochs
+│   │   ├── dist_1M_no_atlantis_5epochs
+│   │   ├── dist_1M_with_atlantis_15epochs
+│   │   ├── dist_1M_with_atlantis_5epochs
+│   │   ├── ft_atlantis_100k
+│   │   ├── ft_atlantis_120k_mixed
+│   │   └── ft_atlantis_120k_mixed_from15epmid
+│   ├── figures
+│   │   ├── cities_map_all.png
+│   │   ├── cities_map_atlantis.png
+│   │   └── cities_map_world_only.png
+│   ├── geographic_mappings
+│   │   └── country_to_region.json
+│   ├── tokenizer
+│   │   └── wm1_tokenizer
+│   └── geonames-all-cities-with-a-population-1000.csv
+├── docs
+│   ├── logs
+│   │   ├── 2025-08-30
+│   │   ├── 2025-08-31
+│   │   ├── 2025-09-01
+│   │   ├── 2025-09-02
+│   │   └── 2025-09-03
+│   ├── reports
+│   │   ├── 2025-08-31-1456-world-models-from-city-coordinates
+│   │   ├── 2025-08-31-1859-emergent-geographic-representations
+│   │   ├── 2025-09-01-2116-catastrophic-forgetting-of-representations
+│   │   ├── 2025-09-02-0145-finetuning-atlantis
+│   │   ├── 2025-08-31-1456-world-models-from-city-coordinates.zip
+│   │   ├── 2025-08-31-1859-emergent-geographic-representations.zip
+│   │   ├── 2025-09-01-2116-catastrophic-forgetting-of-representations.zip
+│   │   └── 2025-09-02-0145-finetuning-atlantis.zip
+│   ├── closing_tasks.md
+│   ├── repo_usage.md
+│   ├── research_proposal.md
+│   └── structure.txt
+├── scratch
+├── scripts
+│   ├── analysis
+│   │   └── run_analysis.sh
+│   ├── data_generation
+│   │   ├── create_dataset.sh
+│   │   ├── create_distance_datasets.sh
+│   │   └── merge_ft_datasets.sh
+│   ├── training
+│   │   └── train_base.sh
+│   └── utils
+│       ├── create_tokenizer.sh
+│       └── plot_cities.sh
+├── src
+│   ├── analysis
+│   │   └── analyze_representations.py
+│   ├── data_processing
+│   │   ├── combine_datasets.py
+│   │   ├── create_city_dataset.py
+│   │   └── create_distance_dataset.py
+│   ├── tokenizer
+│   │   ├── create_hf_tokenizer.py
+│   │   ├── __init__.py
+│   │   └── tokenizer_config.py
+│   ├── training
+│   │   ├── archive
+│   │   └── train.py
+│   ├── visualization
+│   │   └── plot_cities.py
+│   ├── __init__.py
+│   └── utils.py
+├── CLAUDE.md
+├── pyproject.toml
+└── README.md
 
-Key Concepts:
--------------
-- Training configs in configs/ define experiments
-- Datasets are generated into outputs/datasets/
-- Models are saved in outputs/experiments/
-- All source code follows ResearchPy philosophy (utils.py for HOW, scripts for WHAT/WHEN)
-- Use UV virtual environment: source .venv/bin/activate or uv run
-
-Common Commands:
----------------
-# Train a model (from project root)
-python src/training/train.py configs/[config_name].yaml
-
-# Create city dataset with Atlantis
-bash scripts/create_dataset.sh
-# Or manually:
-python src/data_processing/create_city_dataset.py \
-    --threshold 100000 --seed 42 --max-id 10000 \
-    --atlantis-config configs/atlantis_default.yaml \
-    --output outputs/datasets/cities --overwrite
-
-# Generate visualizations
-bash scripts/plot_cities.sh
-
-# Create training datasets (from project root)  
-python src/data_processing/create_distance_dataset.py
-python src/data_processing/create_location_dataset.py
-python src/data_processing/create_randomwalk_dataset.py
+49 directories, 61 files
