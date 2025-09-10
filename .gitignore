@@ -4,49 +4,51 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-dist/
-build/
-
-# Virtual environments
 .venv/
 venv/
 ENV/
 env/
 
-# Data and outputs
-data/
-outputs/
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints
 
-# IDE and tools
-.claude/
+# Data
+data/
+
+# Scratch - temporary work directory (NOT ignored, just its contents)
+scratch/*
+!scratch/.gitkeep
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-
-# Logs
+# Environment
+.env
 *.log
-logs/
 
-# Model checkpoints and weights
+# Model files
 *.pt
 *.pth
 *.safetensors
 *.bin
 *.ckpt
 
-# Temporary files
-tmp/
-temp/
-scratch/
+# UV
+uv.lock
 
-# Environment variables
-.env
-.env.localclaude_notes/docs/mdx-blog/
+# Experiment outputs
+outputs/
+results/
+wandb/
+runs/
+checkpoints/
+*.egg-info/
