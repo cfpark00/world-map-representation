@@ -13,10 +13,10 @@ import shutil
 from pathlib import Path
 from tqdm import tqdm
 from datasets import Dataset, DatasetDict
+from transformers import PreTrainedTokenizerFast
 
 sys.path.append('.')  # Add root to path
 from src.utils import euclidean_distance, init_directory
-from src.tokenizer.tokenizer_config import encode_with_special
 
 
 def load_config(config_path):
@@ -341,7 +341,7 @@ def generate_must_include_pairs(df, must_include_groups, n_pairs):
     return np.array(all_pairs_i)[shuffle_idx], np.array(all_pairs_j)[shuffle_idx]
 
 
-def create_dataset_dict(indices_i, indices_j, df):
+def create_dataset_dict(indices_i, indices_j, df, tokenizer):
     """Create a dictionary suitable for HuggingFace Dataset."""
     # Get coordinates in 2D space
     x1 = df.iloc[indices_i]['x'].values
@@ -361,80 +361,81 @@ def create_dataset_dict(indices_i, indices_j, df):
     text_list = []
     task_type_list = []
     token_lengths = []
+    loss_mask_list = []  # ALWAYS generate loss mask
     
     for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances), 
                           total=len(city1_ids), 
                           desc="Formatting samples", 
                           leave=False):
-        text = f"<bos>dist(c_{c1},c_{c2})={d}<eos>"
+        # Format for new tokenizer: space-delimited characters
+        # Convert "dist(c_1234,c_5678)=90" to space-delimited format
+        dist_str = f"dist(c_{c1},c_{c2})={d}"
+        # Add spaces between each character for the tokenizer
+        spaced_str = ' '.join(dist_str)
+        # Add special tokens with spaces
+        text = f"<bos> {spaced_str} <eos>"
         text_list.append(text)
         task_type_list.append("distance")
         
-        # Measure actual token length (counting <bos> and <eos> as 1 token each)
-        tokens = encode_with_special(f"dist(c_{c1},c_{c2})={d}", add_bos=True, add_eos=True)
+        # Tokenize once for both length and mask
+        tokens = tokenizer.encode(text, add_special_tokens=False)
         token_lengths.append(len(tokens))
+        
+        # ALWAYS create loss mask (training decides whether to use it)
+        # Find where the equals sign appears in the tokenized version
+        # We need to mask everything up to and including the '=' token
+        equals_token_id = tokenizer.encode('=', add_special_tokens=False)[0]
+        
+        # Create mask: 0 for prompt, 1 for answer
+        mask = []
+        found_equals = False
+        for token_id in tokens:
+            if not found_equals:
+                mask.append('0')
+                if token_id == equals_token_id:
+                    found_equals = True
+            else:
+                mask.append('1')  # Everything after = gets loss (including <eos>)
+        
+        loss_mask = ''.join(mask)
+        loss_mask_list.append(loss_mask)
     
     return {
         'text': text_list,
         'task_type': task_type_list,
-        'token_lengths': token_lengths
+        'token_lengths': token_lengths,
+        'loss_mask': loss_mask_list  # Always included
     }
 
 
-def analyze_pairs(indices_i, indices_j, df, split_name):
-    """Analyze the distribution of pair types."""
-    print(f"\n{split_name} pair analysis:")
-    
-    groups_i = df.iloc[indices_i]['group'].values
-    groups_j = df.iloc[indices_j]['group'].values
-    
-    # Count pair types
-    pair_types = {}
-    for g1, g2 in zip(groups_i, groups_j):
-        pair_key = tuple(sorted([g1, g2]))
-        pair_types[pair_key] = pair_types.get(pair_key, 0) + 1
-    
-    # Display statistics
-    total = len(indices_i)
-    for pair_key, count in sorted(pair_types.items(), key=lambda x: -x[1])[:10]:
-        if pair_key[0] == pair_key[1]:
-            print(f"  Within {pair_key[0]}: {count:,} ({count/total:.1%})")
-        else:
-            print(f"  Between {pair_key[0]}-{pair_key[1]}: {count:,} ({count/total:.1%})")
-    
-    if len(pair_types) > 10:
-        print(f"  ... and {len(pair_types)-10} more pair types")
 
 
 def main():
     parser = argparse.ArgumentParser(description='Create distance dataset with configurable pair generation')
-    parser.add_argument('csv_file', type=str, help='Path to input CSV file with cities')
-    parser.add_argument('output_dir', type=str, help='Output directory for the dataset')
-    parser.add_argument('--config', type=str, required=True, help='Path to YAML configuration file')
-    parser.add_argument('--seed', type=int, default=None, help='Override seed from config')
-    parser.add_argument('--n_train', type=int, default=None, help='Override n_train from config')
-    parser.add_argument('--n_val', type=int, default=None, help='Override n_val from config')
-    parser.add_argument('--n_test', type=int, default=None, help='Override n_test from config')
+    parser.add_argument('config_path', type=str, help='Path to YAML configuration file')
     parser.add_argument('--overwrite', action='store_true', help='Overwrite output directory if it exists')
+    parser.add_argument('--debug', action='store_true', help='Debug mode for testing')
     
     args = parser.parse_args()
     
     # Load configuration
-    print(f"Loading configuration from {args.config}")
-    config = load_config(args.config)
+    print(f"Loading configuration from {args.config_path}")
+    config = load_config(args.config_path)
     
-    # Override config with command line arguments
-    if args.seed is not None:
-        config['seed'] = args.seed
-    if args.n_train is not None:
-        config['n_train'] = args.n_train
-    if args.n_val is not None:
-        config['n_val'] = args.n_val
-    if args.n_test is not None:
-        config['n_test'] = args.n_test
+    # Validate config has required fields
+    if 'output_dir' not in config:
+        raise ValueError("FATAL: 'output_dir' is required in config")
+    if 'cities_csv' not in config:
+        raise ValueError("FATAL: 'cities_csv' is required in config")
     
-    # Load cities
-    df = load_cities(args.csv_file, config)
+    # Load tokenizer (default path, can be overridden in config)
+    tokenizer_path = config.get('tokenizer_path', 'data/tokenizers/default_tokenizer')
+    print(f"Loading tokenizer from {tokenizer_path}")
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(tokenizer_path)
+    print(f"Tokenizer vocab size: {tokenizer.vocab_size}")
+    
+    # Load cities from config-specified path
+    df = load_cities(config['cities_csv'], config)
     print(f"Loaded {len(df):,} cities total")
     
     # Display group statistics
@@ -472,17 +473,17 @@ def main():
     test_i = all_i[n_train+n_val:]
     test_j = all_j[n_train+n_val:]
     
-    # Create datasets
+    # Create datasets (loss_mask is always generated)
     print("\nCreating train dataset...")
-    train_data = create_dataset_dict(train_i, train_j, df)
+    train_data = create_dataset_dict(train_i, train_j, df, tokenizer)
     train_dataset = Dataset.from_dict(train_data)
     
     print("Creating validation dataset...")
-    val_data = create_dataset_dict(val_i, val_j, df)
+    val_data = create_dataset_dict(val_i, val_j, df, tokenizer)
     val_dataset = Dataset.from_dict(val_data)
     
     print("Creating test dataset...")
-    test_data = create_dataset_dict(test_i, test_j, df)
+    test_data = create_dataset_dict(test_i, test_j, df, tokenizer)
     test_dataset = Dataset.from_dict(test_data)
     
     # Combine into DatasetDict
@@ -493,7 +494,7 @@ def main():
     })
     
     # Initialize output directory with safety checks
-    output_path = init_directory(args.output_dir, overwrite=args.overwrite)
+    output_path = init_directory(config['output_dir'], overwrite=args.overwrite)
     
     print(f"\nSaving dataset to {output_path}...")
     dataset_dict.save_to_disk(str(output_path))
@@ -508,8 +509,8 @@ def main():
     
     # Save metadata
     metadata = {
-        'csv_file': args.csv_file,
-        'config_file': args.config,
+        'csv_file': config['cities_csv'],
+        'config_file': args.config_path,
         'config': config,
         'created': pd.Timestamp.now(tz='UTC').isoformat(),
         'total_cities': len(df),
@@ -528,18 +529,13 @@ def main():
     
     # Copy config file to output directory
     config_copy_path = output_path / 'config.yaml'
-    shutil.copy(args.config, config_copy_path)
+    shutil.copy(args.config_path, config_copy_path)
     
     print(f"\nSaved files:")
     print(f"  - HuggingFace dataset files")
     print(f"  - metadata.json: Dataset metadata")
     print(f"  - config.yaml: Configuration used")
     
-    # Analyze pair distributions
-    if config.get('analyze_pairs', True):
-        analyze_pairs(train_i, train_j, df, "Train")
-        analyze_pairs(val_i, val_j, df, "Validation")
-        analyze_pairs(test_i, test_j, df, "Test")
     
     # Display sample rows
     print("\nSample train rows:")

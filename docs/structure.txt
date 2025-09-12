@@ -1,113 +1,71 @@
 .
 ├── configs
-│   ├── analysis
-│   │   ├── analysis_dist_1M_no_atlantis_15epochs.yaml
-│   │   ├── analysis_dist_1M_no_atlantis.yaml
-│   │   ├── analysis_dist_1M_with_atlantis_15epochs.yaml
-│   │   ├── analysis_dist_1M_with_atlantis.yaml
-│   │   ├── analysis_ft_atlantis_100k.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_noafrica.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_noatlantisnoafrica.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid_trainall.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_from15epmid.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_noafrica.yaml
-│   │   ├── analysis_ft_atlantis_120k_mixed_trainall.yaml
-│   │   └── analysis_ft_atlantis_120k_mixed.yaml
-│   ├── data
-│   │   ├── city_dataset_default.yaml
-│   │   ├── combine_dist_datasets.yaml
-│   │   ├── dist_100k_atlantis_required.yaml
-│   │   ├── dist_1M_no_atlantis.yaml
-│   │   ├── dist_1M_with_atlantis.yaml
-│   │   └── dist_20k_no_atlantis.yaml
-│   ├── training
-│   │   ├── ft_atlantis_100k.yaml
-│   │   ├── ft_atlantis_120k_mixed_from15epmid.yaml
-│   │   ├── ft_atlantis_120k_mixed.yaml
-│   │   ├── train_dist_1M_no_atlantis_15epochs.yaml
-│   │   ├── train_dist_1M_no_atlantis_5epochs.yaml
-│   │   ├── train_dist_1M_with_atlantis_15epochs.yaml
-│   │   └── train_dist_1M_with_atlantis_5epochs.yaml
-│   ├── atlantis_region_mapping.json
-│   └── tasks.json
+│   ├── analysis
+│   │   ├── dist_pretrain        # Distance pretraining analysis configs
+│   │   └── ft_atlantis          # Atlantis finetuning analysis configs
+│   ├── data_generation
+│   ├── tokenizers
+│   ├── training
+│   ├── visualization
+│   ├── atlantis_region_mapping.json
+│   └── tasks.json
 ├── data
-│   ├── datasets
-│   │   ├── cities
-│   │   ├── dist_100k_atlantis_required
-│   │   ├── dist_120k_mixed
-│   │   ├── dist_1M_no_atlantis
-│   │   ├── dist_1M_with_atlantis
-│   │   └── dist_20k_no_atlantis
-│   ├── experiments
-│   │   ├── dist_1M_no_atlantis_15epochs
-│   │   ├── dist_1M_no_atlantis_5epochs
-│   │   ├── dist_1M_with_atlantis_15epochs
-│   │   ├── dist_1M_with_atlantis_5epochs
-│   │   ├── ft_atlantis_100k
-│   │   ├── ft_atlantis_120k_mixed
-│   │   └── ft_atlantis_120k_mixed_from15epmid
-│   ├── figures
-│   │   ├── cities_map_all.png
-│   │   ├── cities_map_atlantis.png
-│   │   └── cities_map_world_only.png
-│   ├── geographic_mappings
-│   │   └── country_to_region.json
-│   ├── tokenizer
-│   │   └── wm1_tokenizer
-│   └── geonames-all-cities-with-a-population-1000.csv
+│   ├── datasets                 # Generated datasets
+│   ├── experiments             # Training outputs
+│   ├── figures
+│   ├── geographic_mappings
+│   ├── tokenizers
+│   └── geonames-all-cities-with-a-population-1000.csv
 ├── docs
-│   ├── logs
-│   │   ├── 2025-08-30
-│   │   ├── 2025-08-31
-│   │   ├── 2025-09-01
-│   │   ├── 2025-09-02
-│   │   └── 2025-09-03
-│   ├── reports
-│   │   ├── 2025-08-31-1456-world-models-from-city-coordinates
-│   │   ├── 2025-08-31-1859-emergent-geographic-representations
-│   │   ├── 2025-09-01-2116-catastrophic-forgetting-of-representations
-│   │   ├── 2025-09-02-0145-finetuning-atlantis
-│   │   ├── 2025-08-31-1456-world-models-from-city-coordinates.zip
-│   │   ├── 2025-08-31-1859-emergent-geographic-representations.zip
-│   │   ├── 2025-09-01-2116-catastrophic-forgetting-of-representations.zip
-│   │   └── 2025-09-02-0145-finetuning-atlantis.zip
-│   ├── closing_tasks.md
-│   ├── repo_usage.md
-│   ├── research_proposal.md
-│   └── structure.txt
-├── scratch
+│   ├── logs
+│   │   ├── 2025-08-30
+│   │   ├── 2025-08-31
+│   │   ├── 2025-09-01
+│   │   ├── 2025-09-02
+│   │   ├── 2025-09-03
+│   │   ├── 2025-09-09
+│   │   ├── 2025-09-10
+│   │   └── 2025-09-12
+│   ├── reports
+│   ├── closing_tasks.md
+│   ├── repo_usage.md
+│   ├── research_proposal.md
+│   └── structure.txt
+├── old_commits                  # Previous versions for reference
+│   ├── aug31_snapshot          # Old files from August 31
+│   └── b9c7d24                 # Commit b9c7d24a0e02cebe1d966d591487ef4ffd857e6e
+├── scratch                      # Temporary work directory (gitignored)
 ├── scripts
-│   ├── analysis
-│   │   └── run_analysis.sh
-│   ├── data_generation
-│   │   ├── create_dataset.sh
-│   │   ├── create_distance_datasets.sh
-│   │   └── merge_ft_datasets.sh
-│   ├── training
-│   │   └── train_base.sh
-│   └── utils
-│       ├── create_tokenizer.sh
-│       └── plot_cities.sh
+│   ├── analysis
+│   ├── data_generation
+│   ├── tokenizers
+│   ├── training
+│   ├── utils
+│   └── visualization
 ├── src
-│   ├── analysis
-│   │   └── analyze_representations.py
-│   ├── data_processing
-│   │   ├── combine_datasets.py
-│   │   ├── create_city_dataset.py
-│   │   └── create_distance_dataset.py
-│   ├── tokenizer
-│   │   ├── create_hf_tokenizer.py
-│   │   ├── __init__.py
-│   │   └── tokenizer_config.py
-│   ├── training
-│   │   ├── archive
-│   │   └── train.py
-│   ├── visualization
-│   │   └── plot_cities.py
-│   ├── __init__.py
-│   └── utils.py
+│   ├── analysis
+│   │   ├── past                # Archived analysis scripts
+│   │   └── analyze_representations.py
+│   ├── data_processing
+│   │   ├── combine_datasets.py
+│   │   ├── create_city_dataset.py
+│   │   ├── create_distance_dataset.py
+│   │   └── create_random_walk_dataset.py
+│   ├── training
+│   │   └── train.py
+│   ├── visualization
+│   │   └── visualize_cities.py
+│   ├── create_tokenizer.py
+│   ├── representation_extractor.py
+│   └── utils.py
+├── anything.ipynb
 ├── CLAUDE.md
 ├── pyproject.toml
-└── README.md
+├── README.md
+└── uv.lock
 
-49 directories, 61 files
+## Key Changes (2025-09-12)
+- old_commits/ now properly organized by commit hash
+- Loss masking feature added to create_distance_dataset.py
+- Fixed representation analysis bug in analyze_representations.py
+- Added single checkpoint analysis support

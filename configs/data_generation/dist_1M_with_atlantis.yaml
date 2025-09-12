@@ -1,0 +1,14 @@
+# 1M pairs random cities including atlantis
+# Random pairs from all cities (world + atlantis), no restrictions
+
+output_dir: data/datasets/dist_1M_with_atlantis
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+pair_generation:
+  strategy: all_pairs
+
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42

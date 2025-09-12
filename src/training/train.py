@@ -51,7 +51,7 @@ def main():
     config = preprocess_config(config)
     
     # Initialize experiment directory with safety checks
-    exp_dir = init_directory(config['exp_dir'], overwrite)
+    exp_dir = init_directory(config['output_dir'], overwrite)
     
     # Create checkpoints subdirectory
     (exp_dir / 'checkpoints').mkdir(exist_ok=False)
@@ -104,7 +104,8 @@ def main():
         warmup_steps=config['training']['warmup_steps'],
         weight_decay=config['training']['weight_decay'],
         logging_dir=str(exp_dir / 'logs'),
-        logging_steps=10,
+        logging_steps=config.get('logging', {}).get('logging_steps', 10),  # Use config or default to 10
+        report_to=config.get('logging', {}).get('report_to', 'none'),  # Use config or default to 'none'
         eval_strategy="steps",
         eval_steps=config['checkpointing']['eval_steps'],  # HF handles fractional values
         save_strategy="steps",

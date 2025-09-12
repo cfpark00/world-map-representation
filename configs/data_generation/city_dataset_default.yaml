@@ -1,0 +1,14 @@
+source_csv: /n/home12/cfpark00/WM_1/data/geonames-all-cities-with-a-population-1000.csv
+output_dir: data/datasets/cities
+threshold: 100000
+seed: 42
+max_id: 10000
+region_mapping: configs/atlantis_region_mapping.json
+
+atlantis_regions:
+  - city_prefix: "Atlantis"
+    center_x: -35.0
+    center_y: 35.0
+    std_dev: 3.0
+    n_cities: 100
+    country_code: "XX0"

@@ -45,6 +45,9 @@ Thumbs.db
 # UV
 uv.lock
 
+# Old commits for reference
+old_commits/
+
 # Experiment outputs
 outputs/
 results/

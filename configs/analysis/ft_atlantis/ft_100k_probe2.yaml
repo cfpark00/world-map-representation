@@ -1,0 +1,29 @@
+# Analysis: ft_atlantis_100k  
+# Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
+
+output_dir: "data/experiments/ft_atlantis_100k/analysis/probe2_train_all"
+
+experiment_dir: "data/experiments/ft_atlantis_100k"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+layers: [3, 4]
+n_probe_cities: 5000
+n_train_cities: 3000
+
+# Task configuration
+task_type: "distance"
+prompt_format: "dist"
+
+# Probe 2: Train on ALL including Atlantis
+probe_train: ".*"                      # All cities
+probe_test: ".*"                       # Test on all
+highlight: "region:Atlantis"           # Highlight Atlantis
+
+# Visualization
+highlight_label: "Atlantis"
+highlight_color: "#FF1493"
+
+# Compute
+device: "cuda"
+seed: 42

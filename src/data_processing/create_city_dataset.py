@@ -30,7 +30,7 @@ def main():
     pop_threshold = config.get('threshold', 100000)
     seed = config.get('seed', 42)
     max_id = config.get('max_id', None)
-    output_path = config['output']
+    output_path = config['output_dir']
     source_csv = config.get('source_csv', '/n/home12/cfpark00/WM_1/data/geonames-all-cities-with-a-population-1000.csv')
     atlantis_regions = config.get('atlantis_regions', [])
     region_mapping_path = config.get('region_mapping', None)
@@ -170,13 +170,13 @@ def main():
             json.dump(metadata, f, indent=2)
         
         # Copy config file
-        config_copy_path = output_dir / 'city_config.yaml'
+        config_copy_path = output_dir / 'config.yaml'
         shutil.copy(args.config, config_copy_path)
         
         print(f"\nSaving to directory: {output_dir}")
         print(f"  - cities.csv: Main dataset")
         print(f"  - metadata.json: Dataset metadata")
-        print(f"  - city_config.yaml: Configuration used")
+        print(f"  - config.yaml: Configuration used")
     else:
         # Regular CSV file path
         csv_path = Path(output_path)

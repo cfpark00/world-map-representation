@@ -148,6 +148,7 @@ def extract_coordinates(df, coord_column='Coordinates'):
 def parse_location(text):
     """
     Parse location from text like 'loc(c_1234)=567,890' or '567,890'.
+    Handles both compact and space-delimited formats.
     
     Args:
         text: String containing location information
@@ -155,6 +156,9 @@ def parse_location(text):
     Returns:
         Tuple of (x, y) coordinates or (None, None) if not found
     """
+    # Remove all spaces to handle space-delimited tokenizer output
+    text = text.replace(' ', '')
+    
     # Try to find the pattern after =
     match = re.search(r'=(-?\d+),(-?\d+)', text)
     if match:
@@ -169,6 +173,7 @@ def parse_location(text):
 def parse_distance(text):
     """
     Parse distance from text like 'dist(c_1234,c_5678)=901' or just '901'.
+    Handles both compact and space-delimited formats.
     
     Args:
         text: String containing distance information
@@ -176,6 +181,9 @@ def parse_distance(text):
     Returns:
         Distance value as int or None if not found
     """
+    # Remove all spaces to handle space-delimited tokenizer output
+    text = text.replace(' ', '')
+    
     # Try to find the pattern after =
     match = re.search(r'=(\d+)', text)
     if match:
@@ -191,6 +199,7 @@ def parse_walk_transitions(text):
     """
     Parse transitions from random walk text like 'walk_200=c_123,c_456,c_789'.
     Returns list of (city1_id, city2_id) tuples for each transition.
+    Handles both compact and space-delimited formats.
     
     Args:
         text: String containing walk information
@@ -198,6 +207,9 @@ def parse_walk_transitions(text):
     Returns:
         List of (city1_id, city2_id) tuples, or empty list if none found
     """
+    # Remove all spaces to handle space-delimited tokenizer output
+    text = text.replace(' ', '')
+    
     # Find everything after =
     match = re.search(r'=(.+)', text)
     if not match:
@@ -470,10 +482,12 @@ class MultiTaskCollator:
     """
     Collator that handles mixed task types in a single batch.
     Each example must have 'text' and 'task_type' fields.
+    Optionally uses 'loss_mask' field if present and use_loss_mask is True.
     """
-    def __init__(self, tokenizer, max_length=32):
+    def __init__(self, tokenizer, max_length=32, use_loss_mask=False):
         self.tokenizer = tokenizer
         self.max_length = max_length
+        self.use_loss_mask = use_loss_mask
         # Initialize task-specific collators
         self.distance_collator = DistanceCollator(tokenizer, max_length)
         self.location_collator = LocationCollator(tokenizer, max_length)
@@ -481,51 +495,84 @@ class MultiTaskCollator:
         self.full_collator = FullSequenceCollator(tokenizer, max_length)
     
     def __call__(self, examples):
-        # Group examples by task type
-        task_groups = {}
-        for i, ex in enumerate(examples):
-            task = ex.get('task_type', 'unknown')
-            if task not in task_groups:
-                task_groups[task] = []
-            task_groups[task].append((i, ex))
-        
-        # Process each group with appropriate collator
-        all_processed = []
-        original_indices = []
-        
-        for task, group in task_groups.items():
-            indices, items = zip(*group)
+        # Check if we should use loss_mask from dataset
+        if self.use_loss_mask and 'loss_mask' in examples[0]:
+            # Use loss_mask field - tokenize all texts together
+            texts = [ex['text'] for ex in examples]
+            encoding = self.tokenizer(
+                texts,
+                return_tensors='pt',
+                padding=True,
+                truncation=True,
+                max_length=self.max_length
+            )
             
-            # Select appropriate collator
-            if task == 'distance':
-                batch = self.distance_collator(list(items))
-            elif task == 'location':
-                batch = self.location_collator(list(items))
-            elif task == 'randomwalk':
-                batch = self.randomwalk_collator(list(items))
-            else:
-                print(f"Warning: Unknown task_type '{task}', using full sequence loss")
-                batch = self.full_collator(list(items))
+            # Apply loss masks to create labels
+            labels = encoding['input_ids'].clone()
             
-            # Store processed items with original indices
-            for i, idx in enumerate(indices):
-                all_processed.append((idx, {
-                    'input_ids': batch['input_ids'][i],
-                    'attention_mask': batch['attention_mask'][i],
-                    'labels': batch['labels'][i]
-                }))
-        
-        # Sort by original index to maintain order
-        all_processed.sort(key=lambda x: x[0])
-        
-        # Stack into final batch tensors
-        final_batch = {
-            'input_ids': torch.stack([item['input_ids'] for _, item in all_processed]),
-            'attention_mask': torch.stack([item['attention_mask'] for _, item in all_processed]),
-            'labels': torch.stack([item['labels'] for _, item in all_processed])
-        }
-        
-        return final_batch
+            for i, ex in enumerate(examples):
+                if 'loss_mask' in ex:
+                    mask_str = ex['loss_mask']
+                    # Apply mask: set labels to -100 where mask is '0'
+                    for j, mask_char in enumerate(mask_str):
+                        if j < labels[i].size(0):  # Ensure we don't go out of bounds
+                            if mask_char == '0':
+                                labels[i, j] = -100
+                    # Also mask padding tokens
+                    labels[i, encoding['attention_mask'][i] == 0] = -100
+            
+            return {
+                'input_ids': encoding['input_ids'],
+                'attention_mask': encoding['attention_mask'],
+                'labels': labels
+            }
+        else:
+            # Original task-specific collator logic
+            # Group examples by task type
+            task_groups = {}
+            for i, ex in enumerate(examples):
+                task = ex.get('task_type', 'unknown')
+                if task not in task_groups:
+                    task_groups[task] = []
+                task_groups[task].append((i, ex))
+            
+            # Process each group with appropriate collator
+            all_processed = []
+            original_indices = []
+            
+            for task, group in task_groups.items():
+                indices, items = zip(*group)
+                
+                # Select appropriate collator
+                if task == 'distance':
+                    batch = self.distance_collator(list(items))
+                elif task == 'location':
+                    batch = self.location_collator(list(items))
+                elif task == 'randomwalk':
+                    batch = self.randomwalk_collator(list(items))
+                else:
+                    print(f"Warning: Unknown task_type '{task}', using full sequence loss")
+                    batch = self.full_collator(list(items))
+                
+                # Store processed items with original indices
+                for i, idx in enumerate(indices):
+                    all_processed.append((idx, {
+                        'input_ids': batch['input_ids'][i],
+                        'attention_mask': batch['attention_mask'][i],
+                        'labels': batch['labels'][i]
+                    }))
+            
+            # Sort by original index to maintain order
+            all_processed.sort(key=lambda x: x[0])
+            
+            # Stack into final batch tensors
+            final_batch = {
+                'input_ids': torch.stack([item['input_ids'] for _, item in all_processed]),
+                'attention_mask': torch.stack([item['attention_mask'] for _, item in all_processed]),
+                'labels': torch.stack([item['labels'] for _, item in all_processed])
+            }
+            
+            return final_batch
 
 
 def get_collator(config, tokenizer):
@@ -541,7 +588,9 @@ def get_collator(config, tokenizer):
         MultiTaskCollator instance
     """
     max_length = config['dataset']['max_sequence_length']
-    return MultiTaskCollator(tokenizer, max_length)
+    # Check if training config specifies to use loss_mask
+    use_loss_mask = config.get('training', {}).get('use_loss_mask', False)
+    return MultiTaskCollator(tokenizer, max_length, use_loss_mask)
 
 
 def convert_numpy_to_python(obj):
@@ -836,7 +885,7 @@ def preprocess_config(config):
     # Define required fields and their types
     field_specs = {
         # Experiment configuration
-        'exp_dir': ('str', None, "Experiment directory path"),
+        'output_dir': ('str', None, "Output directory path"),
         'tokenizer_path': ('str', None, "Path to tokenizer"),
         
         # Dataset configuration
@@ -1124,6 +1173,71 @@ class GenerationEvalCallback(TrainerCallback):
                 print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
         
         return control
+
+
+def extract_model_representations(model, tokenizer, input_ids, attention_mask, layer_indices, device):
+    """
+    Extract representations from specified layers of a model.
+    
+    Args:
+        model: The transformer model
+        tokenizer: The tokenizer
+        input_ids: Input token IDs
+        attention_mask: Attention mask
+        layer_indices: List of layer indices to extract from
+        device: Device to run on
+    
+    Returns:
+        Concatenated representations from specified layers
+    """
+    model.eval()
+    with torch.no_grad():
+        outputs = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True
+        )
+    
+    # Extract from specified layers and concatenate
+    hidden_states = outputs.hidden_states
+    layer_reps = []
+    for idx in layer_indices:
+        # hidden_states[0] is embeddings, so layer N is at index N+1
+        layer_reps.append(hidden_states[idx + 1])
+    
+    # Concatenate along hidden dimension
+    concatenated = torch.cat(layer_reps, dim=-1)
+    return concatenated
+
+
+def filter_dataframe_by_pattern(df, pattern, column_name='name'):
+    """
+    Filter DataFrame by regex pattern.
+    
+    Args:
+        df: DataFrame to filter
+        pattern: Regex pattern or special syntax like 'column:pattern'
+        column_name: Default column to match against
+    
+    Returns:
+        Filtered DataFrame
+    """
+    if not pattern or pattern == '.*':
+        return df
+    
+    # Check for column-specific syntax
+    if ':' in pattern and pattern.count(':') == 1:
+        col_prefix, col_pattern = pattern.split(':', 1)
+        if col_prefix in df.columns:
+            return df[df[col_prefix].str.match(col_pattern, na=False)]
+    
+    # Default column matching
+    if column_name in df.columns:
+        return df[df[column_name].str.match(pattern, na=False)]
+    else:
+        raise ValueError(f"Column '{column_name}' not found in DataFrame")
+
+
 
 
 def save_training_plots(exp_dir, state, primary_task_type='location'):

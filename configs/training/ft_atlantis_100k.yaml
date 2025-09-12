@@ -1,23 +1,23 @@
-# Experiment directory - all outputs go here
-exp_dir: "outputs/experiments/ft_atlantis_100k"
+# Output directory - all outputs go here
+output_dir: "data/experiments/ft_atlantis_100k"
 
 # Dataset
 dataset:
-  path: "/n/home12/cfpark00/WM_1/outputs/datasets/dist_100k_atlantis_required"
+  path: "data/datasets/dist_100k_atlantis_required"
   max_sequence_length: 32
 
 # Tokenizer
-tokenizer_path: "outputs/tokenizer/wm1_tokenizer"
+tokenizer_path: "data/tokenizers/default_tokenizer"
 
 # Model (Qwen2.5-like)
 model:
-  vocab_size: 44  # Our custom tokenizer vocab size
+  vocab_size: 98  # New ASCII tokenizer vocab size
   hidden_size: 128
   num_hidden_layers: 6
   num_attention_heads: 4
   intermediate_size: 512
   init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
-  ckpt: /n/home12/cfpark00/WM_1/outputs/experiments/dist_1M_no_atlantis_5epochs/checkpoints/final
+  ckpt: data/experiments/dist_1M_no_atlantis_15epochs/checkpoints/final
 
 # Training
 training:
@@ -37,3 +37,7 @@ checkpointing:
   save_steps: 0.05  # Save 10 times per epoch
   eval_strategy: "steps"
   eval_steps: 0.025  # Eval 40 times per epoch
+
+logging:
+  logging_steps: 1
+  report_to: "none"
