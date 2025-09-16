@@ -1,10 +1,10 @@
 # Output directory - all outputs go here
-output_dir: "data/experiments/randomwalk_close_1M_no_atlantis_15epochs_lowerlr_pad"
+output_dir: "data/experiments/distance_1M_with_atlantis"
 
 # Dataset - PADDED VERSION
 dataset:
-  path: "data/datasets/randomwalk_close_1M_no_atlantis_pad"
-  max_sequence_length: 224
+  path: "data/datasets/distance_1M_with_atlantis"
+  max_sequence_length: 32
 
 # Tokenizer
 tokenizer_path: "data/tokenizers/default_tokenizer"
@@ -22,7 +22,7 @@ model:
 training:
   batch_size: 128  # Larger batch size since we have 1M samples
   eval_batch_size: 64
-  num_epochs: 15  # Fewer epochs since more data
+  num_epochs: 15
   optimizer: "adamw"
   learning_rate: 3e-4
   weight_decay: 0.01
@@ -33,14 +33,10 @@ training:
 # Checkpointing
 checkpointing:
   save_strategy: "steps"
-  save_steps: 0.05  # Save 10 times per epoch
+  save_steps: 0.025
   eval_strategy: "steps"
-  eval_steps: 0.025  # Eval 40 times per epoch
+  eval_steps: 0.005
 
 logging:
   logging_steps: 10
   report_to: "none"
-
-eval:
-  randomwalk:
-    cities_csv: "data/datasets/cities/cities.csv"

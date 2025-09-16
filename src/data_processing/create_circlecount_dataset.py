@@ -380,9 +380,9 @@ def main():
         'min_radius': config['min_radius'],
         'max_radius': config['max_radius'],
         'count_stats': {
-            'train': {'min': min(train_counts), 'max': max(train_counts), 'mean': np.mean(train_counts)},
-            'val': {'min': min(val_counts), 'max': max(val_counts), 'mean': np.mean(val_counts)},
-            'test': {'min': min(test_counts), 'max': max(test_counts), 'mean': np.mean(test_counts)}
+            'train': {'min': int(min(train_counts)), 'max': int(max(train_counts)), 'mean': float(np.mean(train_counts))},
+            'val': {'min': int(min(val_counts)), 'max': int(max(val_counts)), 'mean': float(np.mean(val_counts))},
+            'test': {'min': int(min(test_counts)), 'max': int(max(test_counts)), 'mean': float(np.mean(test_counts))}
         }
     }
 

@@ -1,7 +1,7 @@
 # Configuration for combining distance datasets
 # This combines a no-Atlantis dataset with an Atlantis-required dataset
 
-output_dir: data/datasets/distance_120k_ft1
+output_dir: data/datasets/distance_ft1
 
 # Combination mode: 'concat' (full concatenation) or 'sample' (sample from each)
 mode: sample

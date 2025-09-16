@@ -22,7 +22,8 @@ from src.utils import (
     GenerationEvalCallback,
     init_directory,
     get_model,
-    get_dataset
+    get_dataset,
+    seed_all
 )
 
 def main():
@@ -59,11 +60,10 @@ def main():
     # Save config copy to exp_dir
     with open(exp_dir / 'config.yaml', 'w') as f:
         yaml.dump(config, f)
-    
-    # Set seed for reproducibility
-    torch.manual_seed(config['training']['seed'])
-    np.random.seed(config['training']['seed'])
-    
+
+    # Set seed for reproducibility (all random sources)
+    seed_all(config['training']['seed'])
+
     # Device setup
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")

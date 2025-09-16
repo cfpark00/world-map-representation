@@ -1,0 +1,20 @@
+# Combine all geometry tasks (4M total) - NO atlantis, WITH padding
+# 1M distance + 1M randomwalk + 1M trianglearea + 1M angle = 4M total
+
+output_dir: data/datasets/multitask_m1
+mode: concat  # Full concatenation of all datasets
+shuffle: true  # Mix different task types together
+seed: 42
+
+datasets:
+  - path: data/datasets/distance_1M_no_atlantis
+  - path: data/datasets/randomwalk_1M_no_atlantis
+  - path: data/datasets/trianglearea_1M_no_atlantis
+  - path: data/datasets/angle_1M_no_atlantis
+  - path: data/datasets/compass_1M_no_atlantis
+  - path: data/datasets/inside_1M_no_atlantis
+  - path: data/datasets/nearest_5k_no_atlantis
+  - path: data/datasets/perimeter_1M_no_atlantis
+  - path: data/datasets/crossing_1M_no_atlantis
+  - path: data/datasets/circlecount_100k_no_atlantis
+  - path: data/datasets/center_1M_no_atlantis

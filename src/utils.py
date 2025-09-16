@@ -4,6 +4,7 @@
 import os
 import shutil
 import sys
+import random
 from pathlib import Path
 from typing import Union
 from dotenv import load_dotenv
@@ -71,10 +72,41 @@ def init_directory(directory: Union[str, Path], overwrite: bool = False) -> Path
     return directory
 
 
+def seed_all(seed: int):
+    """
+    Set seeds for all random number generators to ensure reproducibility.
+
+    Args:
+        seed: Random seed value
+    """
+    # Python built-in random module
+    random.seed(seed)
+
+    # NumPy
+    np.random.seed(seed)
+
+    # PyTorch
+    torch.manual_seed(seed)
+
+    # CUDA (all GPUs)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
+        # Make CuDNN deterministic (may impact performance)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+    # Set environment variable for additional determinism
+    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    print(f"Set all random seeds to {seed}")
+
+
 # ============================================================================
 # Other reusable utilities for the research
 # ============================================================================
-# Add stateless utility functions below that are expected to be used 
+# Add stateless utility functions below that are expected to be used
 # repetitively throughout the research project
 
 

@@ -1,2 +1,0 @@
-#!/bin/bash
-uv run python src/training/train.py configs/training/train_dist_1M_with_atlantis_15epochs.yaml --overwrite
