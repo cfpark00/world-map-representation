@@ -75,15 +75,12 @@ def main():
     sample_size = min(100, len(train_dataset))
     task_counts = Counter(train_dataset[i].get('task_type', 'unknown') for i in range(sample_size))
     task_types = list(task_counts.keys())
-    
+
     if len(task_types) == 1:
         print(f"Single task type detected: {task_types[0]} ({task_counts[task_types[0]]} samples)")
     else:
         print(f"Multi-task dataset detected: {dict(task_counts)}")
         print(f"Task types: {task_types}")
-    
-    # For backward compatibility, use predominant task type as primary
-    primary_task_type = task_counts.most_common(1)[0][0]
     
     # Initialize model (tokenizer attached as model.tokenizer)
     model = get_model(config)
@@ -142,8 +139,8 @@ def main():
     from src.utils import evaluate_with_generation
     print("Performing generation-based evaluation for checkpoint-0...")
     gen_metrics = evaluate_with_generation(
-        model, eval_dataset, tokenizer, device, 
-        primary_task_type, num_samples=64, batch_size=16, config=config
+        model, eval_dataset, tokenizer, device,
+        task_types[0], num_samples=64, batch_size=16, config=config
     )
     
     # Combine standard and generation metrics
@@ -194,15 +191,6 @@ def main():
                     print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.0f} square units")
                 elif task_type == 'angle':
                     print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.1f} degrees")
-
-        # Also check for legacy single-task metrics
-        if 'eval_metric_mean' in gen_metrics and not printed_header:
-            if primary_task_type == 'location':
-                print(f"Initial avg haversine distance: {gen_metrics['eval_metric_mean']:.2f} km")
-            elif primary_task_type == 'distance':
-                print(f"Initial avg absolute error: {gen_metrics['eval_metric_mean']:.2f} km")
-            else:
-                print(f"Initial avg metric: {gen_metrics['eval_metric_mean']:.3f}")
     
     if config['model'].get('ckpt'):
         print("(Loaded from checkpoint)")
@@ -210,7 +198,7 @@ def main():
         print("(Random initialization - chance level)")
     
     # Save initial plot with checkpoint-0 data
-    save_training_plots(exp_dir, trainer.state, primary_task_type)
+    save_training_plots(exp_dir, trainer.state)
     print(f"Initial plots saved to {exp_dir / 'summary/'}")
     
     # Train
@@ -238,18 +226,23 @@ def main():
             print(f"  {key}: {value:.2f}")
     
     # Save final plot
-    save_training_plots(exp_dir, trainer.state, primary_task_type)
+    save_training_plots(exp_dir, trainer.state)
     print(f"Final training plots saved to {exp_dir / 'summary/'}")
     
-    # Print final statistics
-    if 'eval_metric_mean' in eval_metrics:
-        metric_name = "distance" if primary_task_type == 'location' else "error"
-        print(f"\nFinal {metric_name} statistics:")
-        print(f"  Mean: {eval_metrics['eval_metric_mean']:.2f} km")
-        print(f"  Median: {eval_metrics['eval_metric_median']:.2f} km")
-        print(f"  Std: {eval_metrics['eval_metric_std']:.2f} km")
-        print(f"  Min: {eval_metrics['eval_metric_min']:.2f} km")
-        print(f"  Max: {eval_metrics['eval_metric_max']:.2f} km")
+    # Print final task-specific statistics
+    for task_type in ['distance', 'randomwalk', 'trianglearea', 'angle', 'location']:
+        task_mean_key = f'eval_{task_type}_metric_mean'
+        if task_mean_key in eval_metrics:
+            print(f"\nFinal {task_type} statistics:")
+            print(f"  Mean: {eval_metrics[f'eval_{task_type}_metric_mean']:.2f}")
+            if f'eval_{task_type}_metric_median' in eval_metrics:
+                print(f"  Median: {eval_metrics[f'eval_{task_type}_metric_median']:.2f}")
+            if f'eval_{task_type}_metric_std' in eval_metrics:
+                print(f"  Std: {eval_metrics[f'eval_{task_type}_metric_std']:.2f}")
+            if f'eval_{task_type}_metric_min' in eval_metrics:
+                print(f"  Min: {eval_metrics[f'eval_{task_type}_metric_min']:.2f}")
+            if f'eval_{task_type}_metric_max' in eval_metrics:
+                print(f"  Max: {eval_metrics[f'eval_{task_type}_metric_max']:.2f}")
     
     print(f"\nTraining completed! Results saved to {exp_dir}")
 

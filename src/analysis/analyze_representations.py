@@ -58,7 +58,7 @@ region_colors = {
     'India': '#9C27B0',            # Purple
     'China': '#C62828',            # Dark Red
     'Korea': '#00ACC1',            # Cyan
-    'Japan': '#E91E63',            # Pink
+    'Japan': '#FFD700',            # Gold/Yellow
     'Southeast Asia': '#43A047',   # Light Green
     'Central Asia': '#FFB300',     # Amber
     'Oceania': '#00BCD4',          # Light Cyan

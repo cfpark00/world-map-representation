@@ -2,6 +2,10 @@
 
 This document outlines the project structure and development conventions.
 
+## IMPORTANT
+- **NEVER** run **ANY** git operations unless explicitly told to do so.
+
+
 ## Project Structure
 
 ### `/scripts/` - Execution Scripts
