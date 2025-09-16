@@ -43,7 +43,10 @@
 ├── scratch                      # Temporary work directory (gitignored)
 ├── scripts
 │   ├── analysis
+│   ├── analysis_representations  # Scripts for running representation analysis
 │   ├── data_generation
+│   │   ├── multi               # Multi-task dataset scripts
+│   │   └── single_tasks        # Individual task dataset scripts
 │   ├── tokenizers
 │   ├── training
 │   ├── utils
@@ -68,7 +71,8 @@
 │   │   ├── create_center_dataset.py        # Center of mass finder
 │   │   ├── create_circlecount_dataset.py   # Count cities in radius
 │   │   ├── create_compass_dataset.py       # Compass direction
-│   │   └── create_perimeter_dataset.py     # Polygon perimeter
+│   │   ├── create_perimeter_dataset.py     # Polygon perimeter
+│   │   └── create_randring_dataset.py      # Random ring sampling (stochastic)
 │   ├── training
 │   │   └── train.py
 │   ├── visualization

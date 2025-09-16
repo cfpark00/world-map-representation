@@ -1,11 +1,62 @@
 {
   "distance": {
     "description": "Calculate Euclidean distance between two cities in 2D space. Distance is in scaled coordinates (x: -1800 to 1800, y: -900 to 900). Range: 0-4000 units.",
-    "example": "<bos>dist(c_8658,c_4879)=769<eos>",
     "format": "dist(c_ID1,c_ID2)=DISTANCE",
-    "loss_mask": {
-      "full": "Auto regressive (entire sequence)",
-      "answer": "Answer only (769<eos>)"
-    }
+    "example": "<bos> d i s t ( c _ 0 8 6 5 , c _ 4 8 7 9 ) = 7 6 9 <eos>"
+  },
+  "trianglearea": {
+    "description": "Calculate area of triangle formed by three cities using Shoelace formula. Area is in squared coordinate units. Typical range: 0-3000000 square units.",
+    "format": "triarea(c_ID1,c_ID2,c_ID3)=AREA",
+    "example": "<bos> t r i a r e a ( c _ 1 2 3 4 , c _ 5 6 7 8 , c _ 9 0 1 2 ) = 4 5 8 2 3 1 <eos>"
+  },
+  "angle": {
+    "description": "Calculate angle at center city (second city) formed by three cities. Angle in degrees (0-180).",
+    "format": "angle(c_ID1,c_ID2,c_ID3)=DEGREES",
+    "example": "<bos> a n g l e ( c _ 2 3 4 5 , c _ 6 7 8 9 , c _ 0 1 2 3 ) = 9 7 <eos>"
+  },
+  "center": {
+    "description": "Find city closest to center of mass of given cities. Parameter 'in' specifies whether to search within given cities (TRUE) or all cities (FALSE).",
+    "format": "center(c_ID1,c_ID2,...;in=TRUE/FALSE)=c_RESULT",
+    "example": "<bos> c e n t e r ( c _ 3 4 5 6 , c _ 7 8 9 0 , c _ 1 2 3 4 ; i n = F A L S E ) = c _ 5 6 7 8 <eos>"
+  },
+  "perimeter": {
+    "description": "Calculate perimeter of polygon formed by connecting cities in order (including back to first). Perimeter in coordinate units.",
+    "format": "perim(c_ID1,c_ID2,...)=PERIMETER",
+    "example": "<bos> p e r i m ( c _ 4 5 6 7 , c _ 8 9 0 1 , c _ 2 3 4 5 , c _ 6 7 8 9 ) = 2 8 5 6 <eos>"
+  },
+  "circlecount": {
+    "description": "Count cities within given radius from center city. Radius in coordinate units (5-200 typical).",
+    "format": "circlecount(c_CENTER,r=RADIUS)=COUNT",
+    "example": "<bos> c i r c l e c o u n t ( c _ 3 4 5 6 , r = 1 5 0 ) = 2 3 <eos>"
+  },
+  "compass": {
+    "description": "Determine compass direction from first city to second city. Returns one of: N, NE, E, SE, S, SW, W, NW.",
+    "format": "compass(c_FROM,c_TO)=DIRECTION",
+    "example": "<bos> c o m p a s s ( c _ 1 2 3 4 , c _ 5 6 7 8 ) = N E <eos>"
+  },
+  "crossing": {
+    "description": "Check if two line segments intersect. First segment: city1-city2, second segment: city3-city4. Returns TRUE or FALSE.",
+    "format": "cross(c_ID1,c_ID2;c_ID3,c_ID4)=TRUE/FALSE",
+    "example": "<bos> c r o s s ( c _ 2 3 4 5 , c _ 6 7 8 9 ; c _ 0 1 2 3 , c _ 4 5 6 7 ) = T R U E <eos>"
+  },
+  "inside": {
+    "description": "Check if test city (first) is inside convex hull of remaining cities. Returns TRUE or FALSE.",
+    "format": "inside(c_TEST,c_ID1,c_ID2,...)=TRUE/FALSE",
+    "example": "<bos> i n s i d e ( c _ 9 0 1 2 , c _ 3 4 5 6 , c _ 7 8 9 0 , c _ 1 2 3 4 , c _ 5 6 7 8 ) = F A L S E <eos>"
+  },
+  "nearest": {
+    "description": "Find k-th nearest city to query city from pool of cities. Returns city ID of k-th nearest neighbor.",
+    "format": "nearest(c_QUERY,k)=c_RESULT",
+    "example": "<bos> n e a r e s t ( c _ 4 5 6 7 , 3 ) = c _ 8 9 0 1 <eos>"
+  },
+  "randomwalk": {
+    "description": "Generate random walk of cities where each step is within max_distance from previous. Returns chain of city IDs.",
+    "format": "rw(MAX_DIST,CHAIN_LEN)=c_ID1,c_ID2,...",
+    "example": "<bos> r w ( 1 5 0 , 5 ) = c _ 2 3 4 5 , c _ 6 7 8 9 , c _ 0 1 2 3 , c _ 4 5 6 7 , c _ 8 9 0 1 <eos>"
+  },
+  "randring": {
+    "description": "Randomly sample n cities from annulus (ring) between inner radius r and outer radius R around center city. Returns sampled city IDs.",
+    "format": "randring(c_CENTER,r=MIN_R,R=MAX_R,n=NUM)=c_ID1,c_ID2,...",
+    "example": "<bos> r a n d r i n g ( c _ 3 4 5 6 , r = 5 0 , R = 2 0 0 , n = 4 ) = c _ 7 8 9 0 , c _ 1 2 3 4 , c _ 5 6 7 8 <eos>"
   }
 }
