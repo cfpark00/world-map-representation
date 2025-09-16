@@ -1,0 +1,30 @@
+# 1M inside convex hull queries NO atlantis WITH PADDING
+# Determines if a point is inside the convex hull of a set of points
+# All city IDs padded to 4 digits with leading zeros
+
+output_dir: data/datasets/inside_1M_no_atlantis
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+groups:
+  world:
+    city_names: "^(?!Atlantis_).*"  # Everything NOT starting with Atlantis_
+
+pair_generation:
+  strategy: within_groups
+  groups: [world]
+
+# Convex hull specific parameters
+min_n: 3    # Minimum number of points for hull (must be >= 3)
+max_n: 5    # Maximum number of points for hull
+
+# Control TRUE/FALSE ratio
+true_ratio: 0.5  # 50% TRUE (inside), 50% FALSE (outside)
+
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4

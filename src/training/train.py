@@ -175,12 +175,34 @@ def main():
     print(f"Initial eval loss: {initial_metrics.get('eval_loss', 'N/A'):.4f}")
     
     if gen_metrics:
-        if primary_task_type == 'location':
-            print(f"Initial avg haversine distance: {gen_metrics['eval_metric_mean']:.2f} km")
-        elif primary_task_type == 'distance':
-            print(f"Initial avg absolute error: {gen_metrics['eval_metric_mean']:.2f} km")
-        else:  # randomwalk
-            print(f"Initial avg walk validity: {gen_metrics['eval_metric_mean']:.3f}")
+        # For multi-task, print all task metrics
+        printed_header = False
+        for task_type in ['distance', 'randomwalk', 'trianglearea', 'angle', 'location']:
+            task_mean_key = f'eval_{task_type}_metric_mean'
+            if task_mean_key in gen_metrics:
+                if not printed_header:
+                    print("\nInitial generation metrics:")
+                    printed_header = True
+
+                if task_type == 'location':
+                    print(f"  {task_type}: avg haversine distance = {gen_metrics[task_mean_key]:.2f} km")
+                elif task_type == 'distance':
+                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.2f} km")
+                elif task_type == 'randomwalk':
+                    print(f"  {task_type}: avg error = {gen_metrics[task_mean_key]:.3f}")
+                elif task_type == 'trianglearea':
+                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.0f} square units")
+                elif task_type == 'angle':
+                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.1f} degrees")
+
+        # Also check for legacy single-task metrics
+        if 'eval_metric_mean' in gen_metrics and not printed_header:
+            if primary_task_type == 'location':
+                print(f"Initial avg haversine distance: {gen_metrics['eval_metric_mean']:.2f} km")
+            elif primary_task_type == 'distance':
+                print(f"Initial avg absolute error: {gen_metrics['eval_metric_mean']:.2f} km")
+            else:
+                print(f"Initial avg metric: {gen_metrics['eval_metric_mean']:.3f}")
     
     if config['model'].get('ckpt'):
         print("(Loaded from checkpoint)")

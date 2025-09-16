@@ -197,7 +197,7 @@ def parse_distance(text):
 
 def parse_walk_transitions(text):
     """
-    Parse transitions from random walk text like 'walk_200=c_123,c_456,c_789'.
+    Parse transitions from random walk text like 'rw(200,5)=c_123,c_456,c_789'.
     Returns list of (city1_id, city2_id) tuples for each transition.
     Handles both compact and space-delimited formats.
     
@@ -239,39 +239,41 @@ def parse_walk_transitions(text):
 def validate_transitions(transitions, cities_df, distance_threshold_km):
     """
     Validate transitions in a walk based on distance constraints.
-    
+
     Args:
         transitions: List of (city1_id, city2_id) tuples
-        cities_df: DataFrame with city data (must have 'row_id', 'x', 'y')
+        cities_df: DataFrame with city data (must have 'city_id', 'x', 'y')
         distance_threshold_km: Maximum distance between consecutive cities
-    
+
     Returns:
         Tuple of (num_valid_transitions, total_transitions)
     """
     if not transitions:
         return 0, 0
-    
+
     valid_transitions = 0
     total_transitions = len(transitions)
-    
+
     for city1_id, city2_id in transitions:
-        # Find cities in dataframe
+        # Find cities in dataframe using city_id column
         try:
-            city1 = cities_df[cities_df['row_id'] == city1_id].iloc[0]
-            city2 = cities_df[cities_df['row_id'] == city2_id].iloc[0]
+            city1 = cities_df[cities_df['city_id'] == city1_id].iloc[0]
+            city2 = cities_df[cities_df['city_id'] == city2_id].iloc[0]
         except (IndexError, KeyError):
             # City ID not found in dataset - transition is invalid
             continue
-        
+
         # Calculate distance
         distance = euclidean_distance(
-            city1['x'], city1['y'],
-            city2['x'], city2['y']
-        )
-        
+            np.array([city1['x']]),
+            np.array([city1['y']]),
+            np.array([city2['x']]),
+            np.array([city2['y']])
+        ).item()
+
         if distance <= distance_threshold_km:
             valid_transitions += 1
-    
+
     return valid_transitions, total_transitions
 
 
@@ -404,17 +406,17 @@ class LocationCollator(DataCollatorForLanguageModeling):
 class RandomWalkCollator(DataCollatorForLanguageModeling):
     """
     Collator for random walk tasks.
-    Text format: <bos>WALK:c_X->c_Y->c_Z->...<eos>
-    Computes loss on the entire walk sequence (everything after 'WALK:').
+    Text format: <bos> r w ( max , len ) = c _ X X X X , c _ Y Y Y Y , ... <eos>
+    Computes loss on the city sequence (everything after '=').
     """
     def __init__(self, tokenizer, max_length=256, mlm=False):
         super().__init__(tokenizer, mlm=mlm)
         self.max_length = max_length
-    
+
     def __call__(self, examples):
         # Extract text from examples
         texts = [ex['text'] for ex in examples]
-        
+
         # Tokenize all texts
         batch = self.tokenizer(
             texts,
@@ -423,27 +425,30 @@ class RandomWalkCollator(DataCollatorForLanguageModeling):
             max_length=self.max_length,
             return_tensors='pt'
         )
-        
+
         # Create labels
         labels = batch['input_ids'].clone()
-        
-        # Mask everything before 'WALK:' for loss computation
+
+        # Mask everything before and including '=' for loss computation
         for i, text in enumerate(texts):
-            # Find the position of 'WALK:' in the original text
-            walk_pos = text.find('WALK:')
-            if walk_pos != -1:
-                # Tokenize up to end of 'WALK:' to find where walk starts
-                prompt_text = text[:walk_pos+5]  # Include 'WALK:'
-                prompt_tokens = self.tokenizer(prompt_text, add_special_tokens=False)['input_ids']
-                prompt_len = len(prompt_tokens)
-                
-                # Mask prompt tokens in labels
-                for j in range(min(prompt_len, self.max_length)):
-                    labels[i, j] = -100
-        
+            # Find the position of '=' in the original text
+            eq_pos = text.find('=')
+            if eq_pos == -1:
+                # This should never happen with properly formatted data
+                raise ValueError(f"FATAL: Cannot find '=' in random walk text: {text[:100]}...")
+
+            # Tokenize up to and including '=' to find where city sequence starts
+            prompt_text = text[:eq_pos+1]  # Include '='
+            prompt_tokens = self.tokenizer(prompt_text, add_special_tokens=False)['input_ids']
+            prompt_len = len(prompt_tokens)
+
+            # Mask prompt tokens in labels (everything before and including '=')
+            for j in range(min(prompt_len, self.max_length)):
+                labels[i, j] = -100
+
         # Mask padding tokens
         labels[batch['attention_mask'] == 0] = -100
-        
+
         batch['labels'] = labels
         return batch
 
@@ -497,7 +502,7 @@ class MultiTaskCollator:
     def __call__(self, examples):
         # Check if we should use loss_mask from dataset
         if self.use_loss_mask and 'loss_mask' in examples[0]:
-            # Use loss_mask field - tokenize all texts together
+            # USE DATASET'S LOSS MASK - only compute loss where mask is '1'
             texts = [ex['text'] for ex in examples]
             encoding = self.tokenizer(
                 texts,
@@ -506,10 +511,10 @@ class MultiTaskCollator:
                 truncation=True,
                 max_length=self.max_length
             )
-            
+
             # Apply loss masks to create labels
             labels = encoding['input_ids'].clone()
-            
+
             for i, ex in enumerate(examples):
                 if 'loss_mask' in ex:
                     mask_str = ex['loss_mask']
@@ -520,59 +525,34 @@ class MultiTaskCollator:
                                 labels[i, j] = -100
                     # Also mask padding tokens
                     labels[i, encoding['attention_mask'][i] == 0] = -100
-            
+
             return {
                 'input_ids': encoding['input_ids'],
                 'attention_mask': encoding['attention_mask'],
                 'labels': labels
             }
         else:
-            # Original task-specific collator logic
-            # Group examples by task type
-            task_groups = {}
-            for i, ex in enumerate(examples):
-                task = ex.get('task_type', 'unknown')
-                if task not in task_groups:
-                    task_groups[task] = []
-                task_groups[task].append((i, ex))
-            
-            # Process each group with appropriate collator
-            all_processed = []
-            original_indices = []
-            
-            for task, group in task_groups.items():
-                indices, items = zip(*group)
-                
-                # Select appropriate collator
-                if task == 'distance':
-                    batch = self.distance_collator(list(items))
-                elif task == 'location':
-                    batch = self.location_collator(list(items))
-                elif task == 'randomwalk':
-                    batch = self.randomwalk_collator(list(items))
-                else:
-                    print(f"Warning: Unknown task_type '{task}', using full sequence loss")
-                    batch = self.full_collator(list(items))
-                
-                # Store processed items with original indices
-                for i, idx in enumerate(indices):
-                    all_processed.append((idx, {
-                        'input_ids': batch['input_ids'][i],
-                        'attention_mask': batch['attention_mask'][i],
-                        'labels': batch['labels'][i]
-                    }))
-            
-            # Sort by original index to maintain order
-            all_processed.sort(key=lambda x: x[0])
-            
-            # Stack into final batch tensors
-            final_batch = {
-                'input_ids': torch.stack([item['input_ids'] for _, item in all_processed]),
-                'attention_mask': torch.stack([item['attention_mask'] for _, item in all_processed]),
-                'labels': torch.stack([item['labels'] for _, item in all_processed])
+            # DEFAULT: FULL SEQUENCE LOSS (standard next token prediction on ALL tokens)
+            texts = [ex['text'] for ex in examples]
+            encoding = self.tokenizer(
+                texts,
+                return_tensors='pt',
+                padding=True,
+                truncation=True,
+                max_length=self.max_length
+            )
+
+            # Simple next token prediction: labels = input_ids
+            labels = encoding['input_ids'].clone()
+
+            # Only mask padding tokens (standard practice)
+            labels[encoding['attention_mask'] == 0] = -100
+
+            return {
+                'input_ids': encoding['input_ids'],
+                'attention_mask': encoding['attention_mask'],
+                'labels': labels
             }
-            
-            return final_batch
 
 
 def get_collator(config, tokenizer):
@@ -650,14 +630,33 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
     
     # Load cities data for randomwalk if needed
     cities_df = None
-    distance_threshold_km = None
     if 'randomwalk' in task_samples:
-        if config is None or 'randomwalk' not in config:
-            raise ValueError("FATAL: randomwalk evaluation requires config with randomwalk section")
-        
-        cities_csv = config['randomwalk']['cities_csv']
-        distance_threshold_km = config['randomwalk']['distance_km']
+        # Check for cities_csv in eval.randomwalk.cities_csv structure
+        cities_csv = None
+
+        # Try new structure: eval.randomwalk.cities_csv
+        if config and 'eval' in config and 'randomwalk' in config['eval'] and 'cities_csv' in config['eval']['randomwalk']:
+            cities_csv = config['eval']['randomwalk']['cities_csv']
+        # Fallback to old structure for backward compatibility: randomwalk.cities_csv
+        elif config and 'randomwalk' in config and 'cities_csv' in config['randomwalk']:
+            cities_csv = config['randomwalk']['cities_csv']
+            print(f"WARNING: Using deprecated config structure 'randomwalk.cities_csv'. Please use 'eval.randomwalk.cities_csv' instead.")
+        else:
+            # Require explicit config - no hardcoded default
+            raise ValueError(
+                "FATAL: Random walk evaluation requires cities CSV path. Add to config:\n"
+                "eval:\n"
+                "  randomwalk:\n"
+                "    cities_csv: 'data/datasets/cities/cities.csv'"
+            )
+
         print(f"Loading cities data for randomwalk evaluation from: {cities_csv}")
+
+        # Check if file exists
+        import os
+        if not os.path.exists(cities_csv):
+            raise ValueError(f"FATAL: Cities CSV not found at {cities_csv}. Random walk evaluation needs city coordinates to validate transitions.")
+
         cities_df = pd.read_csv(cities_csv)
     
     # Results storage
@@ -701,46 +700,53 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                         if task_type == 'distance':
                             # Split at '=' for distance tasks: <bos>dist(c_123,c_456)=789<eos>
                             eq_pos = text.find('=')
-                            if eq_pos != -1:
-                                prompt = text[:eq_pos+1]  # Include '='
-                                completion = text[eq_pos+1:]  # Everything after '='
-                            else:
-                                prompt = text
-                                completion = ""
+                            if eq_pos == -1:
+                                raise ValueError(f"FATAL: Cannot find '=' in distance task text: {text[:100]}...")
+                            prompt = text[:eq_pos+1]  # Include '='
+                            completion = text[eq_pos+1:]  # Everything after '='
                         elif task_type == 'location':
                             # Split at ':' for location tasks
                             colon_pos = text.find(':')
-                            if colon_pos != -1:
-                                prompt = text[:colon_pos+1]
-                                completion = text[colon_pos+1:]
-                            else:
-                                prompt = text
-                                completion = ""
+                            if colon_pos == -1:
+                                raise ValueError(f"FATAL: Cannot find ':' in location task text: {text[:100]}...")
+                            prompt = text[:colon_pos+1]
+                            completion = text[colon_pos+1:]
                         elif task_type == 'randomwalk':
-                            # Split at 'WALK:' for randomwalk tasks
-                            walk_pos = text.find('WALK:')
-                            if walk_pos != -1:
-                                prompt = text[:walk_pos+5]  # Include 'WALK:'
-                                completion = text[walk_pos+5:]
+                            # Split at '=' for randomwalk tasks: <bos>rw(max,len)=city_list<eos>
+                            eq_pos = text.find('=')
+                            if eq_pos == -1:
+                                raise ValueError(f"FATAL: Cannot find '=' in randomwalk task text: {text[:100]}...")
+
+                            # For evaluation: include first city in prompt to make task harder
+                            # This prevents model from choosing an easy starting city
+                            full_completion = text[eq_pos+1:]  # Everything after '='
+
+                            # Find the first comma (end of first city)
+                            # Format is like: c _ 1 2 3 4 , c _ 5 6 7 8 , ...
+                            first_comma = full_completion.find(',')
+                            if first_comma != -1:
+                                # Include first city and comma in prompt
+                                prompt = text[:eq_pos+1] + full_completion[:first_comma+1]  # Include '=' and first city with comma
+                                completion = full_completion[first_comma+1:]  # Rest of the cities
                             else:
-                                prompt = text
-                                completion = ""
+                                # Only one city or malformed - fall back to original split
+                                prompt = text[:eq_pos+1]  # Include '='
+                                completion = full_completion
+                        elif task_type in ['trianglearea', 'angle']:
+                            # Split at '=' for trianglearea and angle tasks
+                            eq_pos = text.find('=')
+                            if eq_pos == -1:
+                                raise ValueError(f"FATAL: Cannot find '=' in {task_type} task text: {text[:100]}...")
+                            prompt = text[:eq_pos+1]  # Include '='
+                            completion = text[eq_pos+1:]  # Everything after '='
                         else:
-                            # Unknown format - use whole text as prompt
-                            prompt = text
-                            completion = ""
+                            # Unknown task type - fail immediately
+                            raise ValueError(f"FATAL: Unknown task type '{task_type}' - add explicit handling for this task type")
                     else:
                         raise ValueError(f"Dataset item missing both 'prompt'/'completion' and 'text' fields: {raw_item}")
                     
-                    # For random walk with greedy decoding, add random starting city to avoid identical generations
-                    if task_type == 'randomwalk' and cities_df is not None:
-                        # Sample a random city and append to prompt
-                        random_city = cities_df.sample(n=1).iloc[0]
-                        # Add the city ID to the prompt (e.g., "<bos>walk_200=" -> "<bos>walk_200=c_123,")
-                        modified_prompt = f"{prompt}c_{random_city['row_id']},"
-                        batch_prompts.append(modified_prompt)
-                    else:
-                        batch_prompts.append(prompt)
+                    # For random walk, don't modify prompt - let model generate from scratch
+                    batch_prompts.append(prompt)
                         
                     batch_true_completions.append(completion)
                 
@@ -760,7 +766,9 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                 
                 # Generate with task-appropriate max tokens
                 if task_type == 'randomwalk':
-                    max_new_tokens = 100  # Allow for long walks
+                    max_new_tokens = 224  # Allow for long walks with up to 20 cities with padding
+                elif task_type in ['trianglearea', 'angle']:
+                    max_new_tokens = 30   # Area/angle can be large numbers
                 else:
                     max_new_tokens = 20   # Original for location/distance
                 
@@ -800,25 +808,85 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                     elif task_type == 'distance':
                         true_dist = parse_distance(true_completion)
                         gen_dist = parse_distance(generated)
-                        
+
                         if true_dist is not None and gen_dist is not None:
                             abs_error = abs(true_dist - gen_dist)
                             task_metrics.append(abs_error)
+                        else:
+                            # Format error - assign maximum possible error
+                            # Max distance with 10x scaling = sqrt(3600^2 + 1800^2) ≈ 4025
+                            task_metrics.append(4025.0)
                     
                     elif task_type == 'randomwalk':
-                        # No fallback check - cities_df MUST be loaded for randomwalk
-                        transitions = parse_walk_transitions(generated)
-                        
-                        if transitions:
-                            valid_trans, total_trans = validate_transitions(
-                                transitions, cities_df, distance_threshold_km
-                            )
-                            # Use validity ratio as metric (1.0 = all transitions valid, 0.0 = none valid)
-                            validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
-                            task_metrics.append(validity_ratio)
+                        # Parse the expected max_distance and chain_length from prompt
+                        # Format: rw(max_dist,chain_len)=...
+                        import re
+                        rw_match = re.search(r'rw\((\d+),(\d+)\)', prompt.replace(' ', ''))
+                        if rw_match:
+                            expected_max_dist = int(rw_match.group(1))
+                            expected_chain_len = int(rw_match.group(2))
+
+                            # Parse generated walk
+                            transitions = parse_walk_transitions(generated)
+
+                            if transitions:
+                                # Check all transitions are within max_distance
+                                valid_trans, total_trans = validate_transitions(
+                                    transitions, cities_df, expected_max_dist
+                                )
+
+                                # Check chain length matches using exponential decay
+                                actual_chain_len = len(transitions) + 1  # transitions + 1 = cities
+                                chain_len_diff = abs(actual_chain_len - expected_chain_len)
+                                chain_length_ratio = np.exp(-chain_len_diff / expected_chain_len)
+
+                                # Combined metric: validity ratio * chain length ratio
+                                validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
+                                combined_score = validity_ratio * chain_length_ratio
+                                task_metrics.append(combined_score)
+                            else:
+                                # No transitions found gets 0
+                                task_metrics.append(0.0)
                         else:
-                            # No transitions found gets 0 validity
+                            # Couldn't parse prompt format
                             task_metrics.append(0.0)
+
+                    elif task_type == 'trianglearea':
+                        # Parse expected area from the full text (prompt + completion)
+                        import re
+                        # Look for the answer after = in format: triarea(...)=AREA
+                        true_match = re.search(r'=(\d+)', (prompt + true_completion).replace(' ', ''))
+                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
+
+                        if true_match and gen_match:
+                            true_area = int(true_match.group(1))
+                            gen_area = int(gen_match.group(1))
+
+                            # Use absolute error
+                            abs_error = abs(gen_area - true_area)
+                            task_metrics.append(abs_error)
+                        else:
+                            # Failed to parse - assign maximum possible error
+                            # Max triangle area = 3600 * 1800 / 2 = 3,240,000
+                            task_metrics.append(3240000.0)
+
+                    elif task_type == 'angle':
+                        # Parse expected angle from the full text
+                        import re
+                        # Look for the answer after = in format: angle(...)=DEGREES
+                        true_match = re.search(r'=(\d+)', (prompt + true_completion).replace(' ', ''))
+                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
+
+                        if true_match and gen_match:
+                            true_angle = int(true_match.group(1))
+                            gen_angle = int(gen_match.group(1))
+
+                            # Use absolute error in degrees
+                            abs_error = abs(gen_angle - true_angle)
+                            task_metrics.append(abs_error)
+                        else:
+                            # Failed to parse - assign maximum possible error
+                            task_metrics.append(180.0)
         
         # Calculate metrics for this task
         if task_metrics:
@@ -836,9 +904,15 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
             if task_type == 'location':
                 fail_value = 20000.0
             elif task_type == 'distance':
-                fail_value = 100000.0
-            else:  # randomwalk
-                fail_value = 0.0  # 0% validity for failed randomwalks
+                fail_value = 4025.0  # Maximum possible distance error with 10x scaling
+            elif task_type == 'randomwalk':
+                fail_value = 1.0  # Complete failure
+            elif task_type == 'trianglearea':
+                fail_value = 3240000.0  # Maximum possible triangle area
+            elif task_type == 'angle':
+                fail_value = 180.0  # Maximum angle error in degrees
+            else:
+                fail_value = 1.0  # Default failure
             
             all_task_metrics[task_type] = {
                 f'eval_{task_type}_metric_mean': fail_value,
@@ -946,24 +1020,20 @@ def preprocess_config(config):
                 print(f"  Allowed values: {allowed_values}")
                 sys.exit(1)
     
-    # Validate randomwalk config if present (for evaluation purposes)
-    if 'randomwalk' in config:
-        # Check required randomwalk fields
-        required_rw_fields = ['cities_csv', 'distance_km']
-        for field in required_rw_fields:
-            if field not in config['randomwalk']:
-                print(f"Error: Missing randomwalk.{field} in config")
+    # Validate eval config if present (for task-specific evaluation settings)
+    if 'eval' in config and 'randomwalk' in config.get('eval', {}):
+        if 'cities_csv' in config['eval']['randomwalk']:
+            cities_csv = config['eval']['randomwalk']['cities_csv']
+            if not os.path.exists(cities_csv):
+                print(f"Error: Cities CSV not found: {cities_csv}")
                 sys.exit(1)
-        
-        # Check cities CSV exists
-        cities_csv = config['randomwalk']['cities_csv']
-        if not os.path.exists(cities_csv):
-            print(f"Error: Cities CSV not found: {cities_csv}")
-            sys.exit(1)
-        
-        print(f"Randomwalk evaluation config:")
-        print(f"  Cities CSV: {cities_csv}")
-        print(f"  Distance threshold: {config['randomwalk']['distance_km']} km")
+            print(f"Randomwalk evaluation configured with cities: {cities_csv}")
+
+    # Check for deprecated randomwalk config structure
+    if 'randomwalk' in config:
+        print(f"WARNING: Top-level 'randomwalk' config is deprecated. Use 'eval.randomwalk' instead.")
+        if 'distance_km' in config['randomwalk']:
+            print(f"WARNING: randomwalk.distance_km is IGNORED. Distance threshold is parsed from each sample's prompt.")
     
     return config
 
@@ -1307,8 +1377,9 @@ def save_training_plots(exp_dir, state, primary_task_type='location'):
         plt.plot(train_steps, train_losses, alpha=0.3, label='Train Loss (per batch)')
     if eval_losses:
         plt.plot(eval_steps, eval_losses, 'r-', label='Eval Loss', marker='o', markersize=4)
-    plt.xlabel('Step')
+    plt.xlabel('Step (log scale)')
     plt.ylabel('Loss (log scale)')
+    plt.xscale('log')
     plt.yscale('log')
     plt.title('Training and Evaluation Loss')
     plt.legend()
@@ -1323,8 +1394,15 @@ def save_training_plots(exp_dir, state, primary_task_type='location'):
             continue
             
         plt.figure(figsize=(10, 6))
-        plt.plot(data['steps'], data['values'], 'b-', marker='o', markersize=4)
-        plt.xlabel('Step')
+        # Filter out step 0 and values below 100 for log scale
+        plot_steps = [s for s in data['steps'] if s >= 100]
+        plot_values = [v for s, v in zip(data['steps'], data['values']) if s >= 100]
+
+        if plot_steps:  # Only plot if we have data
+            plt.plot(plot_steps, plot_values, 'b-', marker='o', markersize=4)
+        plt.xlabel('Step (log scale)')
+        plt.xscale('log')
+        plt.xlim(left=100)  # Start x-axis at 100
         
         if task_type == 'location':
             plt.ylabel('Average Haversine Distance (km, log scale)')
@@ -1336,24 +1414,43 @@ def save_training_plots(exp_dir, state, primary_task_type='location'):
             plt.ylim(bottom=10, top=30000)
             plt.yscale('log')
         elif task_type == 'distance':
-            plt.ylabel('Average Absolute Error (units, log scale)')
-            plt.title('Distance Task: Evaluation Absolute Distance Error\n(Lower is better, 100000 units = parse failed)')
-            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10 units reference')
-            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100 units reference')
-            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000 units reference')
-            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000 units (poor)')
-            plt.axhline(y=100000, color='red', linestyle=':', alpha=0.7, label='100000 units (parse failed)')
-            plt.ylim(bottom=1, top=200000)
+            plt.ylabel('Average Absolute Error (km, log scale)')
+            plt.title('Distance Task: Evaluation Absolute Distance Error\n(Lower is better, 4025 km = parse failed)')
+            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10 km (excellent)')
+            plt.axhline(y=50, color='lightgreen', linestyle='--', alpha=0.5, label='50 km (good)')
+            plt.axhline(y=100, color='yellow', linestyle='--', alpha=0.5, label='100 km (okay)')
+            plt.axhline(y=500, color='orange', linestyle='--', alpha=0.5, label='500 km (poor)')
+            plt.axhline(y=4025, color='red', linestyle=':', alpha=0.7, label='4025 km (format error)')
             plt.yscale('log')
+            plt.ylim(bottom=1, top=4427)  # 1.1 * 4025
         elif task_type == 'randomwalk':
-            plt.ylabel('Average Walk Validity (linear scale)')
-            plt.title('Random Walk Task: Evaluation Walk Validity\n(Higher is better, 1.0 = perfect validity)')
-            plt.axhline(y=0.1, color='red', linestyle=':', alpha=0.7, label='0.1 (poor)')
-            plt.axhline(y=0.25, color='orange', linestyle='--', alpha=0.5, label='0.25 (low)')
-            plt.axhline(y=0.5, color='yellow', linestyle='--', alpha=0.5, label='0.5 (medium)')
-            plt.axhline(y=0.75, color='lightgreen', linestyle='--', alpha=0.5, label='0.75 (good)')
+            plt.ylabel('Combined Score (1=perfect, 0=failure)')
+            plt.title('Random Walk Task: Combined Score\n(Higher is better, 1 = perfect, 0 = complete failure)')
             plt.axhline(y=0.9, color='green', linestyle='--', alpha=0.5, label='0.9 (excellent)')
-            plt.ylim(bottom=0, top=1.1)
+            plt.axhline(y=0.75, color='lightgreen', linestyle='--', alpha=0.5, label='0.75 (good)')
+            plt.axhline(y=0.5, color='yellow', linestyle='--', alpha=0.5, label='0.5 (medium)')
+            plt.axhline(y=0.25, color='orange', linestyle='--', alpha=0.5, label='0.25 (poor)')
+            plt.axhline(y=0.0, color='red', linestyle=':', alpha=0.7, label='0.0 (complete failure)')
+            plt.ylim(bottom=-0.05, top=1.05)
+        elif task_type == 'trianglearea':
+            plt.ylabel('Average Absolute Error (square units, log scale)')
+            plt.title('Triangle Area Task: Evaluation Error\n(Lower is better, 3.24M = parse failed)')
+            plt.axhline(y=100, color='green', linestyle='--', alpha=0.5, label='100 (excellent)')
+            plt.axhline(y=1000, color='lightgreen', linestyle='--', alpha=0.5, label='1000 (good)')
+            plt.axhline(y=10000, color='yellow', linestyle='--', alpha=0.5, label='10k (okay)')
+            plt.axhline(y=100000, color='orange', linestyle='--', alpha=0.5, label='100k (poor)')
+            plt.axhline(y=3240000, color='red', linestyle=':', alpha=0.7, label='3.24M (format error)')
+            plt.yscale('log')
+            plt.ylim(bottom=10, top=3564000)  # 1.1 * 3240000
+        elif task_type == 'angle':
+            plt.ylabel('Average Absolute Error (degrees)')
+            plt.title('Angle Task: Evaluation Error\n(Lower is better, 0° = perfect, 180° = format error)')
+            plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10° (excellent)')
+            plt.axhline(y=30, color='lightgreen', linestyle='--', alpha=0.5, label='30° (good)')
+            plt.axhline(y=60, color='yellow', linestyle='--', alpha=0.5, label='60° (okay)')
+            plt.axhline(y=90, color='orange', linestyle='--', alpha=0.5, label='90° (poor)')
+            plt.axhline(y=180, color='red', linestyle=':', alpha=0.7, label='180° (format error)')
+            plt.ylim(bottom=0, top=198)  # 1.1 * 180
         else:
             # Unknown task type - generic plot
             plt.ylabel('Metric Value')

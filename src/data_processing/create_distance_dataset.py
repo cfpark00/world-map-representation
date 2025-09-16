@@ -341,21 +341,35 @@ def generate_must_include_pairs(df, must_include_groups, n_pairs):
     return np.array(all_pairs_i)[shuffle_idx], np.array(all_pairs_j)[shuffle_idx]
 
 
-def create_dataset_dict(indices_i, indices_j, df, tokenizer):
+def create_dataset_dict(indices_i, indices_j, df, tokenizer, config=None):
     """Create a dictionary suitable for HuggingFace Dataset."""
     # Get coordinates in 2D space
     x1 = df.iloc[indices_i]['x'].values
     y1 = df.iloc[indices_i]['y'].values
     x2 = df.iloc[indices_j]['x'].values
     y2 = df.iloc[indices_j]['y'].values
-    
+
     # Calculate Euclidean distances in 2D space
     distances = euclidean_distance(x1, y1, x2, y2)
     distances = np.round(distances).astype(int)
-    
+
     # Get city IDs
     city1_ids = df.iloc[indices_i]['city_id'].values.astype(int)
     city2_ids = df.iloc[indices_j]['city_id'].values.astype(int)
+
+    # Check for leading zeros configuration
+    use_padding = config.get('leading_zeros', False) if config else False
+    if use_padding:
+        if 'n_id_digits' not in config:
+            raise ValueError("When leading_zeros=true, n_id_digits must be specified in config")
+        n_digits = config['n_id_digits']
+        max_expressible = 10**n_digits - 1
+
+        # Validate that all city IDs can be expressed with n_digits
+        max_id = max(city1_ids.max(), city2_ids.max())
+        if max_id > max_expressible:
+            raise ValueError(f"City ID {max_id} exceeds maximum expressible with {n_digits} digits ({max_expressible}). "
+                           f"Please increase n_id_digits or ensure city IDs are within range.")
     
     # Create text format and measure token lengths
     text_list = []
@@ -363,13 +377,19 @@ def create_dataset_dict(indices_i, indices_j, df, tokenizer):
     token_lengths = []
     loss_mask_list = []  # ALWAYS generate loss mask
     
-    for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances), 
-                          total=len(city1_ids), 
-                          desc="Formatting samples", 
+    for c1, c2, d in tqdm(zip(city1_ids, city2_ids, distances),
+                          total=len(city1_ids),
+                          desc="Formatting samples",
                           leave=False):
         # Format for new tokenizer: space-delimited characters
-        # Convert "dist(c_1234,c_5678)=90" to space-delimited format
-        dist_str = f"dist(c_{c1},c_{c2})={d}"
+        # Apply padding if configured
+        if use_padding:
+            c1_str = str(c1).zfill(n_digits)
+            c2_str = str(c2).zfill(n_digits)
+            dist_str = f"dist(c_{c1_str},c_{c2_str})={d}"
+        else:
+            # Original format without padding
+            dist_str = f"dist(c_{c1},c_{c2})={d}"
         # Add spaces between each character for the tokenizer
         spaced_str = ' '.join(dist_str)
         # Add special tokens with spaces
@@ -475,15 +495,15 @@ def main():
     
     # Create datasets (loss_mask is always generated)
     print("\nCreating train dataset...")
-    train_data = create_dataset_dict(train_i, train_j, df, tokenizer)
+    train_data = create_dataset_dict(train_i, train_j, df, tokenizer, config)
     train_dataset = Dataset.from_dict(train_data)
-    
+
     print("Creating validation dataset...")
-    val_data = create_dataset_dict(val_i, val_j, df, tokenizer)
+    val_data = create_dataset_dict(val_i, val_j, df, tokenizer, config)
     val_dataset = Dataset.from_dict(val_data)
-    
+
     print("Creating test dataset...")
-    test_data = create_dataset_dict(test_i, test_j, df, tokenizer)
+    test_data = create_dataset_dict(test_i, test_j, df, tokenizer, config)
     test_dataset = Dataset.from_dict(test_data)
     
     # Combine into DatasetDict

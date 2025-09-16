@@ -48,7 +48,13 @@ python src/scripts/<script_name>.py configs/<config_file>.yaml --overwrite --deb
   - `scripts/data_generation/`
   - `scripts/training/`
   - `scripts/evaluation/`
-- All .sh scripts should be as minimal as possible, mostly they simply keep track of what .py scripts should be ran to recreate the experiment
+- **CRITICAL: Bash scripts MUST be absolutely minimal**:
+  - ONLY shebang (`#!/bin/bash`) and commands
+  - NO comments (not even file descriptions)
+  - NO echo statements or output messages
+  - NO formatting or spacing for readability
+  - NO error handling or conditionals
+  - They exist SOLELY to record exact commands for reproducibility
 - Example:
   ```bash
   #!/bin/bash

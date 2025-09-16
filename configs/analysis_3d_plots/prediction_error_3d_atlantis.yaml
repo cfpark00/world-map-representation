@@ -1,0 +1,26 @@
+# 3D visualization of city location predictions with error magnitude
+# Shows predicted x/y coordinates with prediction error as z-axis
+
+output_dir: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2_train_all_l456/representations/checkpoint-117195/plot_3d/error_linear"
+
+# Source data
+representation_path: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2_train_all_l456/representations/checkpoint-117195"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Probe method configuration (same format as analyze_representations.py)
+method:
+  name: "linear"  # Options: 'linear', 'ridge', or 'lasso'
+  # alpha: 10.0     # Regularization strength (for ridge/lasso)
+  # solver: "auto"  # Solver for ridge regression
+  # max_iter: 1000  # Max iterations (for lasso)
+  # tol: 0.0001     # Tolerance (for ridge/lasso)
+
+# Token and layer selection
+# Representations were saved with layers [4,5,6]
+token_index: 1   # 0=comma, 1=c, 2=underscore, -1=concatenate all tokens
+layer_index: 2   # 0=L4, 1=L5, 2=L6, -1=concatenate all layers
+# Note: -1,-1 concatenates all 9 token-layer combinations
+
+# Plot options
+include_train_plot: true     # Create separate plot for training set
+include_combined_plot: true  # Create combined train+test plot

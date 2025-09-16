@@ -1,0 +1,29 @@
+# Analysis: dist_1M_no_atlantis_15epochs  
+# Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
+
+output_dir: "data/experiments/multitask_4M_no_atlantis_30epochs_pad/analysis/probe0-2_train_all_l5"
+
+experiment_dir: "data/experiments/multitask_4M_no_atlantis_30epochs_pad"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+layers: [5]
+n_train_cities: 3500
+n_test_cities: 1500
+
+# Task configuration
+task_type: "distance"
+prompt_format: "dist_firstcity_last_and_comma"
+
+method:
+  name: "linear"
+
+probe_train: "region:^(?!Atlantis).*"  # Exclude Atlantis
+probe_test: "region:^(?!Atlantis).*"  # Exclude Atlantis
+
+
+# Compute
+device: "cuda"
+seed: 42
+
+save_repr_ckpts: [-1]

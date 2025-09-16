@@ -1,0 +1,36 @@
+# Analysis: randomwalk_1M_no_atlantis_15epochs - Japan region only
+# Probe training and testing on cities from Japan only
+
+output_dir: "data/experiments/randomwalk_1M_no_atlantis_15epochs_lowerlr_pad/analysis/probe_japan_only_l6"
+
+experiment_dir: "data/experiments/randomwalk_1M_no_atlantis_15epochs_lowerlr_pad"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+layers: [6]
+n_probe_cities: 300  # Will sample up to 5000 cities from Japan region
+n_train_cities: 160  # 3000 for training probe
+
+# Task configuration
+task_type: "distance"
+prompt_format: "randomwalk_firstcity_last_and_comma"
+
+plot_links: true
+plot_autobox: true
+
+method:
+  name: "linear"
+
+# Filter to only use cities from Japan region
+probe_train: "region:^Japan$"  # Only Japan region cities for training
+probe_test: "region:^Japan$"   # Only Japan region cities for testing
+
+# Compute
+device: "cuda"
+seed: 42
+
+# Save representations from the final checkpoint
+save_repr_ckpts: [-1]
+
+# Optional: save fit quality plots for all checkpoints
+save_fits: false

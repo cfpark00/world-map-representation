@@ -1,0 +1,47 @@
+# Output directory - all outputs go here
+output_dir: "data/experiments/multitask_4M_no_atlantis_30epochs_pad"
+
+# Dataset - COMBINED MULTITASK PADDED VERSION (4M total)
+dataset:
+  path: "data/datasets/multitask_4M_no_atlantis_pad"
+  max_sequence_length: 224  # Increased to handle longer sequences (random walks)
+
+# Tokenizer
+tokenizer_path: "data/tokenizers/default_tokenizer"
+
+# Model (Qwen2.5-like) - SAME AS SINGLE TASK
+model:
+  vocab_size: 98  # New ASCII tokenizer vocab size
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+
+# Training - SAME AS SINGLE TASK
+training:
+  batch_size: 128  # SAME batch size
+  eval_batch_size: 64
+  num_epochs: 30  # SAME epochs
+  optimizer: "adamw"
+  learning_rate: 5e-4
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # SAME warmup
+  seed: 42
+
+# Checkpointing
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.05  # Save 20 times per epoch (4x data)
+  eval_strategy: "steps"
+  eval_steps: 0.025  # Eval 40 times per epoch
+
+logging:
+  logging_steps: 10
+  report_to: "none"
+
+eval:
+  randomwalk:
+    cities_csv: "data/datasets/cities/cities.csv"
+

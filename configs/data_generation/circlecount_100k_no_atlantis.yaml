@@ -1,0 +1,27 @@
+# 100k circle count queries NO atlantis WITH PADDING
+# Counts cities within specified radius from a center city
+# City IDs padded to 4 digits, but count and radius have NO leading zeros
+
+output_dir: data/datasets/circlecount_100k_no_atlantis
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+groups:
+  world:
+    city_names: "^(?!Atlantis_).*"  # Everything NOT starting with Atlantis_
+
+pair_generation:
+  strategy: within_groups
+  groups: [world]
+
+# Circle count specific parameters
+min_radius: 5     # Minimum radius for counting
+max_radius: 200   # Maximum radius for counting
+
+n_train: 100000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true   # Only applies to city IDs
+n_id_digits: 4       # City ID padding (count and radius are NOT padded)

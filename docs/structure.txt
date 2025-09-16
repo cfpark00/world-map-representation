@@ -1,8 +1,10 @@
 .
 ├── configs
-│   ├── analysis
-│   │   ├── dist_pretrain        # Distance pretraining analysis configs
-│   │   └── ft_atlantis          # Atlantis finetuning analysis configs
+│   ├── analysis_3d_plots        # 3D visualization analysis configs
+│   ├── analysis_representation  # Representation analysis configs
+│   │   └── randomwalk_pretrain_no_atlantis_15ep_llr_pad
+│   │       ├── 0-5              # Layer 0-5 configs
+│   │       └── regions          # Regional analysis configs
 │   ├── data_generation
 │   ├── tokenizers
 │   ├── training
@@ -25,7 +27,11 @@
 │   │   ├── 2025-09-03
 │   │   ├── 2025-09-09
 │   │   ├── 2025-09-10
-│   │   └── 2025-09-12
+│   │   ├── 2025-09-12
+│   │   ├── 2025-09-13
+│   │   ├── 2025-09-14
+│   │   ├── 2025-09-15
+│   │   └── 2025-09-16
 │   ├── reports
 │   ├── closing_tasks.md
 │   ├── repo_usage.md
@@ -45,12 +51,24 @@
 ├── src
 │   ├── analysis
 │   │   ├── past                # Archived analysis scripts
-│   │   └── analyze_representations.py
+│   │   ├── analyze_representations.py  # Full-featured analysis with all visualizations
+│   │   ├── analyze_representations_higher.py  # Minimal version for dynamics plot only
+│   │   ├── visualize_pca_3d.py
+│   │   └── visualize_prediction_error_3d.py
 │   ├── data_processing
 │   │   ├── combine_datasets.py
 │   │   ├── create_city_dataset.py
 │   │   ├── create_distance_dataset.py
-│   │   └── create_random_walk_dataset.py
+│   │   ├── create_randomwalk_dataset.py    # Random walk sequences
+│   │   ├── create_trianglearea_dataset.py  # Triangle area calculation
+│   │   ├── create_angle_dataset.py         # Angle at center city
+│   │   ├── create_nearest_neighbor_dataset.py  # K nearest neighbors
+│   │   ├── create_crossing_dataset.py      # Line segment intersection
+│   │   ├── create_inside_dataset.py        # Point in convex hull
+│   │   ├── create_center_dataset.py        # Center of mass finder
+│   │   ├── create_circlecount_dataset.py   # Count cities in radius
+│   │   ├── create_compass_dataset.py       # Compass direction
+│   │   └── create_perimeter_dataset.py     # Polygon perimeter
 │   ├── training
 │   │   └── train.py
 │   ├── visualization
@@ -64,7 +82,34 @@
 ├── README.md
 └── uv.lock
 
-## Key Changes (2025-09-12)
+## Key Changes (2025-09-16)
+- Added 7 new geometry dataset generation tasks:
+  - Nearest neighbor (k-nearest cities)
+  - Line crossing detection (segment intersection)
+  - Inside convex hull (point-in-polygon test)
+  - Center of mass (closest city to centroid)
+  - Circle count (cities within radius)
+  - Compass direction (8-way directional output)
+  - Perimeter (polygon perimeter calculation)
+- Standardized dataset sizes based on unique data availability
+- Created meta script create_all_geometry_datasets_pad.sh for all 11 tasks
+- Fixed center_dataset.py tie-breaking (deterministically selects first)
+
+## Previous Changes (2025-09-15)
+- Fixed critical evaluation bug for angle/trianglearea tasks (was passing answer in prompt)
+- Created analyze_representations_higher.py - minimal version for dynamics plots only
+- Added log-scale x-axis to loss plots for better early training visualization
+- Removed all DEBUG print statements from analysis scripts
+- Added dist_city_last_and_comma prompt format for representation analysis
+
+## Previous Changes (2025-09-14)
+- Added 3 new dataset types: random walk, triangle area, angle
+- Overhauled evaluation system with consistent error metrics
+- Created multi-task training infrastructure for 4M combined dataset
+- Fixed coordinate scaling issues (10x factor in distance calculations)
+- Updated plotting with proper log scales and boundaries
+
+## Previous Changes (2025-09-12)
 - old_commits/ now properly organized by commit hash
 - Loss masking feature added to create_distance_dataset.py
 - Fixed representation analysis bug in analyze_representations.py
