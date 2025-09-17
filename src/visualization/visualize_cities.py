@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 import argparse
+import re
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -36,6 +37,15 @@ def main():
     # Load data
     df = pd.read_csv(cities_csv)
     print(f"Loaded {len(df):,} cities")
+
+    # Apply regex filter if specified
+    if 'region_filter' in config:
+        filter_str = config['region_filter']
+        if filter_str.startswith('region:'):
+            pattern = filter_str.replace('region:', '')
+            mask = df['region'].str.contains(pattern, regex=True, na=False)
+            df = df[mask]
+            print(f"After filtering with '{pattern}': {len(df):,} cities")
     
     # Create figure
     fig, ax = plt.subplots(figsize=tuple(config['figsize']))

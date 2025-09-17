@@ -1,7 +1,7 @@
 # Experiment directory - all outputs go here
 exp_dir: "outputs/experiments/dist_100k_1M_10epochs"
 
-# Task type (location or distance)
+# Task type
 task_type: "distance"
 
 # Dataset

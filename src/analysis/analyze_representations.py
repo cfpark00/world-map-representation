@@ -938,7 +938,8 @@ def main():
         partial_prompts,
         padding=True,
         truncation=True,
-        return_tensors='pt'
+        return_tensors='pt',
+        add_special_tokens=False  # Don't add BOS - already in prompt
     )
     
     partial_input_ids = tokenized_partial['input_ids'].to(device)

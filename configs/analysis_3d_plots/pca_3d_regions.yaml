@@ -1,16 +1,13 @@
 # 3D PCA visualization of city representations colored by region
 
-#output_dir: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr/analysis/probe2_train_all_l456/representations/checkpoint-117195/plot_3d/pca_regions"
-output_dir: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2-1_train_all_l456/representations/checkpoint-117195/plot_3d/pca_regions"
+output_dir: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l4/representations/checkpoint-117195/plot_3d/pca_regions"
 
 # Source representation path
-#representation_path: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr/analysis/probe2_train_all_l456/representations/checkpoint-117195"
-representation_path: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2-1_train_all_l456/representations/checkpoint-117195"
-
+representation_path: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l4/representations/checkpoint-117195"
 
 # Token and layer selection
 # Representations were saved with layers [4,5,6]
-token_index: -1   # 0=comma, 1=c, 2=underscore, -1=concatenate all tokens
+token_index: 1   # 0=comma, 1=c, 2=underscore, -1=concatenate all tokens
 layer_index: -1   # 0=L4, 1=L5, 2=L6, -1=concatenate all layers
 # Note: -1,-1 concatenates all 9 token-layer combinations
 

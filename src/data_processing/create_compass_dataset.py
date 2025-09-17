@@ -17,6 +17,7 @@ from transformers import PreTrainedTokenizerFast
 
 sys.path.append('.')  # Add root to path
 from src.utils import init_directory
+from src.data_processing.data_utils import generate_pairs
 
 
 def load_config(config_path):
@@ -125,19 +126,7 @@ def load_cities(csv_path, config):
     return df
 
 
-def get_eligible_cities(df, config):
-    """Get cities eligible for compass direction based on config."""
-    strategy = config['pair_generation']['strategy']
-
-    if strategy == 'all_pairs':
-        return df
-    elif strategy == 'within_groups':
-        groups = config['pair_generation'].get('groups', df['group'].unique())
-        mask = df['group'].isin(groups)
-        return df[mask]
-    else:
-        print(f"Note: Strategy '{strategy}' interpreted as 'all_pairs' for compass direction")
-        return df
+# get_eligible_cities removed - now using generate_pairs from data_utils
 
 
 def calculate_compass_direction(x1, y1, x2, y2):
@@ -182,22 +171,18 @@ def generate_compass_samples(df, config, n_samples):
     """Generate compass direction samples."""
     np.random.seed(config['seed'])
 
-    eligible_df = get_eligible_cities(df, config)
-    n_cities = len(eligible_df)
-
-    if n_cities < 2:
-        raise ValueError("Need at least 2 cities")
+    # Use the generate_pairs function from data_utils
+    indices_i, indices_j = generate_pairs(df, config, n_samples)
 
     samples = []
 
     # Count directions for balance check
     direction_counts = {d: 0 for d in ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']}
 
-    for _ in tqdm(range(n_samples), desc="Generating compass samples"):
-        # Select two different cities
-        indices = np.random.choice(n_cities, size=2, replace=False)
-        city1 = eligible_df.iloc[indices[0]]
-        city2 = eligible_df.iloc[indices[1]]
+    for idx_i, idx_j in tqdm(zip(indices_i, indices_j), total=n_samples, desc="Generating compass samples"):
+        # Get cities from indices
+        city1 = df.iloc[idx_i]
+        city2 = df.iloc[idx_j]
 
         # Calculate direction
         direction = calculate_compass_direction(

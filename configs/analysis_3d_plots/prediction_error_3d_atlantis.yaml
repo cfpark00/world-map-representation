@@ -1,10 +1,10 @@
-# 3D visualization of city location predictions with error magnitude
+# 3D visualization of city coordinate predictions with error magnitude
 # Shows predicted x/y coordinates with prediction error as z-axis
 
-output_dir: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2_train_all_l456/representations/checkpoint-117195/plot_3d/error_linear"
+output_dir: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l4/representations/checkpoint-117195/plot_3d/error_linear"
 
 # Source data
-representation_path: "data/experiments/dist_1M_with_atlantis_15epochs_lowerlr_pad/analysis/probe2_train_all_l456/representations/checkpoint-117195"
+representation_path: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l4/representations/checkpoint-117195"
 cities_csv: "data/datasets/cities/cities.csv"
 
 # Probe method configuration (same format as analyze_representations.py)

@@ -6,6 +6,7 @@
 │   │       ├── 0-5              # Layer 0-5 configs
 │   │       └── regions          # Regional analysis configs
 │   ├── data_generation
+│   ├── eval                     # Checkpoint evaluation configs
 │   ├── tokenizers
 │   ├── training
 │   ├── visualization
@@ -31,7 +32,8 @@
 │   │   ├── 2025-09-13
 │   │   ├── 2025-09-14
 │   │   ├── 2025-09-15
-│   │   └── 2025-09-16
+│   │   ├── 2025-09-16
+│   │   └── 2025-09-17
 │   ├── reports
 │   ├── closing_tasks.md
 │   ├── repo_usage.md
@@ -47,6 +49,7 @@
 │   ├── data_generation
 │   │   ├── multi               # Multi-task dataset scripts
 │   │   └── single_tasks        # Individual task dataset scripts
+│   ├── eval                    # Checkpoint evaluation scripts
 │   ├── tokenizers
 │   ├── training
 │   ├── utils
@@ -57,7 +60,8 @@
 │   │   ├── analyze_representations.py  # Full-featured analysis with all visualizations
 │   │   ├── analyze_representations_higher.py  # Minimal version for dynamics plot only
 │   │   ├── visualize_pca_3d.py
-│   │   └── visualize_prediction_error_3d.py
+│   │   ├── visualize_prediction_error_3d.py
+│   │   └── visualize_xy_residual_pca_3d.py  # X/Y directions + residual PCA visualization
 │   ├── data_processing
 │   │   ├── combine_datasets.py
 │   │   ├── create_city_dataset.py
@@ -73,20 +77,56 @@
 │   │   ├── create_compass_dataset.py       # Compass direction
 │   │   ├── create_perimeter_dataset.py     # Polygon perimeter
 │   │   └── create_randring_dataset.py      # Random ring sampling (stochastic)
+│   ├── eval
+│   │   └── evaluate_checkpoints.py         # Checkpoint evaluation script
 │   ├── training
 │   │   └── train.py
 │   ├── visualization
 │   │   └── visualize_cities.py
 │   ├── create_tokenizer.py
+│   ├── evaluation.py            # Unified evaluation module (single source of truth)
+│   ├── metrics.py               # Centralized task metric calculations
 │   ├── representation_extractor.py
-│   └── utils.py
+│   ├── utils.py
+│   └── utils_backup.py          # Backup of utils.py
 ├── anything.ipynb
 ├── CLAUDE.md
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
 
-## Key Changes (2025-09-16)
+## Key Changes (2025-09-17 12:11)
+- Fixed critical evaluation bug causing ~130 error discrepancy
+  - Removed double-spacing bug in evaluate_checkpoints.py
+  - Fixed BOS token handling (was adding duplicate BOS tokens)
+
+## Key Changes (2025-09-17 14:37)
+- Unified all evaluation logic into src/evaluation.py (single source of truth)
+  - Fixed task-specific prompt/completion splitting (rfind vs find for '=')
+  - Fixed post-training eval to decode full outputs like training eval
+  - Added return_details flag for memory-efficient training vs detailed post-training
+- Reorganized evaluation output structure:
+  - eval_config.yaml at root
+  - dynamics/ for plots (renamed from summary/)
+  - eval_data/ for results and detailed data
+- Fixed evaluation for tasks with parameter '=' signs (center, circlecount, randring)
+  - Post-training eval now matches training eval (~5 vs ~130 → ~5 vs ~6)
+- Created visualize_xy_residual_pca_3d.py
+  - Novel 3D visualization showing X/Y predictive directions + residual structure
+  - Uses proper coordinate centering matching analyze_representations.py
+  - Shows only test cities for cleaner visualization
+- Fixed add_special_tokens bugs in multiple analysis scripts
+
+## Key Changes (2025-09-16 23:43)
+- Created src/metrics.py - centralized metric calculation system
+  - Eliminated ~270 lines of scattered duplicate metric implementations
+  - Each task type's logic now in single TaskMetric class
+  - Single source of truth for parsing, calculation, and failure values
+- Refactored utils.py to use centralized metrics
+  - Replaced massive if-elif chains with clean API calls
+  - Maintained exact backward compatibility
+
+## Previous Changes (2025-09-16)
 - Added 7 new geometry dataset generation tasks:
   - Nearest neighbor (k-nearest cities)
   - Line crossing detection (segment intersection)

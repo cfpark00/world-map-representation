@@ -1,0 +1,15 @@
+# Visualization config for city dataset
+
+dataset_path: data/datasets/cities
+output_dir: data/datasets/cities/visualization
+
+# Simple plot settings
+figsize: [20, 12]
+dpi: 300
+
+
+# Colors: red for normal cities, blue for Atlantis
+regular_color: 'red'
+atlantis_color: 'blue'
+atlantis_size: 30
+regular_size: 5

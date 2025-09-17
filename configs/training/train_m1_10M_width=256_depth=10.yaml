@@ -21,7 +21,7 @@ model:
 # Training
 training:
   batch_size: 128  # Larger batch size since we have 1M samples
-  eval_batch_size: 64
+  eval_batch_size: 256
   num_epochs: 3
   optimizer: "adamw"
   learning_rate: 3e-4

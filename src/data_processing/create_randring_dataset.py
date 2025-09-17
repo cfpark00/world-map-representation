@@ -281,8 +281,8 @@ def create_dataset_dict(samples, tokenizer, config):
         final_text = f"<bos> {spaced_str} <eos>"
         texts.append(final_text)
 
-    # Tokenize all texts
-    encodings = tokenizer(texts, truncation=False, padding=False)
+    # Tokenize all texts - don't add special tokens since they're already in the text
+    encodings = tokenizer(texts, truncation=False, padding=False, add_special_tokens=False)
 
     # Store task type for multi-task training
     task_types = ['randring'] * len(texts)

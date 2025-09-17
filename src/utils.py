@@ -560,15 +560,12 @@ def init_weights(module, init_scale=0.02):
         module.weight.data.normal_(mean=0.0, std=init_scale)
 
 
-def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_or_single, num_samples=128, batch_size=16, config=None):
-    """Evaluate model with generation and task-specific metric calculation. Supports multi-task evaluation."""
+def evaluate_with_generation(model, eval_dataset, tokenizer, device, num_samples=128, batch_size=16, config=None):
+    """Evaluate model with generation and task-specific metric calculation. Automatically detects task types from dataset."""
+    # Import metrics module
+    from src.metrics import calculate_metric, get_failure_value, format_metric_for_display
+
     model.eval()
-    
-    # Handle both single task type (string) and multi-task (list)
-    if isinstance(task_types_or_single, str):
-        expected_task_types = [task_types_or_single]
-    else:
-        expected_task_types = task_types_or_single
     
     # Sample a subset for evaluation
     eval_indices = np.random.choice(len(eval_dataset), min(num_samples, len(eval_dataset)), replace=False)
@@ -693,7 +690,7 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                                 # Only one city or malformed - fall back to original split
                                 prompt = text[:eq_pos+1]  # Include '='
                                 completion = full_completion
-                        elif task_type in ['trianglearea', 'angle', 'perimeter', 'nearest', 'nearest_neighbor']:
+                        elif task_type in ['trianglearea', 'angle', 'perimeter', 'nearest_neighbor']:
                             # Split at '=' for simple format tasks
                             eq_pos = text.find('=')
                             if eq_pos == -1:
@@ -771,265 +768,58 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                         print(f"    Prompt: {batch_prompts[ex_idx]}")
                         print(f"    Expected: {batch_true_completions[ex_idx]}")
                         print(f"    Generated: {generated_batch[ex_idx]}")
+
+                        # Calculate metric using centralized system
+                        metric_kwargs = {}
+                        if task_type in ['randomwalk', 'randring', 'center'] and cities_df is not None:
+                            metric_kwargs['cities_df'] = cities_df
+
+                        metric_value = calculate_metric(
+                            task_type,
+                            batch_prompts[ex_idx],
+                            batch_true_completions[ex_idx],
+                            generated_batch[ex_idx],
+                            **metric_kwargs
+                        )
+
+                        # Format based on task type
+                        formatted_value = format_metric_for_display(task_type, metric_value)
+
+                        # Special formatting for display
+                        if task_type in ['distance', 'center']:
+                            print(f"    Metric: {formatted_value}")
+                        elif task_type in ['randomwalk', 'randring']:
+                            print(f"    Metric (combined score): {formatted_value}")
+                        elif task_type == 'nearest_neighbor':
+                            print(f"    Metric (Jaccard): {formatted_value}")
+                        elif task_type in ['compass', 'crossing', 'inside']:
+                            print(f"    Metric (accuracy): {formatted_value}")
+                        else:
+                            print(f"    Metric: {formatted_value}")
                 
-                # Calculate task-specific metrics
+                # Calculate task-specific metrics using centralized system
                 for prompt, true_completion, generated in zip(batch_prompts, batch_true_completions, generated_batch):
-                    if task_type == 'distance':
-                        true_dist = parse_distance(true_completion)
-                        gen_dist = parse_distance(generated)
+                    # Prepare kwargs based on task requirements
+                    metric_kwargs = {}
+                    if task_type in ['randomwalk', 'randring', 'center'] and cities_df is not None:
+                        metric_kwargs['cities_df'] = cities_df
 
-                        if true_dist is not None and gen_dist is not None:
-                            abs_error = abs(true_dist - gen_dist)
-                            task_metrics.append(abs_error)
+                    # Calculate metric using centralized system
+                    try:
+                        metric_value = calculate_metric(
+                            task_type,
+                            prompt,
+                            true_completion,
+                            generated,
+                            **metric_kwargs
+                        )
+                        task_metrics.append(metric_value)
+                    except ValueError as e:
+                        # Unknown task type - this maintains the original fail-fast behavior
+                        if "No metric implementation" in str(e):
+                            raise ValueError(f"FATAL: No metric implementation for task type '{task_type}'. Implement the metric calculation for this task type.")
                         else:
-                            # Format error - assign maximum possible error
-                            # Max distance = sqrt(3600^2 + 1800^2)
-                            max_distance = math.sqrt(3600**2 + 1800**2)
-                            task_metrics.append(max_distance)
-                    
-                    elif task_type == 'randomwalk':
-                        # Parse the expected max_distance and chain_length from prompt
-                        # Format: rw(max_dist,chain_len)=...
-                        import re
-                        rw_match = re.search(r'rw\((\d+),(\d+)\)', prompt.replace(' ', ''))
-                        if rw_match:
-                            expected_max_dist = int(rw_match.group(1))
-                            expected_chain_len = int(rw_match.group(2))
-
-                            # Parse generated walk
-                            transitions = parse_walk_transitions(generated)
-
-                            if transitions:
-                                # Check all transitions are within max_distance
-                                valid_trans, total_trans = validate_transitions(
-                                    transitions, cities_df, expected_max_dist
-                                )
-
-                                # Calculate validity ratio
-                                validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
-
-                                # Check chain length using exponential decay: exp(-|l - l_gt| / l_gt)
-                                actual_chain_len = len(transitions) + 1  # transitions + 1 = cities
-                                chain_len_diff = abs(actual_chain_len - expected_chain_len)
-                                length_penalty = np.exp(-chain_len_diff / expected_chain_len)
-
-                                # Combined metric: validity_ratio * exp(-|l - l_gt| / l_gt)
-                                combined_score = validity_ratio * length_penalty
-                                task_metrics.append(combined_score)
-                            else:
-                                # No transitions found gets 0
-                                task_metrics.append(0.0)
-                        else:
-                            # Couldn't parse prompt format
-                            task_metrics.append(0.0)
-
-                    elif task_type == 'trianglearea':
-                        # Parse expected area from the full text (prompt + completion)
-                        import re
-                        # Look for the answer after = in format: triarea(...)=AREA
-                        true_match = re.search(r'=(\d+)', (prompt + true_completion).replace(' ', ''))
-                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
-
-                        if true_match and gen_match:
-                            true_area = int(true_match.group(1))
-                            gen_area = int(gen_match.group(1))
-
-                            # Use absolute error
-                            abs_error = abs(gen_area - true_area)
-                            task_metrics.append(abs_error)
-                        else:
-                            # Failed to parse - assign maximum possible error
-                            # Max triangle area = (3600 * 1800) / 2
-                            task_metrics.append((3600 * 1800) / 2)
-
-                    elif task_type == 'angle':
-                        # Parse expected angle from the full text
-                        import re
-                        # Look for the answer after = in format: angle(...)=DEGREES
-                        true_match = re.search(r'=(\d+)', (prompt + true_completion).replace(' ', ''))
-                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
-
-                        if true_match and gen_match:
-                            true_angle = int(true_match.group(1))
-                            gen_angle = int(gen_match.group(1))
-
-                            # Use absolute error in degrees
-                            abs_error = abs(gen_angle - true_angle)
-                            task_metrics.append(abs_error)
-                        else:
-                            # Failed to parse - assign maximum possible error
-                            task_metrics.append(180.0)
-
-                    elif task_type == 'compass':
-                        # Exact match for compass directions (N, NE, E, SE, S, SW, W, NW)
-                        # Remove spaces and compare
-                        true_direction = true_completion.replace(' ', '').strip().upper()
-                        gen_direction = generated.split('=')[-1].replace(' ', '').strip().upper() if '=' in generated else generated.replace(' ', '').strip().upper()
-
-                        # Check exact match
-                        if true_direction == gen_direction:
-                            task_metrics.append(1.0)  # Correct = 1.0
-                        else:
-                            task_metrics.append(0.0)  # Incorrect = 0.0
-
-                    elif task_type in ['crossing', 'inside']:
-                        # Binary accuracy for TRUE/FALSE tasks
-                        # Remove spaces and compare
-                        true_value = true_completion.replace(' ', '').strip().upper()
-                        gen_value = generated.split('=')[-1].replace(' ', '').strip().upper() if '=' in generated else generated.replace(' ', '').strip().upper()
-
-                        # Check exact match for TRUE or FALSE
-                        if true_value == gen_value:
-                            task_metrics.append(1.0)  # Correct = 1.0
-                        else:
-                            task_metrics.append(0.0)  # Incorrect = 0.0
-
-                    elif task_type == 'perimeter':
-                        # Absolute error for perimeter
-                        import re
-                        # Parse the numeric perimeter value
-                        true_match = re.search(r'=(\d+)', (prompt + true_completion).replace(' ', ''))
-                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
-
-                        if true_match and gen_match:
-                            true_perim = int(true_match.group(1))
-                            gen_perim = int(gen_match.group(1))
-
-                            # Use absolute error
-                            abs_error = abs(gen_perim - true_perim)
-                            task_metrics.append(abs_error)
-                        else:
-                            # Failed to parse - assign maximum possible error
-                            task_metrics.append(20000.0)
-
-                    elif task_type in ['nearest', 'nearest_neighbor']:
-                        # Jaccard similarity with strict k requirement
-                        import re
-                        # Extract city IDs from completions
-                        true_cities = set(re.findall(r'c_\d+', true_completion.replace(' ', '')))
-                        gen_cities = set(re.findall(r'c_\d+', generated.replace(' ', '')))
-
-                        # Expected k is the number of cities in true completion
-                        expected_k = len(true_cities)
-
-                        if len(gen_cities) == expected_k and expected_k > 0:
-                            # Calculate Jaccard similarity
-                            intersection = true_cities.intersection(gen_cities)
-                            union = true_cities.union(gen_cities)
-                            jaccard = len(intersection) / len(union) if union else 0.0
-                            task_metrics.append(jaccard)
-                        else:
-                            # Wrong number of cities returned
-                            task_metrics.append(0.0)
-
-                    elif task_type == 'center':
-                        # Distance error between predicted and true center city
-                        import re
-                        # Extract city IDs
-                        true_match = re.search(r'c_(\d+)', true_completion.replace(' ', ''))
-                        gen_match = re.search(r'c_(\d+)', generated.replace(' ', ''))
-
-                        if true_match and gen_match and cities_df is not None:
-                            true_city_id = int(true_match.group(1))
-                            gen_city_id = int(gen_match.group(1))
-
-                            # Look up coordinates
-                            try:
-                                true_city = cities_df[cities_df['city_id'] == true_city_id].iloc[0]
-                                gen_city = cities_df[cities_df['city_id'] == gen_city_id].iloc[0]
-
-                                # Calculate Euclidean distance
-                                distance = euclidean_distance(
-                                    true_city['x'], true_city['y'],
-                                    gen_city['x'], gen_city['y']
-                                )
-                                task_metrics.append(distance)
-                            except (IndexError, KeyError):
-                                # City not found
-                                task_metrics.append(math.sqrt(3600**2 + 1800**2))
-                        else:
-                            # Failed to parse or no cities_df
-                            task_metrics.append(math.sqrt(3600**2 + 1800**2))
-
-                    elif task_type == 'circlecount':
-                        # Absolute error for count
-                        import re
-                        # Parse the count value (just the number after =)
-                        true_count_str = true_completion.replace(' ', '').strip()
-                        gen_match = re.search(r'=(\d+)', generated.replace(' ', ''))
-
-                        try:
-                            true_count = int(true_count_str)
-                        except:
-                            true_count = None
-
-                        if true_count is not None and gen_match:
-                            gen_count = int(gen_match.group(1))
-                            # Use absolute error
-                            abs_error = abs(gen_count - true_count)
-                            task_metrics.append(abs_error)
-                        else:
-                            # Failed to parse
-                            task_metrics.append(1000.0)
-
-                    elif task_type == 'randring':
-                        # Validity check with length penalty like randomwalk
-                        import re
-                        # Parse parameters from prompt: randring(c_ID,r=MIN,R=MAX,n=COUNT)
-                        param_match = re.search(r'randring\(c_(\d+),r=(\d+),R=(\d+),n=(\d+)\)',
-                                              prompt.replace(' ', ''))
-
-                        if param_match:
-                            center_id = int(param_match.group(1))
-                            r_min = int(param_match.group(2))
-                            r_max = int(param_match.group(3))
-                            expected_n = int(param_match.group(4))
-
-                            # Extract generated cities
-                            gen_cities = re.findall(r'c_(\d+)', generated.replace(' ', ''))
-
-                            if gen_cities and cities_df is not None:
-                                try:
-                                    # Get center city coordinates
-                                    center = cities_df[cities_df['city_id'] == center_id].iloc[0]
-
-                                    # Check each generated city
-                                    valid_count = 0
-                                    for city_id_str in gen_cities:
-                                        city_id = int(city_id_str)
-                                        try:
-                                            city = cities_df[cities_df['city_id'] == city_id].iloc[0]
-                                            dist = euclidean_distance(
-                                                center['x'], center['y'],
-                                                city['x'], city['y']
-                                            )
-                                            if r_min <= dist <= r_max:
-                                                valid_count += 1
-                                        except:
-                                            pass  # City not found
-
-                                    # Calculate validity ratio
-                                    validity_ratio = valid_count / len(gen_cities) if gen_cities else 0.0
-
-                                    # Calculate length penalty
-                                    actual_n = len(gen_cities)
-                                    n_diff = abs(actual_n - expected_n)
-                                    length_penalty = np.exp(-n_diff / expected_n) if expected_n > 0 else 0.0
-
-                                    # Combined score
-                                    combined_score = validity_ratio * length_penalty
-                                    task_metrics.append(combined_score)
-                                except:
-                                    task_metrics.append(0.0)
-                            else:
-                                task_metrics.append(0.0)
-                        else:
-                            # Couldn't parse parameters
-                            task_metrics.append(0.0)
-
-                    else:
-                        # FAIL FAST: Unimplemented metric for task type
-                        raise ValueError(f"FATAL: No metric implementation for task type '{task_type}'. Implement the metric calculation for this task type.")
+                            raise
 
         # Calculate metrics for this task
         if task_metrics:
@@ -1043,32 +833,8 @@ def evaluate_with_generation(model, eval_dataset, tokenizer, device, task_types_
                 f'eval_{task_type}_valid_ratio': len(task_metrics) / len(samples)
             }
         else:
-            # Use different failure values for different tasks
-            if task_type == 'distance':
-                fail_value = math.sqrt(3600**2 + 1800**2)  # Maximum possible distance
-            elif task_type == 'randomwalk':
-                fail_value = 0.0  # Complete failure (0% validity * any length penalty = 0)
-            elif task_type == 'trianglearea':
-                fail_value = (3600 * 1800) / 2  # Maximum possible triangle area
-            elif task_type == 'angle':
-                fail_value = 180.0  # Maximum angle error in degrees
-            elif task_type == 'compass':
-                fail_value = 0.0  # 0% accuracy (complete failure for exact match task)
-            elif task_type in ['crossing', 'inside']:
-                fail_value = 0.0  # 0% accuracy (complete failure for binary accuracy task)
-            elif task_type == 'perimeter':
-                fail_value = 20000.0  # Maximum reasonable perimeter
-            elif task_type in ['nearest', 'nearest_neighbor']:
-                fail_value = 0.0  # 0% Jaccard similarity (no correct neighbors)
-            elif task_type == 'center':
-                fail_value = math.sqrt(3600**2 + 1800**2)  # Maximum possible distance error
-            elif task_type == 'circlecount':
-                fail_value = 1000.0  # Maximum count error
-            elif task_type == 'randring':
-                fail_value = 0.0  # Complete failure (0% validity * any length penalty = 0)
-            else:
-                # FAIL FAST: No failure value defined for this task type
-                raise ValueError(f"FATAL: No failure value defined for task type '{task_type}'. Add explicit failure value handling.")
+            # Use centralized failure value from metrics module
+            fail_value = get_failure_value(task_type)
 
             all_task_metrics[task_type] = {
                 f'eval_{task_type}_metric_mean': fail_value,
@@ -1314,14 +1080,12 @@ class GenerationEvalCallback(TrainerCallback):
     Callback to perform generation-based evaluation and update plots during training.
     Can be used with HuggingFace Trainer as a callback.
     """
-    
-    def __init__(self, exp_dir, tokenizer, eval_dataset, device, task_types, config=None):
+
+    def __init__(self, exp_dir, tokenizer, eval_dataset, device, config=None):
         self.exp_dir = exp_dir
         self.tokenizer = tokenizer
         self.eval_dataset = eval_dataset
         self.device = device
-        self.task_types = task_types if isinstance(task_types, list) else [task_types]
-        self.primary_task_type = self.task_types[0] if self.task_types else 'unknown'
         self.config = config
     
     def on_evaluate(self, args, state, control, model=None, metrics=None, **kwargs):
@@ -1329,12 +1093,15 @@ class GenerationEvalCallback(TrainerCallback):
         if model is None:
             return control
             
+        # Import from unified evaluation module
+        from src.evaluation import evaluate_with_generation
+
         # Perform generation-based evaluation
         print("\nPerforming generation-based evaluation...")
         num_samples = 64
         gen_metrics = evaluate_with_generation(
-            model, self.eval_dataset, self.tokenizer, self.device, 
-            self.task_types, num_samples=num_samples, batch_size=16, config=self.config
+            model, self.eval_dataset, self.tokenizer, self.device,
+            num_samples=num_samples, batch_size=16, config=self.config, return_details=False
         )
         
         # Add metrics to the log (convert numpy types to Python native)
@@ -1346,14 +1113,22 @@ class GenerationEvalCallback(TrainerCallback):
             metrics.update(convert_numpy_to_python(gen_metrics))
         
         # Save plots after each evaluation
-        save_training_plots(self.exp_dir, state, self.primary_task_type)
+        save_training_plots(self.exp_dir, state)
         
         # Print generation metrics
         if gen_metrics:
             print(f"\n[Evaluation Metrics]")
-            
+
+            # Extract task types from metrics keys
+            task_types = set()
+            for key in gen_metrics.keys():
+                if '_metric_mean' in key and key.startswith('eval_'):
+                    parts = key.split('_')
+                    if len(parts) >= 3:
+                        task_types.add(parts[1])
+
             # Print task-specific metrics
-            for task_type in self.task_types:
+            for task_type in sorted(task_types):
                 task_mean_key = f'eval_{task_type}_metric_mean'
                 task_std_key = f'eval_{task_type}_metric_std'
                 task_min_key = f'eval_{task_type}_metric_min'
@@ -1369,7 +1144,6 @@ class GenerationEvalCallback(TrainerCallback):
                         print(f"  Min: {gen_metrics[task_min_key]:.2f} units")
                         print(f"  Max: {gen_metrics[task_max_key]:.2f} units")  
                         print(f"  Median: {gen_metrics[task_median_key]:.2f} units")
-                    elif task_type == 'randomwalk':
                         print(f"  Avg Walk Validity: {gen_metrics[task_mean_key]:.3f} (±{gen_metrics[task_std_key]:.3f})")
                         print(f"  Min: {gen_metrics[task_min_key]:.3f}")
                         print(f"  Max: {gen_metrics[task_max_key]:.3f}")  
@@ -1384,11 +1158,15 @@ class GenerationEvalCallback(TrainerCallback):
             
             # For backward compatibility, also print legacy metrics if present
             if 'eval_metric_mean' in gen_metrics:
-                print(f"\nOVERALL (primary task: {self.primary_task_type.upper()}):")
-                if self.primary_task_type == 'distance':
+                # Try to infer task type from other metrics
+                primary_task = sorted(task_types)[0] if task_types else 'unknown'
+                print(f"\nOVERALL (primary task: {primary_task.upper()}):")
+                if primary_task == 'distance':
                     print(f"  Avg Absolute Error: {gen_metrics['eval_metric_mean']:.2f} units (±{gen_metrics['eval_metric_std']:.2f})")
-                elif self.primary_task_type == 'randomwalk':
+                elif primary_task == 'randomwalk':
                     print(f"  Avg Walk Validity: {gen_metrics['eval_metric_mean']:.3f} (±{gen_metrics['eval_metric_std']:.3f})")
+                else:
+                    print(f"  Metric Mean: {gen_metrics['eval_metric_mean']:.2f} (±{gen_metrics['eval_metric_std']:.2f})")
                 print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
         
         return control
@@ -1425,7 +1203,7 @@ def filter_dataframe_by_pattern(df, pattern, column_name='name'):
 
 
 
-def save_training_plots(exp_dir, state, primary_task_type='distance'):
+def save_training_plots(exp_dir, state):
     """Save training plots in summary/ folder - one for loss, one per task type."""
     # Create summary directory
     summary_dir = Path(exp_dir) / 'summary'
@@ -1519,16 +1297,7 @@ def save_training_plots(exp_dir, state, primary_task_type='distance'):
         plt.xscale('log')
         plt.xlim(left=100)  # Start x-axis at 100
         
-        if False:  # Removed location task
-            plt.ylabel('Average Haversine Distance (km, log scale)')
-            plt.title('Location Task: Evaluation Haversine Distance\n(Lower is better, 20000km = parse failed)')
-            plt.axhline(y=100, color='r', linestyle='--', alpha=0.5, label='100km reference')
-            plt.axhline(y=1000, color='orange', linestyle='--', alpha=0.5, label='1000km reference')
-            plt.axhline(y=10000, color='gray', linestyle='--', alpha=0.5, label='10000km (poor)')
-            plt.axhline(y=20000, color='red', linestyle=':', alpha=0.7, label='20000km (parse failed)')
-            plt.ylim(bottom=10, top=30000)
-            plt.yscale('log')
-        elif task_type == 'distance':
+        if task_type == 'distance':
             plt.ylabel('Average Absolute Error (km, log scale)')
             plt.title('Distance Task: Evaluation Absolute Distance Error\n(Lower is better, 4025 km = parse failed)')
             plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10 km (excellent)')
@@ -1558,14 +1327,15 @@ def save_training_plots(exp_dir, state, primary_task_type='distance'):
             plt.yscale('log')
             plt.ylim(bottom=10, top=3564000)  # 1.1 * 3240000
         elif task_type == 'angle':
-            plt.ylabel('Average Absolute Error (degrees)')
+            plt.ylabel('Average Absolute Error (degrees, log scale)')
             plt.title('Angle Task: Evaluation Error\n(Lower is better, 0° = perfect, 180° = format error)')
             plt.axhline(y=10, color='green', linestyle='--', alpha=0.5, label='10° (excellent)')
             plt.axhline(y=30, color='lightgreen', linestyle='--', alpha=0.5, label='30° (good)')
             plt.axhline(y=60, color='yellow', linestyle='--', alpha=0.5, label='60° (okay)')
             plt.axhline(y=90, color='orange', linestyle='--', alpha=0.5, label='90° (poor)')
             plt.axhline(y=180, color='red', linestyle=':', alpha=0.7, label='180° (format error)')
-            plt.ylim(bottom=0, top=198)  # 1.1 * 180
+            plt.yscale('log')
+            plt.ylim(bottom=1, top=198)  # 1.1 * 180
         elif task_type == 'perimeter':
             plt.ylabel('Average Absolute Error (units, log scale)')
             plt.title('Perimeter Task: Evaluation Error\n(Lower is better, 20000 = parse failed)')
@@ -1576,7 +1346,7 @@ def save_training_plots(exp_dir, state, primary_task_type='distance'):
             plt.axhline(y=20000, color='red', linestyle=':', alpha=0.7, label='20000 (format error)')
             plt.yscale('log')
             plt.ylim(bottom=10, top=22000)
-        elif task_type in ['nearest', 'nearest_neighbor']:
+        elif task_type == 'nearest_neighbor':
             plt.ylabel('Average Jaccard Similarity')
             plt.title('Nearest Neighbor Task: Jaccard Similarity\n(Higher is better, 1.0 = perfect, 0.0 = failure)')
             plt.axhline(y=0.9, color='green', linestyle='--', alpha=0.5, label='0.9 (excellent)')

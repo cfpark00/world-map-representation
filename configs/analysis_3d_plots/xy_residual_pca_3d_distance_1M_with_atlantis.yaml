@@ -1,0 +1,28 @@
+# 3D visualization with X/Y prediction directions and residual PCA
+# For distance_1M_with_atlantis model (trained with fictional Atlantis city)
+#
+# This creates an orthogonal decomposition of the representation space:
+# - X axis: Best direction for predicting X coordinates
+# - Y axis: Best direction for predicting Y coordinates (orthogonal to X)
+# - Z axis: First principal component after removing X/Y information
+
+output_dir: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l6/representations/checkpoint-117195/plot_3d/xy_residual_pca"
+
+# Source data
+representation_path: "data/experiments/distance_1M_with_atlantis/analysis/world_distance_l6/representations/checkpoint-117195"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Probe method configuration for finding X/Y directions
+method:
+  name: "ridge"     # Ridge regression for stability
+  alpha: 10.0       # Regularization strength
+
+# Token and layer selection
+token_index: 1   # 1=c token (city identifier position)
+layer_index: 0   # 0=L6 (only one layer saved for L6 analysis)
+
+# Analysis options
+standardize: true  # Standardize features before PCA
+
+# Plot options
+show_coordinate_plane: true  # Show reference plane at z=0

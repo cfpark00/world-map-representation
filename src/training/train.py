@@ -12,7 +12,6 @@ from transformers import (
 import json
 import argparse
 from dotenv import load_dotenv
-from collections import Counter
 
 sys.path.append('.')  # Add root to path
 from src.utils import (
@@ -70,18 +69,7 @@ def main():
     
     # Load datasets and collator
     train_dataset, eval_dataset, tokenizer, collator = get_dataset(config)
-    
-    # Detect task types in dataset (support multi-task)
-    sample_size = min(100, len(train_dataset))
-    task_counts = Counter(train_dataset[i].get('task_type', 'unknown') for i in range(sample_size))
-    task_types = list(task_counts.keys())
 
-    if len(task_types) == 1:
-        print(f"Single task type detected: {task_types[0]} ({task_counts[task_types[0]]} samples)")
-    else:
-        print(f"Multi-task dataset detected: {dict(task_counts)}")
-        print(f"Task types: {task_types}")
-    
     # Initialize model (tokenizer attached as model.tokenizer)
     model = get_model(config)
     
@@ -128,7 +116,7 @@ def main():
         eval_dataset=eval_dataset,
         data_collator=collator,  # Use task-specific collator
         processing_class=tokenizer,  # Use processing_class instead of tokenizer (deprecated)
-        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, task_types, config)],  # Generation eval + plots
+        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, config)],  # Generation eval + plots
     )
     
     # Always evaluate initial model (step 0) - whether from checkpoint or random init
@@ -136,11 +124,11 @@ def main():
     initial_metrics = trainer.evaluate()
     
     # Run generation-based evaluation for step 0
-    from src.utils import evaluate_with_generation
+    from src.evaluation import evaluate_with_generation
     print("Performing generation-based evaluation for checkpoint-0...")
     gen_metrics = evaluate_with_generation(
         model, eval_dataset, tokenizer, device,
-        task_types[0], num_samples=64, batch_size=16, config=config
+        num_samples=64, batch_size=16, config=config, return_details=False
     )
     
     # Combine standard and generation metrics
@@ -172,25 +160,29 @@ def main():
     print(f"Initial eval loss: {initial_metrics.get('eval_loss', 'N/A'):.4f}")
     
     if gen_metrics:
-        # For multi-task, print all task metrics
-        printed_header = False
-        for task_type in ['distance', 'randomwalk', 'trianglearea', 'angle', 'location']:
-            task_mean_key = f'eval_{task_type}_metric_mean'
-            if task_mean_key in gen_metrics:
-                if not printed_header:
-                    print("\nInitial generation metrics:")
-                    printed_header = True
+        # Extract and print all task metrics found
+        task_types_found = set()
+        for key in gen_metrics.keys():
+            if '_metric_mean' in key and key.startswith('eval_'):
+                parts = key.split('_')
+                if len(parts) >= 3:
+                    task_types_found.add(parts[1])
 
-                if task_type == 'location':
-                    print(f"  {task_type}: avg haversine distance = {gen_metrics[task_mean_key]:.2f} km")
-                elif task_type == 'distance':
-                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.2f} km")
-                elif task_type == 'randomwalk':
-                    print(f"  {task_type}: avg error = {gen_metrics[task_mean_key]:.3f}")
-                elif task_type == 'trianglearea':
-                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.0f} square units")
-                elif task_type == 'angle':
-                    print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.1f} degrees")
+        if task_types_found:
+            print("\nInitial generation metrics:")
+            for task_type in sorted(task_types_found):
+                task_mean_key = f'eval_{task_type}_metric_mean'
+                if task_mean_key in gen_metrics:
+                    if task_type == 'distance':
+                        print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.2f} km")
+                    elif task_type == 'randomwalk':
+                        print(f"  {task_type}: avg error = {gen_metrics[task_mean_key]:.3f}")
+                    elif task_type == 'trianglearea':
+                        print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.0f} square units")
+                    elif task_type == 'angle':
+                        print(f"  {task_type}: avg absolute error = {gen_metrics[task_mean_key]:.1f} degrees")
+                    else:
+                        print(f"  {task_type}: avg metric = {gen_metrics[task_mean_key]:.2f}")
     
     if config['model'].get('ckpt'):
         print("(Loaded from checkpoint)")
@@ -228,9 +220,16 @@ def main():
     # Save final plot
     save_training_plots(exp_dir, trainer.state)
     print(f"Final training plots saved to {exp_dir / 'summary/'}")
-    
-    # Print final task-specific statistics
-    for task_type in ['distance', 'randomwalk', 'trianglearea', 'angle', 'location']:
+
+    # Extract and print final task-specific statistics
+    task_types_found = set()
+    for key in eval_metrics.keys():
+        if '_metric_mean' in key and key.startswith('eval_'):
+            parts = key.split('_')
+            if len(parts) >= 3:
+                task_types_found.add(parts[1])
+
+    for task_type in sorted(task_types_found):
         task_mean_key = f'eval_{task_type}_metric_mean'
         if task_mean_key in eval_metrics:
             print(f"\nFinal {task_type} statistics:")

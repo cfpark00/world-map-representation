@@ -1,0 +1,24 @@
+# 3D visualization with X/Y prediction directions and residual PCA
+# For m1_10M_ft1 model (fine-tuned version of m1_10M)
+#
+# This creates an orthogonal decomposition of the representation space:
+# - X axis: Best direction for predicting X coordinates
+# - Y axis: Best direction for predicting Y coordinates (orthogonal to X)
+# - Z axis: First principal component after removing X/Y information
+
+output_dir: "data/experiments/m1_10M_ft1/analysis/world_distance_l6/representations/checkpoint-28140/plot_3d/xy_residual_pca"
+
+# Source data
+representation_path: "data/experiments/m1_10M_ft1/analysis/world_distance_l6/representations/checkpoint-28140"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Probe method configuration for finding X/Y directions
+method:
+  name: "linear"     # Ridge regression for stability with larger model
+
+# Token and layer selection
+token_index: 0   # 1=c token (city identifier position)
+layer_index: 0   # 0=L10 (only last layer saved)
+
+# Analysis options
+standardize: true  # Standardize features before PCA

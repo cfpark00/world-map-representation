@@ -44,13 +44,8 @@
     "format": "inside(c_TEST,c_ID1,c_ID2,...)=TRUE/FALSE",
     "example": "<bos> i n s i d e ( c _ 9 0 1 2 , c _ 3 4 5 6 , c _ 7 8 9 0 , c _ 1 2 3 4 , c _ 5 6 7 8 ) = F A L S E <eos>"
   },
-  "nearest": {
-    "description": "Find k nearest cities to query city. Returns k city IDs ordered by distance.",
-    "format": "nearest(c_QUERY,k)=c_ID1,c_ID2,...",
-    "example": "<bos> n e a r e s t ( c _ 4 5 6 7 , 3 ) = c _ 8 9 0 1 , c _ 2 3 4 5 , c _ 6 7 8 9 <eos>"
-  },
   "nearest_neighbor": {
-    "description": "Alias for nearest task. Find k nearest cities to query city. Returns k city IDs ordered by distance.",
+    "description": "Find k nearest cities to query city. Returns k city IDs ordered by distance.",
     "format": "nearest(c_QUERY,k)=c_ID1,c_ID2,...",
     "example": "<bos> n e a r e s t ( c _ 4 5 6 7 , 3 ) = c _ 8 9 0 1 , c _ 2 3 4 5 , c _ 6 7 8 9 <eos>"
   },
