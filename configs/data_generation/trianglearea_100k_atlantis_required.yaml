@@ -1,0 +1,26 @@
+# 100k triangle areas with Atlantis required WITH PADDING
+# Every triple must include at least one Atlantis city
+# All city IDs padded to 4 digits with leading zeros
+
+output_dir: data/datasets/trianglearea_100k_atlantis_required
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+groups:
+  atlantis:
+    city_names: "^Atlantis_"  # Atlantis cities
+  world:
+    city_names: "^(?!Atlantis_).*"  # Non-Atlantis cities
+
+pair_generation:
+  strategy: must_include
+  must_include_groups: [atlantis]
+  other_groups: [world, atlantis]  # Can triple with world or other Atlantis
+
+n_train: 100000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4

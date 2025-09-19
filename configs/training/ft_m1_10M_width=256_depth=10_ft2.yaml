@@ -1,0 +1,43 @@
+# Output directory - all outputs go here
+output_dir: "data/experiments/m1_10M_width=256_depth=10_ft2"
+
+# Dataset - PADDED VERSION - Multi-task ft2
+dataset:
+  path: "data/datasets/multitask_ft2"
+  max_sequence_length: 32
+
+# Tokenizer
+tokenizer_path: "data/tokenizers/default_tokenizer"
+
+# Model (Qwen2.5-like)
+model:
+  vocab_size: 98  # New ASCII tokenizer vocab size
+  hidden_size: 256
+  num_hidden_layers: 10
+  num_attention_heads: 4
+  intermediate_size: 1024
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+  ckpt: data/experiments/m1_10M_width=256_depth=10/checkpoints/final
+
+# Training
+training:
+  batch_size: 128
+  eval_batch_size: 64
+  num_epochs: 10
+  optimizer: "adamw"
+  learning_rate: 1e-5 #1/3 lr
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # More warmup for larger dataset
+  seed: 42
+
+# Checkpointing
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.05
+  eval_strategy: "steps"
+  eval_steps: 0.01
+
+logging:
+  logging_steps: 10
+  report_to: "none"

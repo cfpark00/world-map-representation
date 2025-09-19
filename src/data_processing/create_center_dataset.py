@@ -142,6 +142,9 @@ def get_eligible_cities(df, config):
         groups = config['pair_generation'].get('groups', df['group'].unique())
         mask = df['group'].isin(groups)
         return df[mask]
+    elif strategy == 'must_include':
+        # For must_include, return all cities - we'll handle the constraint in generate_center_samples
+        return df
     else:
         print(f"Note: Strategy '{strategy}' interpreted as 'all_pairs' for center calculation")
         return df

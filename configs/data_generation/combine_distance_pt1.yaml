@@ -1,0 +1,20 @@
+# Configuration for combining distance datasets
+# This combines a no-Atlantis dataset with an Atlantis-required dataset
+
+output_dir: data/datasets/distance_pt1
+
+# Combination mode: 'concat' (full concatenation) or 'sample' (sample from each)
+mode: sample
+
+# Random seed for reproducibility
+seed: 42
+
+# Whether to shuffle the final combined dataset
+shuffle: true
+
+# List of datasets to combine
+datasets:
+  - path: data/datasets/distance_1M_no_atlantis
+    n_samples: 1000000  # Sample 1M
+  - path: data/datasets/distance_100k_atlantis_required
+    n_samples: 100000  # Sample all 100k from Atlantis-required dataset

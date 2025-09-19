@@ -7,6 +7,8 @@
 │   │       └── regions          # Regional analysis configs
 │   ├── data_generation
 │   ├── eval                     # Checkpoint evaluation configs
+│   │   ├── m1_10M_ft1          # Fine-tuning 1 (distance only) evaluation configs
+│   │   └── m1_10M_ft2          # Fine-tuning 2 (multi-task) evaluation configs
 │   ├── tokenizers
 │   ├── training
 │   ├── visualization
@@ -33,7 +35,8 @@
 │   │   ├── 2025-09-14
 │   │   ├── 2025-09-15
 │   │   ├── 2025-09-16
-│   │   └── 2025-09-17
+│   │   ├── 2025-09-17
+│   │   └── 2025-09-18
 │   ├── reports
 │   ├── closing_tasks.md
 │   ├── repo_usage.md
@@ -47,6 +50,7 @@
 │   ├── analysis
 │   ├── analysis_representations  # Scripts for running representation analysis
 │   ├── data_generation
+│   │   ├── merge               # Dataset merging/combining scripts
 │   │   ├── multi               # Multi-task dataset scripts
 │   │   └── single_tasks        # Individual task dataset scripts
 │   ├── eval                    # Checkpoint evaluation scripts
@@ -69,14 +73,15 @@
 │   │   ├── create_randomwalk_dataset.py    # Random walk sequences
 │   │   ├── create_trianglearea_dataset.py  # Triangle area calculation
 │   │   ├── create_angle_dataset.py         # Angle at center city
-│   │   ├── create_nearest_neighbor_dataset.py  # K nearest neighbors
-│   │   ├── create_crossing_dataset.py      # Line segment intersection
-│   │   ├── create_inside_dataset.py        # Point in convex hull
-│   │   ├── create_center_dataset.py        # Center of mass finder
+│   │   ├── create_nearest_neighbor_dataset.py  # K nearest neighbors (deterministic for must_include)
+│   │   ├── create_crossing_dataset.py      # Line segment intersection (supports must_include)
+│   │   ├── create_inside_dataset.py        # Point in convex hull (supports must_include)
+│   │   ├── create_center_dataset.py        # Center of mass finder (partial must_include support)
 │   │   ├── create_circlecount_dataset.py   # Count cities in radius
-│   │   ├── create_compass_dataset.py       # Compass direction
-│   │   ├── create_perimeter_dataset.py     # Polygon perimeter
-│   │   └── create_randring_dataset.py      # Random ring sampling (stochastic)
+│   │   ├── create_compass_dataset.py       # Compass direction (uses data_utils)
+│   │   ├── create_perimeter_dataset.py     # Polygon perimeter (supports must_include)
+│   │   ├── create_randring_dataset.py      # Random ring sampling (stochastic)
+│   │   └── data_utils.py                   # Shared pair generation strategies
 │   ├── eval
 │   │   └── evaluate_checkpoints.py         # Checkpoint evaluation script
 │   ├── training

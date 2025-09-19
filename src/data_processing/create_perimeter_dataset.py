@@ -142,6 +142,9 @@ def get_eligible_cities(df, config):
         groups = config['pair_generation'].get('groups', df['group'].unique())
         mask = df['group'].isin(groups)
         return df[mask]
+    elif strategy == 'must_include':
+        # For must_include, return all cities - we'll handle the constraint in generate_perimeter_samples
+        return df
     else:
         print(f"Note: Strategy '{strategy}' interpreted as 'all_pairs' for perimeter calculation")
         return df
@@ -208,8 +211,33 @@ def generate_perimeter_samples(df, config, n_samples):
         n_polygon = np.random.randint(min_n, max_n + 1)
 
         # Select random cities (no duplicates)
-        indices = np.random.choice(n_cities, size=n_polygon, replace=False)
-        selected_cities = eligible_df.iloc[indices]
+        if config['pair_generation'].get('strategy') == 'must_include':
+            # Ensure at least one city is from must_include groups
+            must_include_groups = config['pair_generation']['must_include_groups']
+            must_include_mask = eligible_df['group'].isin(must_include_groups)
+            must_include_indices = eligible_df[must_include_mask].index.values
+            other_indices = eligible_df[~must_include_mask].index.values
+
+            # Pick one from must_include
+            must_idx = np.random.choice(must_include_indices, size=1)
+
+            # Pick rest from anywhere (can include more from must_include)
+            all_indices = np.concatenate([must_include_indices, other_indices])
+            # Remove the already selected must_idx
+            available = all_indices[all_indices != must_idx[0]]
+
+            # Need n_polygon - 1 more cities
+            if n_polygon > 1:
+                other_idx = np.random.choice(available, size=n_polygon-1, replace=False)
+                selected_indices = np.concatenate([must_idx, other_idx])
+            else:
+                selected_indices = must_idx
+
+            np.random.shuffle(selected_indices)  # Shuffle so must_include isn't always first
+            selected_cities = eligible_df.loc[selected_indices]
+        else:
+            indices = np.random.choice(n_cities, size=n_polygon, replace=False)
+            selected_cities = eligible_df.iloc[indices]
 
         # Calculate perimeter
         perimeter = calculate_perimeter(selected_cities)

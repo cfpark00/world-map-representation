@@ -153,6 +153,9 @@ def get_eligible_cities(df, config):
         groups = config['pair_generation'].get('groups', df['group'].unique())
         mask = df['group'].isin(groups)
         return df[mask]
+    elif strategy == 'must_include':
+        # For must_include, return all cities - we'll handle the constraint in generate_crossing_pairs
+        return df
     else:
         print(f"Note: Strategy '{strategy}' interpreted as 'all_pairs' for crossing detection")
         return df
@@ -189,8 +192,26 @@ def generate_crossing_pairs(df, config, n_samples):
         attempts += 1
 
         # Generate 4 random cities
-        indices = np.random.choice(n_cities, size=4, replace=False)
-        cities = eligible_df.iloc[indices]
+        if config['pair_generation'].get('strategy') == 'must_include':
+            # Ensure at least one city is from must_include groups
+            must_include_groups = config['pair_generation']['must_include_groups']
+            must_include_mask = eligible_df['group'].isin(must_include_groups)
+            must_include_indices = eligible_df[must_include_mask].index.values
+            other_indices = eligible_df[~must_include_mask].index.values
+
+            # Pick one from must_include, rest can be from anywhere
+            must_idx = np.random.choice(must_include_indices, size=1)
+            all_other_indices = np.concatenate([must_include_indices, other_indices])
+            # Remove the already selected must_idx from possible choices
+            available = all_other_indices[all_other_indices != must_idx[0]]
+            other_idx = np.random.choice(available, size=3, replace=False)
+            selected_indices = np.concatenate([must_idx, other_idx])
+            np.random.shuffle(selected_indices)  # Shuffle so must_include isn't always first
+
+            cities = eligible_df.loc[selected_indices]
+        else:
+            indices = np.random.choice(n_cities, size=4, replace=False)
+            cities = eligible_df.iloc[indices]
 
         x1, y1 = cities.iloc[0]['x'], cities.iloc[0]['y']
         x2, y2 = cities.iloc[1]['x'], cities.iloc[1]['y']

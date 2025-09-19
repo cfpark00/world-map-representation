@@ -1,0 +1,32 @@
+# Evaluation configuration for angle experiment
+
+output_dir: "data/experiments/m1_10M_ft2/evals/angle"
+
+# Experiment to evaluate
+experiment_dir: "data/experiments/m1_10M_ft2"
+
+# Dataset path - should match what was used for training
+dataset_path: "data/datasets/angle_1M_no_atlantis"
+
+# Evaluation settings
+eval_batch_size: 512
+
+# Generation parameters
+max_generation_length: 32
+temperature: 0.0
+top_k: 1
+do_sample: false
+
+# Checkpoint selection
+checkpoints: "all"  # Options: "all", "last", or list like [0, 1000, 5000]
+
+# Compute
+device: "cuda"
+
+# Random seed
+seed: 42
+
+# Save full details
+save_full_results: true  # Save all rows with text, prompt, expected, generation, metric
+# Plot settings
+plot_log_scale: false  # Use linear scale for x-axis instead of log scale

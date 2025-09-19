@@ -1113,7 +1113,7 @@ class GenerationEvalCallback(TrainerCallback):
             metrics.update(convert_numpy_to_python(gen_metrics))
         
         # Save plots after each evaluation
-        save_training_plots(self.exp_dir, state)
+        save_training_plots(self.exp_dir, state, None)
         
         # Print generation metrics
         if gen_metrics:
@@ -1203,11 +1203,16 @@ def filter_dataframe_by_pattern(df, pattern, column_name='name'):
 
 
 
-def save_training_plots(exp_dir, state):
+def save_training_plots(exp_dir, state, config=None):
     """Save training plots in summary/ folder - one for loss, one per task type."""
     # Create summary directory
     summary_dir = Path(exp_dir) / 'summary'
     summary_dir.mkdir(exist_ok=True)
+
+    # Get plot settings from config
+    use_log_scale = True  # Default to log scale
+    if config and isinstance(config, dict):
+        use_log_scale = config.get('plot_log_scale', True)
     
     # Extract all metrics from log history
     train_losses = []
@@ -1217,7 +1222,9 @@ def save_training_plots(exp_dir, state):
     task_metrics = {}  # Will store metrics per task type
     
     # First, check if checkpoint-0 exists and add it to the beginning
+    # (only relevant when called from training, not from evaluate_checkpoints)
     checkpoint_0_path = Path(exp_dir) / 'checkpoints' / 'checkpoint-0' / 'eval_results.json'
+    loaded_checkpoint_0 = False
     if checkpoint_0_path.exists():
         try:
             with open(checkpoint_0_path, 'r') as f:
@@ -1225,7 +1232,8 @@ def save_training_plots(exp_dir, state):
             if 'eval_loss' in ckpt0_data:
                 eval_losses.append(ckpt0_data['eval_loss'])
                 eval_steps.append(0)
-            
+                loaded_checkpoint_0 = True
+
             # Extract task-specific metrics from checkpoint-0
             for key, value in ckpt0_data.items():
                 if '_metric_mean' in key and key.startswith('eval_'):
@@ -1239,22 +1247,23 @@ def save_training_plots(exp_dir, state):
                         task_metrics[task_type]['values'].append(value)
         except:
             pass  # If we can't read it, just continue without it
-    
+
     # Then extract metrics from log history (training steps)
     for entry in state.log_history:
         step = entry.get('step', 0)
-        
+
         if 'loss' in entry and 'eval_loss' not in entry:
             train_losses.append(entry['loss'])
             train_steps.append(step)
-        
-        if 'eval_loss' in entry and step != 0:  # Skip step 0 as we already added checkpoint-0
+
+        # Only skip step 0 if we already loaded it from file
+        if 'eval_loss' in entry and (step != 0 or not loaded_checkpoint_0):
             eval_losses.append(entry['eval_loss'])
             eval_steps.append(step)
-        
+
         # Extract task-specific metrics
         for key, value in entry.items():
-            if '_metric_mean' in key and key.startswith('eval_') and step != 0:
+            if '_metric_mean' in key and key.startswith('eval_') and (step != 0 or not loaded_checkpoint_0):
                 # Extract task type from key like eval_distance_metric_mean
                 parts = key.split('_')
                 if len(parts) >= 3:
@@ -1270,10 +1279,14 @@ def save_training_plots(exp_dir, state):
         plt.plot(train_steps, train_losses, alpha=0.3, label='Train Loss (per batch)')
     if eval_losses:
         plt.plot(eval_steps, eval_losses, 'r-', label='Eval Loss', marker='o', markersize=4)
-    plt.xlabel('Step (log scale)')
-    plt.ylabel('Loss (log scale)')
-    plt.xscale('log')
-    plt.yscale('log')
+    if use_log_scale:
+        plt.xlabel('Step (log scale)')
+        plt.ylabel('Loss (log scale)')
+        plt.xscale('log')
+        plt.yscale('log')
+    else:
+        plt.xlabel('Step')
+        plt.ylabel('Loss')
     plt.title('Training and Evaluation Loss')
     plt.legend()
     plt.grid(True, alpha=0.3)
@@ -1287,15 +1300,24 @@ def save_training_plots(exp_dir, state):
             continue
             
         plt.figure(figsize=(10, 6))
-        # Filter out step 0 and values below 100 for log scale
-        plot_steps = [s for s in data['steps'] if s >= 100]
-        plot_values = [v for s, v in zip(data['steps'], data['values']) if s >= 100]
+        # Filter data based on scale type
+        if use_log_scale:
+            # Filter out step 0 and values below 100 for log scale
+            plot_steps = [s for s in data['steps'] if s >= 100]
+            plot_values = [v for s, v in zip(data['steps'], data['values']) if s >= 100]
+        else:
+            # Use all data for linear scale
+            plot_steps = data['steps']
+            plot_values = data['values']
 
         if plot_steps:  # Only plot if we have data
             plt.plot(plot_steps, plot_values, 'b-', marker='o', markersize=4)
-        plt.xlabel('Step (log scale)')
-        plt.xscale('log')
-        plt.xlim(left=100)  # Start x-axis at 100
+        if use_log_scale:
+            plt.xlabel('Step (log scale)')
+            plt.xscale('log')
+            plt.xlim(left=100)  # Start x-axis at 100
+        else:
+            plt.xlabel('Step')
         
         if task_type == 'distance':
             plt.ylabel('Average Absolute Error (km, log scale)')

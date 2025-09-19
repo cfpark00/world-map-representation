@@ -333,20 +333,131 @@ def main():
     print(f"  Test: {n_test:,}")
 
     # Generate queries for each split
-    print("\nGenerating train queries...")
-    train_queries = generate_nearest_neighbor_queries(df, config, n_train)
+    # Special handling for must_include strategy to avoid train/test overlap
+    if config['pair_generation'].get('strategy') == 'must_include':
+        print("\nUsing deterministic generation for must_include strategy...")
 
-    # Increment seed for different splits
-    config['seed'] += 1
-    print("Generating validation queries...")
-    val_queries = generate_nearest_neighbor_queries(df, config, n_val)
+        # Generate ALL possible queries first
+        must_include_groups = config['pair_generation']['must_include_groups']
+        query_mask = df['group'].isin(must_include_groups)
+        query_df = df[query_mask]
 
-    config['seed'] += 1
-    print("Generating test queries...")
-    test_queries = generate_nearest_neighbor_queries(df, config, n_test)
+        # Create all possible (city, k) combinations
+        all_queries_list = []
+        for _, query_city in query_df.iterrows():
+            for k in range(config['min_k'], config['max_k'] + 1):
+                all_queries_list.append((query_city, k))
 
-    # Reset seed
-    config['seed'] -= 2
+        print(f"Total possible unique queries: {len(all_queries_list)}")
+
+        # Shuffle with seed for reproducibility
+        np.random.seed(config['seed'])
+        np.random.shuffle(all_queries_list)
+
+        # Split into train/val/test
+        # Val can overlap with train, but test must be completely separate
+        if n_train + n_test > len(all_queries_list):
+            raise ValueError(f"Requested {n_train} train + {n_test} test = {n_train + n_test} samples, "
+                           f"but only {len(all_queries_list)} unique queries possible")
+
+        # Take first n_train for train
+        train_queries_list = all_queries_list[:n_train]
+
+        # Take last n_test for test (guaranteed no overlap with train)
+        test_queries_list = all_queries_list[-n_test:]
+
+        # For val, sample from train portion (allowing overlap)
+        val_indices = np.random.choice(n_train, size=min(n_val, n_train), replace=False)
+        val_queries_list = [all_queries_list[i] for i in val_indices]
+
+        # Now generate the actual nearest neighbor results for each split
+        print("\nGenerating train queries...")
+        train_queries = []
+        for query_city, k in tqdm(train_queries_list, desc="Processing train queries", leave=False):
+            # Calculate distances to all cities
+            distances = euclidean_distance(
+                np.array([query_city['x']]),
+                np.array([query_city['y']]),
+                df['x'].values,
+                df['y'].values
+            ).squeeze()
+
+            # Exclude the query city itself
+            valid_mask = df['city_id'] != query_city['city_id']
+            valid_distances = distances[valid_mask]
+            valid_df = df[valid_mask]
+
+            # Find k nearest neighbors
+            nearest_indices = np.argsort(valid_distances)[:k]
+            nearest_cities = valid_df.iloc[nearest_indices]
+
+            train_queries.append({
+                'query_city': query_city,
+                'k': k,
+                'neighbors': nearest_cities
+            })
+
+        print("Generating validation queries...")
+        val_queries = []
+        for query_city, k in tqdm(val_queries_list, desc="Processing val queries", leave=False):
+            distances = euclidean_distance(
+                np.array([query_city['x']]),
+                np.array([query_city['y']]),
+                df['x'].values,
+                df['y'].values
+            ).squeeze()
+
+            valid_mask = df['city_id'] != query_city['city_id']
+            valid_distances = distances[valid_mask]
+            valid_df = df[valid_mask]
+
+            nearest_indices = np.argsort(valid_distances)[:k]
+            nearest_cities = valid_df.iloc[nearest_indices]
+
+            val_queries.append({
+                'query_city': query_city,
+                'k': k,
+                'neighbors': nearest_cities
+            })
+
+        print("Generating test queries...")
+        test_queries = []
+        for query_city, k in tqdm(test_queries_list, desc="Processing test queries", leave=False):
+            distances = euclidean_distance(
+                np.array([query_city['x']]),
+                np.array([query_city['y']]),
+                df['x'].values,
+                df['y'].values
+            ).squeeze()
+
+            valid_mask = df['city_id'] != query_city['city_id']
+            valid_distances = distances[valid_mask]
+            valid_df = df[valid_mask]
+
+            nearest_indices = np.argsort(valid_distances)[:k]
+            nearest_cities = valid_df.iloc[nearest_indices]
+
+            test_queries.append({
+                'query_city': query_city,
+                'k': k,
+                'neighbors': nearest_cities
+            })
+    else:
+        # Original stochastic generation for other strategies
+        print("\nGenerating train queries...")
+        train_queries = generate_nearest_neighbor_queries(df, config, n_train)
+
+        # Increment seed for different splits
+        config['seed'] += 1
+        print("Generating validation queries...")
+        val_queries = generate_nearest_neighbor_queries(df, config, n_val)
+
+        config['seed'] += 1
+        print("Generating test queries...")
+        test_queries = generate_nearest_neighbor_queries(df, config, n_test)
+
+        # Reset seed
+        config['seed'] -= 2
 
     # Create datasets
     print("\nCreating train dataset...")

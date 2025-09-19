@@ -158,7 +158,7 @@ def evaluate_checkpoint_with_details(
         return {'metrics': convert_numpy_to_python(metrics)}
 
 
-def plot_results(all_results: Dict[str, Dict], output_dir: Path):
+def plot_results(all_results: Dict[str, Dict], output_dir: Path, config=None):
     """Generate plots for evaluation results using the same function as training."""
     from transformers import TrainerState
 
@@ -174,7 +174,7 @@ def plot_results(all_results: Dict[str, Dict], output_dir: Path):
         state.log_history.append(log_entry)
 
     # Use the same plotting function as training - it will create task-specific plots
-    save_training_plots(output_dir, state)
+    save_training_plots(output_dir, state, config)
 
 
 def main():
@@ -293,7 +293,7 @@ def main():
 
     # Generate plots (will create summary/ directory)
     print("\nGenerating plots")
-    plot_results(all_results, output_dir)
+    plot_results(all_results, output_dir, config)
 
     # Rename summary/ to dynamics/ for clarity
     summary_dir = output_dir / 'summary'

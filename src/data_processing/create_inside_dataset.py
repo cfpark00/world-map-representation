@@ -145,6 +145,9 @@ def get_eligible_cities(df, config):
         groups = config['pair_generation'].get('groups', df['group'].unique())
         mask = df['group'].isin(groups)
         return df[mask]
+    elif strategy == 'must_include':
+        # For must_include, return all cities - we'll handle the constraint in generate_inside_queries
+        return df
     else:
         print(f"Note: Strategy '{strategy}' interpreted as 'all_pairs' for inside detection")
         return df
@@ -217,8 +220,35 @@ def generate_inside_samples(df, config, n_samples):
         n_hull = np.random.randint(min_n, max_n + 1)
 
         # Select n_hull + 1 cities (one for test point, rest for hull)
-        indices = np.random.choice(n_cities, size=n_hull + 1, replace=False)
-        cities = eligible_df.iloc[indices]
+        if config['pair_generation'].get('strategy') == 'must_include':
+            # Ensure at least one hull vertex is from must_include groups
+            must_include_groups = config['pair_generation']['must_include_groups']
+            must_include_mask = eligible_df['group'].isin(must_include_groups)
+            must_include_indices = eligible_df[must_include_mask].index.values
+            other_indices = eligible_df[~must_include_mask].index.values
+
+            # Pick one from must_include for the hull
+            must_idx = np.random.choice(must_include_indices, size=1)
+
+            # Pick rest from anywhere (including test point)
+            all_indices = np.concatenate([must_include_indices, other_indices])
+            available = all_indices[all_indices != must_idx[0]]
+
+            # Need n_hull more cities (n_hull-1 for hull + 1 for test point)
+            other_idx = np.random.choice(available, size=n_hull, replace=False)
+
+            # First of other_idx is test point, rest + must_idx form hull
+            test_idx = other_idx[0:1]
+            hull_idx = np.concatenate([must_idx, other_idx[1:]])
+
+            # Shuffle hull indices so must_include isn't always first
+            np.random.shuffle(hull_idx)
+
+            all_selected = np.concatenate([test_idx, hull_idx])
+            cities = eligible_df.loc[all_selected]
+        else:
+            indices = np.random.choice(n_cities, size=n_hull + 1, replace=False)
+            cities = eligible_df.iloc[indices]
 
         # First city is the test point
         test_city = cities.iloc[0]

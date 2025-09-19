@@ -1,0 +1,33 @@
+# 100k inside convex hull queries with Atlantis required WITH PADDING
+# Every polygon must include at least one Atlantis city as a vertex
+# All city IDs padded to 4 digits with leading zeros
+
+output_dir: data/datasets/inside_100k_atlantis_required
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+groups:
+  atlantis:
+    city_names: "^Atlantis_"  # Atlantis cities
+  world:
+    city_names: "^(?!Atlantis_).*"  # Non-Atlantis cities
+
+pair_generation:
+  strategy: must_include
+  must_include_groups: [atlantis]
+  other_groups: [world, atlantis]  # Can combine with world or other Atlantis
+
+# Convex hull specific parameters
+min_n: 3    # Minimum number of points for hull (must be >= 3)
+max_n: 5    # Maximum number of points for hull
+
+# Control TRUE/FALSE ratio
+true_ratio: 0.5  # 50% TRUE (inside), 50% FALSE (outside)
+
+n_train: 100000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4
