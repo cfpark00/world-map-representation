@@ -106,9 +106,10 @@ def get_prompt_config(prompt_format, city):
         extraction_indices = [11, 12]  # i4 (last digit), comma
         position_names = ['last_digit', 'comma']
 
-    elif prompt_format == 'triarea_firstcity_last_and_comma':
+    elif prompt_format == 'trianglearea_firstcity_last_and_comma':
         # Format: "<bos> t r i a r e a ( c _ X X X X ,"
         # Extract last digit and comma - no need for "c_" after since causal attention can't see it
+        # Note: The actual dataset uses "triarea" not "trianglearea"
         triarea_str = f"triarea(c_{city['row_id']},"
         spaced_str = ' '.join(triarea_str)
         prompt = f"<bos> {spaced_str}"
@@ -116,10 +117,11 @@ def get_prompt_config(prompt_format, city):
         extraction_indices = [14, 15]  # i4 (last digit), comma
         position_names = ['last_digit', 'comma']
 
-    elif prompt_format == 'triarea_firstcity_last':
+    elif prompt_format == 'trianglearea_firstcity_last':
         # Format: "<bos> t r i a r e a ( c _ X X X X"
         # Extract only last digit of first city (no comma)
         # Just the city ID without comma at the end
+        # Note: The actual dataset uses "triarea" not "trianglearea"
         city_id_str = str(city['row_id'])
         triarea_str = f"triarea(c_{city_id_str}"  # No comma
         spaced_str = ' '.join(triarea_str)
@@ -128,6 +130,24 @@ def get_prompt_config(prompt_format, city):
         # Position 14 is the last digit of a 4-digit city ID
         extraction_indices = [14]  # Just i4 (last digit)
         position_names = ['last_digit']
+
+    elif prompt_format == 'crossing_firstcity_last_and_comma':
+        # Format: "<bos> c r o s s ( c _ X X X X ,"
+        # Extract last digit and comma of first city
+        cross_str = f"cross(c_{city['row_id']},"
+        spaced_str = ' '.join(cross_str)
+        prompt = f"<bos> {spaced_str}"
+        # "cross" has 5 chars vs "dist" with 4, so positions shift by 1
+        # Token positions: <bos> c r o s s ( c _ X X X X ,
+        # Position 0: <bos>
+        # Position 1-5: c r o s s
+        # Position 6: (
+        # Position 7: c
+        # Position 8: _
+        # Position 9-12: city ID digits (for 4-digit ID)
+        # Position 13: ,
+        extraction_indices = [12, 13]  # last digit, comma
+        position_names = ['last_digit', 'comma']
 
     elif prompt_format == 'randomwalk_firstcity_last_and_comma':
         # Format: "<bos> r w ( max_dist , chain_len ) = c _ X X X X ,"

@@ -30,6 +30,10 @@ dependencies = [
     "dspy-ai>=3.0.0",
     "jsonlines>=3.1.0",
     "plotly>=6.3.0",
+    "vllm==0.8.1",
+    "lm-eval==0.4.8",
+    "langdetect>=1.0.9",
+    "immutabledict>=4.2.1",
 ]
 
 [tool.uv]

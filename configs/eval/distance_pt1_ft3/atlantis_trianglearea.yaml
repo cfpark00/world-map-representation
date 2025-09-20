@@ -1,0 +1,32 @@
+# Evaluation configuration for trianglearea experiment
+
+output_dir: "data/experiments/distance_pt1_ft3/evals/atlantis_trianglearea"
+
+# Experiment to evaluate
+experiment_dir: "data/experiments/distance_pt1_ft3"
+
+# Dataset path - should match what was used for training
+dataset_path: "data/datasets/trianglearea_100k_atlantis_required"
+
+# Evaluation settings
+eval_batch_size: 512
+
+# Generation parameters
+max_generation_length: 32
+temperature: 0.0
+top_k: 1
+do_sample: false
+
+# Checkpoint selection
+checkpoints: "all"  # Options: "all", "last", or list like [0, 1000, 5000]
+
+# Compute
+device: "cuda"
+
+# Random seed
+seed: 42
+
+# Save full details
+save_full_results: true  # Save all rows with text, prompt, expected, generation, metric
+# Plot settings
+plot_log_scale: false  # Use linear scale for x-axis instead of log scale

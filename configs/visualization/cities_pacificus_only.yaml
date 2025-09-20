@@ -1,0 +1,41 @@
+# Visualization config highlighting only Pacificus cities
+
+dataset_path: data/datasets/cities_with_pacificus
+output_dir: data/datasets/cities_with_pacificus/visualization_pacificus
+output_filename: pacificus_focus.png
+
+# Plot settings
+figsize: [20, 12]
+dpi: 300
+background_color: '#e6f2ff'
+title: 'Pacificus Region Highlighted'
+
+# Highlight Pacificus prominently
+highlight_groups:
+  - label: 'Pacificus Cities'
+    regions: 'Pacificus'
+    color: '#FF1493'  # Deep pink
+    size: 50
+    alpha: 0.9
+    edgecolor: 'gold'
+    linewidth: 2.0
+    marker: 'D'  # Diamond marker
+
+# All other cities subdued
+default_cities:
+  label: 'Other cities'
+  color: 'lightgray'
+  size: 3
+  alpha: 0.3
+  edgecolor: 'none'
+
+# Zoom in on Pacific region
+xlim: [-140, -80]  # Focus on Pacific area
+ylim: [-45, 0]
+
+# Grid and legend
+grid_alpha: 0.2
+legend:
+  loc: 'upper right'
+  fontsize: 12
+  framealpha: 0.9

@@ -1,0 +1,35 @@
+# Evaluation configuration for distance_pt1 experiment
+
+output_dir: "data/experiments/distance_pt1_ft3/evals/multi_task"
+
+# Experiment to evaluate
+experiment_dir: "data/experiments/distance_pt1_ft3"
+
+# Dataset path - should match what was used for training
+dataset_path: "data/datasets/multitask_m1"
+
+# Cities CSV for tasks that need coordinate validation (randomwalk, randring, center)
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Evaluation settings
+eval_batch_size: 512
+
+# Generation parameters
+max_generation_length: 224
+temperature: 0.0
+top_k: 1
+do_sample: false
+
+# Checkpoint selection
+checkpoints: "all"  # Options: "all", "last", or list like [0, 1000, 5000]
+
+# Compute
+device: "cuda"
+
+# Random seed
+seed: 42
+
+# Save full details
+save_full_results: true  # Save all rows with text, prompt, expected, generation, metric
+# Plot settings
+plot_log_scale: false  # Use linear scale for x-axis instead of log scale

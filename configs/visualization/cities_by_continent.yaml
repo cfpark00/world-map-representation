@@ -1,0 +1,70 @@
+# Visualization config highlighting cities by continent
+
+dataset_path: data/datasets/cities_with_pacificus
+output_dir: data/datasets/cities_with_pacificus/visualization_continents
+output_filename: cities_by_continent.png
+
+# Plot settings
+figsize: [20, 12]
+dpi: 300
+background_color: '#f0f0f0'
+title: 'World Cities by Continent'
+
+# Highlight groups by continent/region
+highlight_groups:
+  - label: 'North America'
+    regions: 'North America'
+    color: '#2E7D32'  # Dark green
+    size: 15
+    alpha: 0.7
+    marker: 'o'
+
+  - label: 'South America'
+    regions: 'South America'
+    color: '#FDD835'  # Yellow
+    size: 15
+    alpha: 0.7
+    marker: 'o'
+
+  - label: 'Europe'
+    regions: ['Western Europe', 'Eastern Europe']  # Multiple regions
+    color: '#1976D2'  # Blue
+    size: 15
+    alpha: 0.7
+    marker: 'o'
+
+  - label: 'Africa'
+    regions: 'Africa'
+    color: '#D32F2F'  # Red
+    size: 15
+    alpha: 0.7
+    marker: 'o'
+
+  - label: 'Asia'
+    regions: ['China', 'Japan', 'Korea', 'Southeast Asia', 'India', 'Central Asia', 'Middle East']
+    color: '#9C27B0'  # Purple
+    size: 15
+    alpha: 0.7
+    marker: 'o'
+
+  - label: 'Synthetic Regions'
+    pattern: 'Atlantis|Pacificus'  # Regex pattern
+    color: 'cyan'
+    size: 30
+    alpha: 0.9
+    edgecolor: 'black'
+    linewidth: 1.5
+    marker: '*'  # star marker
+
+# Default cities (any remaining)
+default_cities:
+  label: 'Other'
+  color: 'gray'
+  size: 8
+  alpha: 0.4
+
+# Grid and legend
+legend:
+  loc: 'lower left'
+  fontsize: 10
+  framealpha: 0.95

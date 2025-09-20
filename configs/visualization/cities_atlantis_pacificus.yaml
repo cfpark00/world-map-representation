@@ -1,0 +1,47 @@
+# Visualization config for cities with both Atlantis and Pacificus highlighted
+
+dataset_path: data/datasets/cities_with_pacificus
+output_dir: data/datasets/cities_with_pacificus/visualization
+output_filename: cities_atlantis_pacificus.png
+
+# Plot settings
+figsize: [20, 12]
+dpi: 300
+background_color: '#e6f2ff'
+title: 'World Cities with Atlantis and Pacificus Regions'
+
+# Highlight specific regions with custom colors/sizes
+highlight_groups:
+  - label: 'Atlantis'
+    regions: 'Atlantis'  # Match region containing "Atlantis"
+    color: 'blue'
+    size: 40
+    alpha: 0.8
+    edgecolor: 'white'
+    linewidth: 1.0
+    marker: 'o'
+
+  - label: 'Pacificus'
+    regions: 'Pacificus'  # Match region containing "Pacificus"
+    color: 'purple'
+    size: 40
+    alpha: 0.8
+    edgecolor: 'gold'
+    linewidth: 1.0
+    marker: 's'  # square marker
+
+# Default cities (everything else)
+default_cities:
+  label: 'World cities'
+  color: 'red'
+  size: 5
+  alpha: 0.6
+  edgecolor: 'none'
+
+# Grid and legend
+grid_alpha: 0.3
+grid_style: '--'
+legend:
+  loc: 'upper left'
+  fontsize: 11
+  framealpha: 0.9
