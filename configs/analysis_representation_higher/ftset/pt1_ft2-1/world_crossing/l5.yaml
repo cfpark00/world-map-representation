@@ -1,0 +1,31 @@
+# Analysis: dist_1M_no_atlantis_15epochs
+# Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
+# Modified for analyze_representations_higher.py (no visualization parameters)
+
+output_dir: "data/experiments/pt1_ft2-1/analysis_higher/world_crossing_l5"
+
+experiment_dir: "data/experiments/pt1_ft2-1"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+layers: [5]
+n_train_cities: 3250
+n_test_cities: 1250
+
+# Task configuration
+prompt_format: "crossing_firstcity_last_and_comma"
+
+method:
+  name: "linear"
+
+probe_train: "region:.* && city_id:^[1-9][0-9]{3,}$"  # Exclude Atlantis AND cities with ID < 1000
+probe_test: "region:.* && city_id:^[1-9][0-9]{3,}$"  # Exclude Atlantis AND cities with ID < 1000
+
+# Compute
+device: "cuda"
+seed: 42
+
+save_repr_ckpts: [-2]
+
+# PCA Analysis
+perform_pca: true  # Perform PCA analysis on last checkpoint

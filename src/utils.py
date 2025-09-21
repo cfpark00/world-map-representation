@@ -1173,32 +1173,139 @@ class GenerationEvalCallback(TrainerCallback):
 
 
 
-def filter_dataframe_by_pattern(df, pattern, column_name='name'):
+def filter_dataframe_by_pattern_backup(df, pattern, column_name='name'):
     """
     Filter DataFrame by regex pattern.
-    
+
     Args:
         df: DataFrame to filter
         pattern: Regex pattern or special syntax like 'column:pattern'
         column_name: Default column to match against
-    
+
     Returns:
         Filtered DataFrame
     """
     if not pattern or pattern == '.*':
         return df
-    
+
     # Check for column-specific syntax
     if ':' in pattern and pattern.count(':') == 1:
         col_prefix, col_pattern = pattern.split(':', 1)
         if col_prefix in df.columns:
             return df[df[col_prefix].str.match(col_pattern, na=False)]
-    
+
     # Default column matching
     if column_name in df.columns:
         return df[df[column_name].str.match(pattern, na=False)]
     else:
         raise ValueError(f"Column '{column_name}' not found in DataFrame")
+
+
+def filter_dataframe_by_pattern(df, pattern, column_name='name'):
+    """
+    Filter DataFrame by regex pattern with support for multi-pattern composition.
+
+    Args:
+        df: DataFrame to filter
+        pattern: Can be:
+            - A single regex pattern
+            - A pattern with column syntax like 'column:pattern'
+            - A pattern with inline && (AND) or || (OR) operators
+            - A list of patterns (will apply ALL patterns - intersection)
+            - A dict with 'AND' or 'OR' key containing list of patterns
+        column_name: Default column to match against
+
+    Returns:
+        Filtered DataFrame
+
+    Examples:
+        # Single pattern (backward compatible)
+        pattern = "region:^(?!Atlantis).*"
+
+        # Inline AND with &&
+        pattern = "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$"
+
+        # Inline OR with ||
+        pattern = "region:Europe || region:Asia"
+
+        # Multiple patterns with AND (intersection)
+        pattern = ["region:^(?!Atlantis).*", "city_id:^[1-9][0-9]{3,}$"]
+
+        # Explicit AND
+        pattern = {"AND": ["region:^(?!Atlantis).*", "city_id:^[1-9][0-9]{3,}$"]}
+
+        # OR composition (union)
+        pattern = {"OR": ["region:Europe", "region:Asia"]}
+    """
+    if not pattern or pattern == '.*':
+        return df
+
+    # Handle list of patterns (implicit AND)
+    if isinstance(pattern, list):
+        result = df
+        for p in pattern:
+            result = filter_dataframe_by_pattern(result, p, column_name)
+        return result
+
+    # Handle dict with AND/OR
+    if isinstance(pattern, dict):
+        if 'AND' in pattern:
+            result = df
+            for p in pattern['AND']:
+                result = filter_dataframe_by_pattern(result, p, column_name)
+            return result
+        elif 'OR' in pattern:
+            import pandas as pd
+            results = []
+            for p in pattern['OR']:
+                results.append(filter_dataframe_by_pattern(df, p, column_name))
+            if results:
+                return pd.concat(results).drop_duplicates()
+            return df.iloc[0:0]  # Return empty dataframe with same structure
+
+    # Handle string patterns
+    if isinstance(pattern, str):
+        # Check for inline operators (&& and ||)
+        # Note: || has precedence over && (OR before AND)
+        if '||' in pattern:
+            # Split by || and apply OR logic
+            import pandas as pd
+            or_parts = [p.strip() for p in pattern.split('||')]
+            results = []
+            for p in or_parts:
+                results.append(filter_dataframe_by_pattern(df, p, column_name))
+            if results:
+                return pd.concat(results).drop_duplicates()
+            return df.iloc[0:0]
+        elif '&&' in pattern:
+            # Split by && and apply AND logic
+            and_parts = [p.strip() for p in pattern.split('&&')]
+            result = df
+            for p in and_parts:
+                result = filter_dataframe_by_pattern(result, p, column_name)
+            return result
+
+        # Original single pattern logic (backward compatible)
+        # Check for column-specific syntax
+        if ':' in pattern and pattern.count(':') == 1:
+            col_prefix, col_pattern = pattern.split(':', 1)
+            if col_prefix in df.columns:
+                # Check if column is numeric or string
+                if df[col_prefix].dtype in ['int64', 'int32', 'float64', 'float32']:
+                    # For numeric columns, convert to string first
+                    return df[df[col_prefix].astype(str).str.match(col_pattern, na=False)]
+                else:
+                    # For string columns, use directly
+                    return df[df[col_prefix].str.match(col_pattern, na=False)]
+
+        # Default column matching
+        if column_name in df.columns:
+            return df[df[column_name].str.match(pattern, na=False)]
+        else:
+            raise ValueError(f"Column '{column_name}' not found in DataFrame")
+
+    # If pattern type is not recognized, return original df
+    return df
 
 
 
@@ -1226,27 +1333,24 @@ def save_training_plots(exp_dir, state, config=None):
     checkpoint_0_path = Path(exp_dir) / 'checkpoints' / 'checkpoint-0' / 'eval_results.json'
     loaded_checkpoint_0 = False
     if checkpoint_0_path.exists():
-        try:
-            with open(checkpoint_0_path, 'r') as f:
-                ckpt0_data = json.load(f)
-            if 'eval_loss' in ckpt0_data:
-                eval_losses.append(ckpt0_data['eval_loss'])
-                eval_steps.append(0)
-                loaded_checkpoint_0 = True
+        with open(checkpoint_0_path, 'r') as f:
+            ckpt0_data = json.load(f)
+        if 'eval_loss' in ckpt0_data:
+            eval_losses.append(ckpt0_data['eval_loss'])
+            eval_steps.append(0)
+            loaded_checkpoint_0 = True
 
-            # Extract task-specific metrics from checkpoint-0
-            for key, value in ckpt0_data.items():
-                if '_metric_mean' in key and key.startswith('eval_'):
-                    # Extract task type from key like eval_distance_metric_mean
-                    parts = key.split('_')
-                    if len(parts) >= 3:
-                        task_type = parts[1]  # distance, randomwalk, etc
-                        if task_type not in task_metrics:
-                            task_metrics[task_type] = {'steps': [], 'values': []}
-                        task_metrics[task_type]['steps'].append(0)
-                        task_metrics[task_type]['values'].append(value)
-        except:
-            pass  # If we can't read it, just continue without it
+        # Extract task-specific metrics from checkpoint-0
+        for key, value in ckpt0_data.items():
+            if '_metric_mean' in key and key.startswith('eval_'):
+                # Extract task type from key like eval_distance_metric_mean
+                parts = key.split('_')
+                if len(parts) >= 3:
+                    task_type = parts[1]  # distance, randomwalk, etc
+                    if task_type not in task_metrics:
+                        task_metrics[task_type] = {'steps': [], 'values': []}
+                    task_metrics[task_type]['steps'].append(0)
+                    task_metrics[task_type]['values'].append(value)
 
     # Then extract metrics from log history (training steps)
     for entry in state.log_history:

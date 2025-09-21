@@ -301,53 +301,37 @@ def generate_must_include_triples(df, must_include_groups, n_triples):
     """Generate triples where at least one city must be from specified groups."""
     must_include_mask = df['group'].isin(must_include_groups)
     must_include_indices = df[must_include_mask].index.values
-    other_indices = df[~must_include_mask].index.values
     all_indices = df.index.values
+
+    if len(must_include_indices) == 0:
+        raise ValueError("No cities found in must_include groups")
 
     triples_i = []
     triples_j = []
     triples_k = []
 
-    for _ in range(n_triples):
-        # At least one city must be from must_include groups
-        # The center city (j) should often be from must_include for angle tasks
-        prob_center_must = 0.7  # 70% chance center is from must_include
+    attempts = 0
+    max_attempts = n_triples * 10
 
-        if np.random.random() < prob_center_must and len(must_include_indices) > 0:
-            # Center from must_include
-            j = np.random.choice(must_include_indices)
-            i, k = np.random.choice(all_indices, size=2, replace=False)
-        else:
-            # At least one from must_include, random positions
-            n_must = np.random.choice([1, 2, 3], p=[0.6, 0.3, 0.1])
+    while len(triples_i) < n_triples and attempts < max_attempts:
+        attempts += 1
 
-            if n_must == 1:
-                # One from must_include, two from all
-                must_idx = np.random.choice(must_include_indices)
-                other_idxs = np.random.choice(all_indices, size=2, replace=False)
-                # Randomly assign positions
-                positions = np.random.permutation([must_idx, other_idxs[0], other_idxs[1]])
-                i, j, k = positions
-            elif n_must == 2:
-                # Two from must_include, one from all
-                must_idxs = np.random.choice(must_include_indices, size=2, replace=False)
-                other_idx = np.random.choice(all_indices)
-                positions = np.random.permutation([must_idxs[0], must_idxs[1], other_idx])
-                i, j, k = positions
-            else:
-                # All three from must_include
-                if len(must_include_indices) >= 3:
-                    i, j, k = np.random.choice(must_include_indices, size=3, replace=False)
-                else:
-                    # Fall back
-                    j = np.random.choice(must_include_indices)
-                    i, k = np.random.choice(all_indices, size=2, replace=False)
+        # Simple: pick one from must_include, two from all cities
+        must_idx = np.random.choice(must_include_indices)
+        other_idxs = np.random.choice(all_indices, size=2, replace=False)
+
+        # Randomly assign positions (shuffling which one is from Atlantis)
+        positions = np.random.permutation([must_idx, other_idxs[0], other_idxs[1]])
+        i, j, k = positions
 
         # Ensure no duplicates
         if i != j and j != k and i != k:
             triples_i.append(i)
             triples_j.append(j)
             triples_k.append(k)
+
+    if len(triples_i) < n_triples:
+        print(f"Warning: Could only generate {len(triples_i)} unique triples out of {n_triples} requested")
 
     return np.array(triples_i), np.array(triples_j), np.array(triples_k)
 
@@ -485,6 +469,14 @@ def main():
     # Generate all triples at once and split
     n_total = n_train + n_val + n_test
     all_i, all_j, all_k = generate_triples(df, config, n_total)
+
+    # Apply random shuffling to each triple for symmetry
+    print("Applying random triple shuffling for symmetry...")
+    for idx in range(len(all_i)):
+        # Randomly shuffle the three cities in each triple
+        triple = [all_i[idx], all_j[idx], all_k[idx]]
+        np.random.shuffle(triple)
+        all_i[idx], all_j[idx], all_k[idx] = triple
 
     # Split into train/val/test
     train_i = all_i[:n_train]

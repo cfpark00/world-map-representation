@@ -92,74 +92,89 @@ class RandomWalkMetric(TaskMetric):
         expected_max_dist = int(rw_match.group(1))
         expected_chain_len = int(rw_match.group(2))
 
-        # Parse generated walk
-        transitions = self._parse_walk_transitions(generated)
+        # Parse generated walk and count all attempted transitions
+        transitions, total_attempted = self._parse_walk_transitions(generated)
 
-        if not transitions:
+        if total_attempted == 0:
             return self.get_failure_value()
 
         # Validate transitions
-        valid_trans, total_trans = self._validate_transitions(
+        valid_trans = self._validate_transitions(
             transitions, cities_df, expected_max_dist
         )
 
-        # Calculate validity ratio
-        validity_ratio = valid_trans / total_trans if total_trans > 0 else 0.0
+        # Calculate validity ratio (valid transitions / total attempted transitions)
+        validity_ratio = valid_trans / total_attempted
 
-        # Calculate length penalty
-        actual_chain_len = len(transitions) + 1
+        # Calculate length penalty based on actual parsed cities (not attempted)
+        actual_chain_len = len(transitions) + 1 if transitions else 0
         chain_len_diff = abs(actual_chain_len - expected_chain_len)
-        length_penalty = np.exp(-chain_len_diff / expected_chain_len)
+        length_penalty = np.exp(-chain_len_diff / expected_chain_len) if expected_chain_len > 0 else 0.0
 
         # Combined score
         return validity_ratio * length_penalty
 
-    def _parse_walk_transitions(self, text: str) -> List[Tuple[int, int]]:
-        """Parse transitions from walk text (exact copy from utils.py)."""
+    def _parse_walk_transitions(self, text: str) -> Tuple[List[Tuple[int, int]], int]:
+        """
+        Parse transitions from walk text.
+        Returns: (list of valid transitions, total attempted transitions)
+        """
         text = text.replace(' ', '')
 
         match = re.search(r'=(.+)', text)
         if not match:
-            return []
+            return [], 0
 
         sequence = match.group(1)
-        city_matches = list(re.finditer(r'c_(\d+)', sequence))
 
-        if len(city_matches) < 2:
-            return []
+        # Find ALL city-like tokens (valid or invalid)
+        all_city_tokens = re.findall(r'c_\w+', sequence)
+
+        if len(all_city_tokens) < 2:
+            return [], len(all_city_tokens)
+
+        # Total attempted transitions is number of consecutive city pairs
+        total_attempted = len(all_city_tokens) - 1
+
+        # Now extract only the valid transitions (with numeric IDs)
+        city_matches = list(re.finditer(r'c_(\d+)', sequence))
 
         transitions = []
         for i in range(len(city_matches) - 1):
-            try:
-                city1_id = int(city_matches[i].group(1))
-                city2_id = int(city_matches[i + 1].group(1))
-                transitions.append((city1_id, city2_id))
-            except (ValueError, AttributeError):
-                continue
+            city1_id = int(city_matches[i].group(1))
+            city2_id = int(city_matches[i + 1].group(1))
+            transitions.append((city1_id, city2_id))
 
-        return transitions
+        return transitions, total_attempted
 
     def _validate_transitions(self, transitions, cities_df, distance_threshold_km):
-        """Validate transitions (exact copy from utils.py)."""
+        """
+        Validate transitions.
+        Returns: number of valid transitions (both cities exist AND distance is valid)
+        """
         if not transitions:
-            return 0, 0
+            return 0
 
         valid_transitions = 0
-        total_transitions = len(transitions)
 
         for city1_id, city2_id in transitions:
-            try:
-                city1 = cities_df[cities_df['city_id'] == city1_id].iloc[0]
-                city2 = cities_df[cities_df['city_id'] == city2_id].iloc[0]
-            except (IndexError, KeyError):
+            # Check if both cities exist
+            city1_rows = cities_df[cities_df['city_id'] == city1_id]
+            city2_rows = cities_df[cities_df['city_id'] == city2_id]
+
+            # If either city doesn't exist, this transition fails
+            if len(city1_rows) == 0 or len(city2_rows) == 0:
                 continue
+
+            city1 = city1_rows.iloc[0]
+            city2 = city2_rows.iloc[0]
 
             distance = np.sqrt((city2['x'] - city1['x'])**2 + (city2['y'] - city1['y'])**2)
 
             if distance <= distance_threshold_km:
                 valid_transitions += 1
 
-        return valid_transitions, total_transitions
+        return valid_transitions
 
     def get_failure_value(self) -> float:
         return 0.0
@@ -419,37 +434,31 @@ class RandRingMetric(TaskMetric):
         if not gen_cities:
             return self.get_failure_value()
 
-        try:
-            # Get center city coordinates
-            center = cities_df[cities_df['city_id'] == center_id].iloc[0]
+        # Get center city coordinates
+        center = cities_df[cities_df['city_id'] == center_id].iloc[0]
 
-            # Check each generated city
-            valid_count = 0
-            for city_id_str in gen_cities:
-                city_id = int(city_id_str)
-                try:
-                    city = cities_df[cities_df['city_id'] == city_id].iloc[0]
-                    dist = np.sqrt(
-                        (city['x'] - center['x'])**2 +
-                        (city['y'] - center['y'])**2
-                    )
-                    if r_min <= dist <= r_max:
-                        valid_count += 1
-                except:
-                    pass
+        # Check each generated city
+        valid_count = 0
+        for city_id_str in gen_cities:
+            city_id = int(city_id_str)
+            city = cities_df[cities_df['city_id'] == city_id].iloc[0]
+            dist = np.sqrt(
+                (city['x'] - center['x'])**2 +
+                (city['y'] - center['y'])**2
+            )
+            if r_min <= dist <= r_max:
+                valid_count += 1
 
-            # Calculate validity ratio
-            validity_ratio = valid_count / len(gen_cities)
+        # Calculate validity ratio
+        validity_ratio = valid_count / len(gen_cities)
 
-            # Calculate length penalty
-            actual_n = len(gen_cities)
-            n_diff = abs(actual_n - expected_n)
-            length_penalty = np.exp(-n_diff / expected_n) if expected_n > 0 else 0.0
+        # Calculate length penalty
+        actual_n = len(gen_cities)
+        n_diff = abs(actual_n - expected_n)
+        length_penalty = np.exp(-n_diff / expected_n) if expected_n > 0 else 0.0
 
-            # Combined score
-            return validity_ratio * length_penalty
-        except:
-            return self.get_failure_value()
+        # Combined score
+        return validity_ratio * length_penalty
 
     def get_failure_value(self) -> float:
         return 0.0

@@ -1,10 +1,13 @@
 .
 ├── configs
 │   ├── analysis_3d_plots        # 3D visualization analysis configs
+│   ├── analysis_activation_gradients  # Gradient analysis configs for token activations
+│   ├── analysis_pca_timeline    # PCA timeline visualization configs
 │   ├── analysis_representation  # Representation analysis configs
 │   │   └── randomwalk_pretrain_no_atlantis_15ep_llr_pad
 │   │       ├── 0-5              # Layer 0-5 configs
 │   │       └── regions          # Regional analysis configs
+│   ├── analysis_representation_higher  # Stripped representation analysis (no world map)
 │   ├── data_generation
 │   ├── eval                     # Checkpoint evaluation configs
 │   │   ├── m1_10M_ft1          # Fine-tuning 1 (distance only) evaluation configs
@@ -22,6 +25,7 @@
 │   ├── tokenizers
 │   └── geonames-all-cities-with-a-population-1000.csv
 ├── docs
+│   ├── findings                 # Documented discoveries and phenomena
 │   ├── logs
 │   │   ├── 2025-08-30
 │   │   ├── 2025-08-31
@@ -36,7 +40,9 @@
 │   │   ├── 2025-09-15
 │   │   ├── 2025-09-16
 │   │   ├── 2025-09-17
-│   │   └── 2025-09-18
+│   │   ├── 2025-09-18
+│   │   ├── 2025-09-20
+│   │   └── 2025-09-21
 │   ├── reports
 │   ├── closing_tasks.md
 │   ├── repo_usage.md
@@ -61,9 +67,11 @@
 ├── src
 │   ├── analysis
 │   │   ├── past                # Archived analysis scripts
+│   │   ├── analyze_activation_gradients.py  # Gradient flow analysis from loss to activations
 │   │   ├── analyze_representations.py  # Full-featured analysis with all visualizations
 │   │   ├── analyze_representations_higher.py  # Minimal version for dynamics plot only
 │   │   ├── visualize_pca_3d.py
+│   │   ├── visualize_pca_3d_timeline.py    # PCA timeline animation
 │   │   ├── visualize_prediction_error_3d.py
 │   │   └── visualize_xy_residual_pca_3d.py  # X/Y directions + residual PCA visualization
 │   ├── data_processing

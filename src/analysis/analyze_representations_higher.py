@@ -21,8 +21,9 @@ import yaml
 import matplotlib.pyplot as plt
 from transformers import AutoTokenizer, Qwen2ForCausalLM
 from typing import List, Dict, Tuple
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, LinearRegression
 from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.decomposition import PCA
 from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
@@ -34,36 +35,7 @@ sys.path.insert(0, str(project_root))
 from src.utils import init_directory, filter_dataframe_by_pattern
 # from src.representation_extractor import RepresentationExtractor  # Not needed - using output_hidden_states directly
 import json
-
-
-
-
-# Load country to region mapping from JSON file
-def load_region_mapping(mapping_path):
-    """Load region mapping from JSON file."""
-    with open(mapping_path, 'r') as f:
-        return json.load(f)
-
-# Global variable for region mapping (will be loaded from JSON)
-country_to_region = {}
-
-# Define region colors - using distinct colors for each region
-region_colors = {
-    'North America': '#2E7D32',     # Dark Green
-    'South America': '#FDD835',     # Yellow  
-    'Africa': '#D32F2F',           # Red
-    'Western Europe': '#1976D2',    # Blue
-    'Eastern Europe': '#795548',    # Brown
-    'Middle East': '#F57C00',      # Orange
-    'India': '#9C27B0',            # Purple
-    'China': '#C62828',            # Dark Red
-    'Korea': '#00ACC1',            # Cyan
-    'Japan': '#FFD700',            # Gold/Yellow
-    'Southeast Asia': '#43A047',   # Light Green
-    'Central Asia': '#FFB300',     # Amber
-    'Oceania': '#00BCD4',          # Light Cyan
-    'Unknown': '#9E9E9E',          # Gray
-}
+import pickle
 
 
 def get_prompt_config(prompt_format, city):
@@ -189,16 +161,197 @@ def get_prompt_config(prompt_format, city):
     }
 
 
+def perform_pca_analysis(representations_train, representations_test, x_train, y_train, x_test, y_test,
+                        n_components_list=[2, 4, 6, 8, 10]):
+    """Perform PCA analysis and train linear regression on different numbers of components.
+
+    Args:
+        representations_train: Training representations (n_train, n_features)
+        representations_test: Test representations (n_test, n_features)
+        x_train, y_train: Training coordinates
+        x_test, y_test: Test coordinates
+        n_components_list: List of component numbers to test
+
+    Returns:
+        Dictionary with PCA results for each number of components
+    """
+    results = {}
+
+    # Fit PCA on training data
+    max_components = max(n_components_list)
+    n_features = representations_train.shape[1]
+
+    # Ensure we don't request more components than available
+    max_possible_components = min(representations_train.shape[0], n_features)
+    if max_components > max_possible_components:
+        print(f"Warning: Requested {max_components} components but only {max_possible_components} available")
+        n_components_list = [n for n in n_components_list if n <= max_possible_components]
+        if not n_components_list:
+            raise ValueError(f"No valid component numbers. Max possible: {max_possible_components}")
+
+    # Fit PCA with maximum components needed
+    pca = PCA(n_components=min(max_components, max_possible_components))
+    pca.fit(representations_train)
+
+    # Store PCA object for later use
+    results['pca_object'] = pca
+    results['explained_variance_ratio'] = pca.explained_variance_ratio_
+    results['components_results'] = {}
+
+    for n_comp in n_components_list:
+        # Get first n components
+        train_pca = pca.transform(representations_train)[:, :n_comp]
+        test_pca = pca.transform(representations_test)[:, :n_comp]
+
+        # Train linear regression for x coordinate
+        x_model = LinearRegression()
+        x_model.fit(train_pca, x_train)
+        x_train_pred = x_model.predict(train_pca)
+        x_test_pred = x_model.predict(test_pca)
+
+        # Train linear regression for y coordinate
+        y_model = LinearRegression()
+        y_model.fit(train_pca, y_train)
+        y_train_pred = y_model.predict(train_pca)
+        y_test_pred = y_model.predict(test_pca)
+
+        # Calculate R² scores
+        x_train_r2 = r2_score(x_train, x_train_pred)
+        x_test_r2 = r2_score(x_test, x_test_pred)
+        y_train_r2 = r2_score(y_train, y_train_pred)
+        y_test_r2 = r2_score(y_test, y_test_pred)
+
+        # Calculate MAE
+        x_test_mae = mean_absolute_error(x_test, x_test_pred)
+        y_test_mae = mean_absolute_error(y_test, y_test_pred)
+
+        # Calculate distance error
+        pred_distances = np.sqrt((x_test - x_test_pred)**2 + (y_test - y_test_pred)**2)
+        mean_dist_error = np.mean(pred_distances)
+
+        results['components_results'][n_comp] = {
+            'n_components': n_comp,
+            'x_train_r2': x_train_r2,
+            'x_test_r2': x_test_r2,
+            'y_train_r2': y_train_r2,
+            'y_test_r2': y_test_r2,
+            'x_test_mae': x_test_mae,
+            'y_test_mae': y_test_mae,
+            'mean_dist_error': mean_dist_error,
+            'cumulative_variance_explained': np.sum(pca.explained_variance_ratio_[:n_comp])
+        }
+
+    return results
+
+
+def create_pca_analysis_plots(pca_results, output_dir, step):
+    """Create plots for PCA analysis results.
+
+    Args:
+        pca_results: Results from perform_pca_analysis
+        output_dir: Directory to save plots
+        step: Checkpoint step number
+    """
+    components_data = pca_results['components_results']
+
+    # Extract data for plotting
+    n_components = sorted(components_data.keys())
+    x_train_r2 = [components_data[n]['x_train_r2'] for n in n_components]
+    x_test_r2 = [components_data[n]['x_test_r2'] for n in n_components]
+    y_train_r2 = [components_data[n]['y_train_r2'] for n in n_components]
+    y_test_r2 = [components_data[n]['y_test_r2'] for n in n_components]
+    variance_explained = [components_data[n]['cumulative_variance_explained'] for n in n_components]
+    mean_dist_errors = [components_data[n]['mean_dist_error'] for n in n_components]
+
+    # Create figure with subplots
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+
+    # Plot 1: R² for X coordinate
+    ax = axes[0, 0]
+    ax.plot(n_components, x_train_r2, 'b-o', label='Train', linewidth=2, markersize=8)
+    ax.plot(n_components, x_test_r2, 'r-s', label='Test', linewidth=2, markersize=8)
+    ax.set_xlabel('Number of PCA Components', fontsize=12)
+    ax.set_ylabel('R² Score', fontsize=12)
+    ax.set_title(f'X Coordinate Prediction (Step {step})', fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=10)
+    ax.set_xticks(n_components)
+
+    # Plot 2: R² for Y coordinate
+    ax = axes[0, 1]
+    ax.plot(n_components, y_train_r2, 'b-o', label='Train', linewidth=2, markersize=8)
+    ax.plot(n_components, y_test_r2, 'r-s', label='Test', linewidth=2, markersize=8)
+    ax.set_xlabel('Number of PCA Components', fontsize=12)
+    ax.set_ylabel('R² Score', fontsize=12)
+    ax.set_title(f'Y Coordinate Prediction (Step {step})', fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=10)
+    ax.set_xticks(n_components)
+
+    # Plot 3: Variance Explained and Average R²
+    ax = axes[1, 0]
+    avg_test_r2 = [(x_test_r2[i] + y_test_r2[i]) / 2 for i in range(len(n_components))]
+
+    ax2 = ax.twinx()
+    line1 = ax.plot(n_components, variance_explained, 'g-^', label='Cumulative Variance',
+                    linewidth=2, markersize=8)
+    line2 = ax2.plot(n_components, avg_test_r2, 'm-d', label='Avg Test R²',
+                     linewidth=2, markersize=8)
+
+    ax.set_xlabel('Number of PCA Components', fontsize=12)
+    ax.set_ylabel('Cumulative Variance Explained', fontsize=12, color='g')
+    ax2.set_ylabel('Average Test R²', fontsize=12, color='m')
+    ax.set_title('Variance Explained vs Performance', fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.set_xticks(n_components)
+    ax.tick_params(axis='y', labelcolor='g')
+    ax2.tick_params(axis='y', labelcolor='m')
+
+    # Combine legends
+    lines = line1 + line2
+    labels = [l.get_label() for l in lines]
+    ax.legend(lines, labels, loc='best', fontsize=10)
+
+    # Plot 4: Mean Distance Error
+    ax = axes[1, 1]
+    ax.plot(n_components, mean_dist_errors, 'orange', marker='o', linewidth=2, markersize=8)
+    ax.set_xlabel('Number of PCA Components', fontsize=12)
+    ax.set_ylabel('Mean Distance Error', fontsize=12)
+    ax.set_title('Location Prediction Error', fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.set_xticks(n_components)
+    ax.set_yscale('log')
+
+    plt.suptitle(f'PCA Analysis - Checkpoint {step}', fontsize=16, y=1.02)
+    plt.tight_layout()
+
+    # Save plot
+    plot_path = output_dir / 'pca_r2_vs_components.png'
+    plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+    print(f"PCA analysis plot saved to {plot_path}")
+
+    # Also save numerical results as CSV
+    import pandas as pd
+    results_df = pd.DataFrame(components_data).T
+    results_df.index.name = 'n_components'
+    csv_path = output_dir / 'pca_results.csv'
+    results_df.to_csv(csv_path)
+    print(f"PCA results saved to {csv_path}")
+
+
 def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attention_mask,
                        x_train, x_test, y_train, y_test, n_train_cities,
                        device, layer_indices, return_predictions=False, method_config=None,
                        return_probe_weights=False, return_representations=False,
-                       extraction_indices=None, position_names=None):
+                       extraction_indices=None, position_names=None, perform_pca=False):
     """Analyze a single checkpoint and return R² scores and optionally probe weights and representations
 
     Args:
         extraction_indices: List of token positions to extract representations from
         position_names: Names for each extracted position (for debugging)
+        perform_pca: If True, also perform PCA analysis
     """
     
     # Load model
@@ -369,6 +522,18 @@ def analyze_checkpoint(checkpoint_path, step, partial_input_ids, partial_attenti
             'input_ids': partial_input_ids.cpu().numpy()  # For reference
         }
     
+    # Add PCA analysis if requested
+    pca_results = None
+    if perform_pca:
+        print("  Performing PCA analysis...")
+        pca_results = perform_pca_analysis(
+            partial_reps_np[:n_train_cities],  # Training representations
+            partial_reps_np[n_train_cities:],  # Test representations
+            x_train, y_train, x_test, y_test,
+            n_components_list=[2, 4, 6, 8, 10]
+        )
+        result['pca_results'] = pca_results
+
     return result, representations_data
 
 
@@ -528,198 +693,6 @@ def create_fit_quality_plot(x_train_true, y_train_true, x_train_pred, y_train_pr
     return fig
 
 
-def create_world_map_frame(x_pred, y_pred, x_true, y_true,
-                          test_city_info, step, r2_x, r2_y, mean_error,
-                          highlight_pattern=None, highlight_label=None, highlight_color=None,
-                          plot_links=False, plot_autolim=False):
-    """Create a single frame for the world map animation with regions colored and optional highlighting
-
-    Args:
-        plot_links: If True, draw lines connecting true to predicted positions
-        plot_autolim: If True, automatically set axis limits based on data with 10% padding
-    """
-    
-    fig, ax = plt.subplots(1, 1, figsize=(20, 12))
-    
-    # Get regions for test cities
-    test_regions = []
-    highlight_mask = []
-    for city in test_city_info:
-        # Use region directly from city info if available
-        if 'region' in city:
-            region = city['region']
-        else:
-            country = city['country']
-            # Fail fast if country not in mapping
-            if country not in country_to_region:
-                raise ValueError(f"Country '{country}' not found in region mapping. City: {city['name']}")
-            region = country_to_region[country]
-        test_regions.append(region)
-        
-        # Check if this city should be highlighted
-        if highlight_pattern and 'region' in city:
-            # Parse highlight pattern (e.g., "region:Atlantis")
-            if ':' in highlight_pattern:
-                field, value = highlight_pattern.split(':', 1)
-                if field == 'region' and city.get('region') == value:
-                    highlight_mask.append(True)
-                else:
-                    highlight_mask.append(False)
-            else:
-                highlight_mask.append(False)
-        else:
-            highlight_mask.append(False)
-    
-    # Get unique regions in test data
-    unique_regions = list(set(test_regions))
-    
-    # Plot predicted test locations by region
-    for region in unique_regions:
-        # Skip if this region will be highlighted separately
-        if highlight_pattern and ':' in highlight_pattern:
-            field, value = highlight_pattern.split(':', 1)
-            if field == 'region' and region == value:
-                continue  # Skip this region, it will be highlighted
-        
-        # Get indices for this region
-        region_mask = [r == region for r in test_regions]
-        if sum(region_mask) > 0:
-            # Get color for this region (use gray if not in predefined colors)
-            region_color = region_colors.get(region, '#808080')  # Default gray
-            region_xs_pred = x_pred[region_mask]
-            region_ys_pred = y_pred[region_mask]
-            region_xs_true = x_true[region_mask]
-            region_ys_true = y_true[region_mask]
-            
-            # Plot true locations with smaller markers (scale by /10 for display)
-            ax.scatter(region_xs_true / 10, region_ys_true / 10, 
-                      s=15, alpha=0.3, c='gray',
-                      edgecolors='none')
-            
-            # Plot predicted locations (scale by /10 for display)
-            ax.scatter(region_xs_pred / 10, region_ys_pred / 10, 
-                      s=30, alpha=0.7, c=region_color,
-                      label=f'{region} ({sum(region_mask)})', 
-                      edgecolors='black', linewidth=0.3)
-    
-    # Plot highlighted cities with special markers (e.g., Atlantis with pink stars)
-    if highlight_color and sum(highlight_mask) > 0:
-        highlight_indices = np.array(highlight_mask)
-        highlight_xs_pred = x_pred[highlight_indices]
-        highlight_ys_pred = y_pred[highlight_indices]
-        highlight_xs_true = x_true[highlight_indices]
-        highlight_ys_true = y_true[highlight_indices]
-        
-        # Plot true locations with stars
-        ax.scatter(highlight_xs_true / 10, highlight_ys_true / 10,
-                  s=40, alpha=0.5, c='gray',
-                  marker='*', edgecolors='none')
-        
-        # Plot predicted locations with pink stars
-        ax.scatter(highlight_xs_pred / 10, highlight_ys_pred / 10,
-                  s=100, alpha=0.9, c=highlight_color,
-                  marker='*', label=f'{highlight_label} ({sum(highlight_mask)})',
-                  edgecolors='black', linewidth=0.5)
-    
-    # Draw links between true and predicted positions if requested
-    if plot_links:
-        # Draw lines for all non-highlighted cities
-        for i in range(len(x_pred)):
-            if not (highlight_mask and highlight_mask[i]):
-                # Draw a thin line from true to predicted position
-                ax.plot([x_true[i]/10, x_pred[i]/10],
-                       [y_true[i]/10, y_pred[i]/10],
-                       'gray', alpha=0.2, linewidth=0.5, zorder=1)
-
-        # Draw highlighted links with different style if applicable
-        if highlight_color and sum(highlight_mask) > 0:
-            highlight_indices = np.where(np.array(highlight_mask))[0]
-            for i in highlight_indices:
-                ax.plot([x_true[i]/10, x_pred[i]/10],
-                       [y_true[i]/10, y_pred[i]/10],
-                       color=highlight_color, alpha=0.4, linewidth=1.0,
-                       linestyle='--', zorder=2)
-
-    # Add grid and reference lines
-    ax.axhline(y=0, color='gray', linestyle='--', alpha=0.3, linewidth=0.5)  # Equator
-    ax.axvline(x=0, color='gray', linestyle='--', alpha=0.3, linewidth=0.5)  # Prime Meridian
-    
-    # Calculate mean positions of predicted locations for each region
-    region_label_positions = {}
-    for region in unique_regions:
-        # Get indices for this region
-        region_mask = [r == region for r in test_regions]
-        if sum(region_mask) > 0:
-            region_xs_pred = x_pred[region_mask]
-            region_ys_pred = y_pred[region_mask]
-            # Calculate mean position of predictions for this region
-            mean_x = np.mean(region_xs_pred) / 10  # Scale for display
-            mean_y = np.mean(region_ys_pred) / 10  # Scale for display
-            region_label_positions[region] = (mean_x, mean_y)
-    
-    # Add region labels at the mean predicted positions
-    for region, (x, y) in region_label_positions.items():
-        fontsize = 9 if 'Europe' in region else 10
-        ax.text(x, y, region, fontsize=fontsize, fontweight='bold', 
-               ha='center', va='center', alpha=0.6,
-               bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.5))
-    
-    # Set limits based on plot_autolim setting
-    if plot_autolim:
-        # Calculate bounds from both true and predicted positions
-        all_x = np.concatenate([x_true/10, x_pred/10])
-        all_y = np.concatenate([y_true/10, y_pred/10])
-
-        min_x, max_x = all_x.min(), all_x.max()
-        min_y, max_y = all_y.min(), all_y.max()
-
-        # Calculate data width and height
-        data_width = max_x - min_x
-        data_height = max_y - min_y
-
-        # Use the larger dimension to maintain equal aspect ratio
-        max_dimension = max(data_width, data_height)
-
-        # Add 10% padding based on the larger dimension
-        padding = max_dimension * 0.1
-
-        # Calculate centers
-        center_x = (min_x + max_x) / 2
-        center_y = (min_y + max_y) / 2
-
-        # Set limits using the same span for both axes (equal aspect ratio)
-        half_span = (max_dimension + 2 * padding) / 2
-        ax.set_xlim(center_x - half_span, center_x + half_span)
-        ax.set_ylim(center_y - half_span, center_y + half_span)
-    else:
-        # Use default world map limits
-        ax.set_xlim(-180, 180)
-        ax.set_ylim(-90, 90)
-    ax.set_xlabel('X coordinate', fontsize=12)
-    ax.set_ylabel('Y coordinate', fontsize=12)
-
-    # Ensure equal aspect ratio for geographic data
-    ax.set_aspect('equal', adjustable='box')
-
-    # Add title with metrics
-    ax.set_title(f'Step {step:,} | X R²: {r2_x:.3f} | Y R²: {r2_y:.3f} | Mean Error: {mean_error:.2f}',
-                fontsize=16, pad=20)
-
-    ax.grid(True, alpha=0.3)
-    ax.legend(loc='upper left', ncol=2, fontsize=8,
-             bbox_to_anchor=(0.02, 0.98), framealpha=0.9)
-
-    # Add tick marks
-    if not plot_autolim:
-        # Use standard world map ticks
-        ax.set_xticks(range(-180, 181, 60))
-        ax.set_yticks(range(-90, 91, 30))
-    # When using autolim, matplotlib will automatically choose appropriate ticks
-    
-    plt.tight_layout()
-    
-    return fig
-
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze representation dynamics')
@@ -751,16 +724,10 @@ def main():
     
     # Optional checkpoint parameter - can be "final", a number, or None for all
     checkpoint_param = config.get('checkpoint', None)
+
+    # PCA analysis flag
+    perform_pca_analysis_flag = config.get('perform_pca', True)  # Default to True
     
-    # Optional fields with explicit None
-    highlight_pattern = config.get('highlight', None)
-    highlight_label = config.get('highlight_label', None)
-    highlight_color = config.get('highlight_color', None)
-    plot_links = config.get('plot_links', False)  # Default to False if not specified
-    plot_autolim = config.get('plot_autolim', False)  # Default to False if not specified
-    # Also check for plot_autobox as an alias for plot_autolim
-    if 'plot_autobox' in config:
-        plot_autolim = config.get('plot_autobox', False)
     
     # Initialize output directory
     output_dir = init_directory(output_dir, overwrite=args.overwrite)
@@ -794,7 +761,12 @@ def main():
         print(f"Hidden size: {training_config['model']['hidden_size']}")
     print(f"Extracting from layers: {layer_indices}")
     if save_repr_ckpts:
-        print(f"Will save representations for checkpoints: {save_repr_ckpts}")
+        if -2 in save_repr_ckpts:
+            print(f"Will save representations for ALL checkpoints")
+        elif -1 in save_repr_ckpts:
+            print(f"Will save representations for last checkpoint")
+        else:
+            print(f"Will save representations for checkpoints: {save_repr_ckpts}")
     
     # Print probe method configuration
     if method_config:
@@ -862,17 +834,6 @@ def main():
     
     print(f"Using device: {device}")
     
-    # Load region mapping from config
-    global country_to_region
-    region_mapping_path = config.get('region_mapping_path', 'data/geographic_mappings/country_to_region.json')
-    mapping_path = Path(region_mapping_path)
-    if not mapping_path.is_absolute():
-        mapping_path = project_root / mapping_path
-    if mapping_path.exists():
-        country_to_region = load_region_mapping(mapping_path)
-        print(f"Loaded region mapping from {mapping_path}")
-    else:
-        print(f"Warning: Region mapping file not found at {mapping_path}")
     
     # Load tokenizer - no fallback
     tokenizer_path = checkpoints_dir / 'checkpoint-0'
@@ -987,18 +948,15 @@ def main():
     
     # Set analysis directory BEFORE the loop
     analysis_dir = output_dir
-    
+
     results = []
-    predictions_for_animation = []
     fit_quality_data = []  # Store data for fit quality plots
     
     for i, (step, checkpoint_path) in enumerate(tqdm(checkpoint_dirs, desc="Processing")):
         print(f"\nStep {step}:")
-        # Get predictions for animation - always include all checkpoints
-        return_preds = True
-        
         # Get predictions for fit quality plots based on save_fits setting
         get_fit_quality = save_fits  # Generate for ALL checkpoints if save_fits is True
+        return_preds = get_fit_quality  # Only return predictions if needed for fit quality
         
         # Determine if we should save weights for this checkpoint
         save_weights = save_fits  # Save weights when we save fit quality plots
@@ -1006,14 +964,20 @@ def main():
         # Check if we should save representations for this checkpoint
         save_representations = False
         if save_repr_ckpts:
+            # -2 means all checkpoints
+            if -2 in save_repr_ckpts:
+                save_representations = True
             # -1 means last checkpoint in the list
-            is_last_checkpoint = (i == len(checkpoint_dirs) - 1)
-            if -1 in save_repr_ckpts and is_last_checkpoint:
+            elif -1 in save_repr_ckpts and (i == len(checkpoint_dirs) - 1):
                 save_representations = True
             # Check for specific step number
             elif step in save_repr_ckpts:
                 save_representations = True
         
+        # Only perform PCA on last checkpoint if flag is set
+        is_last_checkpoint = (i == len(checkpoint_dirs) - 1)
+        should_perform_pca = perform_pca_analysis_flag and is_last_checkpoint
+
         result_data = analyze_checkpoint(
             checkpoint_path, step,
             partial_input_ids, partial_attention_mask,
@@ -1024,7 +988,8 @@ def main():
             return_probe_weights=save_weights,
             return_representations=save_representations,
             extraction_indices=extraction_indices,
-            position_names=position_names
+            position_names=position_names,
+            perform_pca=should_perform_pca
         )
         
         # Handle tuple return (result, representations_data)
@@ -1053,19 +1018,9 @@ def main():
                     result['loss'] = None
         else:
             result['loss'] = None
-            
+
         results.append(result)
-        
-        if return_preds:
-            predictions_for_animation.append({
-                'step': step,
-                'x_pred': result['x_test_pred'],
-                'y_pred': result['y_test_pred'],
-                'x_r2': result['x_test_r2'],
-                'y_r2': result['y_test_r2'],
-                'mean_error': result['mean_dist_error']
-            })
-        
+
         # Collect fit quality data and weights for selected checkpoints
         if get_fit_quality and 'x_train_pred' in result:
             fit_data_entry = {
@@ -1131,6 +1086,18 @@ def main():
         
         print(f"  X R²: {result['x_test_r2']:.3f}, Y R²: {result['y_test_r2']:.3f}")
         print(f"  Mean dist error: {result['mean_dist_error']:.2f}")
+
+        # Save PCA analysis if performed
+        if 'pca_results' in result and result['pca_results'] is not None:
+            pca_dir = analysis_dir / f'checkpoint-{step}' / 'pca'
+            pca_dir.mkdir(parents=True, exist_ok=True)
+            create_pca_analysis_plots(result['pca_results'], pca_dir, step)
+
+            # Save PCA model for potential reuse
+            pca_model_path = pca_dir / 'pca_model.pkl'
+            with open(pca_model_path, 'wb') as f:
+                pickle.dump(result['pca_results']['pca_object'], f)
+            print(f"  PCA model saved to {pca_model_path}")
     
     if not results:
         print("No successful checkpoint analyses!")
@@ -1260,74 +1227,6 @@ def main():
     print(f"R² plot saved to {plot_path}")
     plt.close()
     
-    # Create animated GIF of world map evolution
-    if predictions_for_animation:
-        print("\n" + "="*60)
-        print("Generating World Map Animation")
-        print("="*60)
-        
-        # Create frames
-        frames = []
-        for pred_data in tqdm(predictions_for_animation, desc="Creating frames"):
-            fig = create_world_map_frame(
-                pred_data['x_pred'], pred_data['y_pred'],
-                x_test, y_test, test_city_info,
-                pred_data['step'], pred_data['x_r2'],
-                pred_data['y_r2'], pred_data['mean_error'],
-                highlight_pattern, highlight_label, highlight_color,
-                plot_links, plot_autolim
-            )
-            frames.append(fig)
-        
-        # Save as GIF
-        gif_path = analysis_dir / 'world_map_evolution.gif'
-        
-        # Save frames as individual images and then combine into GIF
-        from PIL import Image
-        images = []
-        
-        for i, fig in enumerate(frames):
-            # Save figure to temporary file
-            temp_path = analysis_dir / f'temp_frame_{i:03d}.png'
-            fig.savefig(temp_path, dpi=100, bbox_inches='tight')
-            plt.close(fig)
-            
-            # Load as PIL Image
-            images.append(Image.open(temp_path))
-        
-        # Save as GIF
-        images[0].save(
-            gif_path,
-            save_all=True,
-            append_images=images[1:],
-            duration=500,  # 500ms per frame
-            loop=0
-        )
-        
-        # Clean up temporary files
-        for i in range(len(frames)):
-            temp_path = analysis_dir / f'temp_frame_{i:03d}.png'
-            if temp_path.exists():
-                temp_path.unlink()
-        
-        print(f"World map animation saved to {gif_path}")
-        
-        # Also save the final frame as a static image
-        if predictions_for_animation:
-            final_pred = predictions_for_animation[-1]
-            final_fig = create_world_map_frame(
-                final_pred['x_pred'], final_pred['y_pred'],
-                x_test, y_test, test_city_info,
-                final_pred['step'], final_pred['x_r2'],
-                final_pred['y_r2'], final_pred['mean_error'],
-                highlight_pattern, highlight_label, highlight_color,
-                plot_links, plot_autolim
-            )
-            final_map_path = analysis_dir / 'world_map_final.png'
-            final_fig.savefig(final_map_path, dpi=150, bbox_inches='tight')
-            plt.close(final_fig)
-            print(f"Final world map saved to {final_map_path}")
-    
     # Generate fit quality plots and save probe weights
     if fit_quality_data:
         print("\n" + "="*60)
@@ -1409,11 +1308,23 @@ def main():
     print(f"  X R²: {final['x_test_r2']:.3f}")
     print(f"  Y R²:  {final['y_test_r2']:.3f}")
     print(f"  Distance Error: {final['mean_dist_error']:.2f}")
-    
+
     print(f"\nImprovement:")
     print(f"  X R²: {final['x_test_r2'] - initial['x_test_r2']:+.3f}")
     print(f"  Y R²:  {final['y_test_r2'] - initial['y_test_r2']:+.3f}")
     print(f"  Distance Error: {final['mean_dist_error'] - initial['mean_dist_error']:+.2f}")
+
+    # Check if PCA was actually performed on any checkpoint
+    pca_performed = False
+    if perform_pca_analysis_flag and results:
+        # Check last result for PCA
+        final_result = results[-1] if isinstance(results, list) else results
+        if isinstance(final_result, dict) and 'pca_results' in final_result and final_result.get('pca_results') is not None:
+            pca_performed = True
+            print(f"\nPCA Analysis performed on final checkpoint")
+        elif perform_pca_analysis_flag:
+            print(f"\nWarning: PCA analysis was requested but not performed (check for errors above)")
+
     print(f"\nOutputs saved to: {analysis_dir}")
 
 

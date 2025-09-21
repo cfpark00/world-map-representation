@@ -1,0 +1,32 @@
+# Analysis: dist_1M_no_atlantis_15epochs
+# Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
+# Modified for analyze_representations_higher.py (no visualization parameters)
+
+output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838/plot_3d/pca_regions"
+
+
+# Source representation path
+representation_path: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838"
+
+# Token and layer selection
+# Representations were saved with layers [4,5,6]
+token_index: 1   # 0=comma, 1=c, 2=underscore, -1=concatenate all tokens
+layer_index: -1   # 0=L4, 1=L5, 2=L6, -1=concatenate all layers
+# Note: -1,-1 concatenates all 9 token-layer combinations
+
+# PCA parameters
+n_components: 3  # Number of PCA components
+
+# Axis mapping (optional) - which PC to use for each axis (0-based indexing)
+# Example: to plot PC2, PC3, PC4 instead of PC1, PC2, PC3:
+axis_mapping:
+  1: 0  # X-axis uses PC2 (index 1)
+  2: 1  # Y-axis uses PC3 (index 2)
+  3: 2  # Z-axis uses PC4 (index 3)
+
+# Plot options
+include_test_only: true   # Create separate plot for test set only
+include_train_only: false  # Create separate plot for training set only
+
+
+

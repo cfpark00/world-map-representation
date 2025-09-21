@@ -1,0 +1,35 @@
+# Activation gradient analysis for distance task
+# Analyzes gradients flowing from loss to specific token activations
+
+# Task configuration
+task_type: distance  # Only 'distance' is currently supported
+
+output_dir: "data/experiments/m1_10M/analysis/activation_gradients_l3_4_6"
+
+# Model to analyze
+experiment_dir: "data/experiments/m1_10M"
+
+# Cities data
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+n_samples: 200  # Number of sequences to analyze
+seed: 42
+checkpoint: "final"  # Which checkpoint to use (or a number like 100000)
+
+# Target layers to analyze (0 is embeddings, n is layer n output)
+# Model has 6 layers, so valid indices are 0-6
+target_layers: [3, 4, 5, 6]  # Middle and later layers
+
+# Target token positions to track gradients
+# These are position names that will be identified in the sequence
+target_positions:
+  - city1_last_digit  # Last digit of first city ID (e.g., "4" in c_1234)
+  - comma             # Comma between cities
+
+# Filtering patterns (same as probe patterns in other analyses)
+probe_train: "region:.*"  # All regions for training
+probe_test: "region:.*"    # All regions for testing
+
+# Device
+device: cuda

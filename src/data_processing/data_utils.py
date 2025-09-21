@@ -171,37 +171,29 @@ def generate_must_include_pairs(df, must_include_groups, n_pairs):
     """Generate pairs where at least one city must be from specified groups."""
     must_include_mask = df['group'].isin(must_include_groups)
     must_include_indices = df[must_include_mask].index.values
-    other_indices = df[~must_include_mask].index.values
+    all_indices = df.index.values
+
+    if len(must_include_indices) == 0:
+        raise ValueError("No cities found in must_include groups")
 
     all_pairs_i = []
     all_pairs_j = []
 
-    # Generate inter-must-include pairs (both cities from must_include groups)
-    n_must = len(must_include_indices)
-    if n_must >= 2:
-        n_inter_pairs = min(n_pairs // 10, n_must * (n_must - 1) // 2)  # 10% inter pairs
-        triu_indices = np.triu_indices(n_must, k=1)
-        selected = np.random.choice(len(triu_indices[0]), size=min(n_inter_pairs, len(triu_indices[0])), replace=False)
-        inter_i = must_include_indices[triu_indices[0][selected]]
-        inter_j = must_include_indices[triu_indices[1][selected]]
-        all_pairs_i.extend(inter_i)
-        all_pairs_j.extend(inter_j)
+    for _ in range(n_pairs):
+        # Simple: pick one from must_include, one from all cities
+        must_idx = np.random.choice(must_include_indices)
+        other_idx = np.random.choice(all_indices)
 
-    # Generate cross pairs (one from must_include, one from other)
-    n_cross_pairs = n_pairs - len(all_pairs_i)
-    if n_cross_pairs > 0 and len(other_indices) > 0:
-        must_repeated = np.repeat(must_include_indices, len(other_indices))
-        other_tiled = np.tile(other_indices, len(must_include_indices))
+        # Ensure they're different
+        while other_idx == must_idx:
+            other_idx = np.random.choice(all_indices)
 
-        n_available = len(must_repeated)
-        selected = np.random.choice(n_available, size=min(n_cross_pairs, n_available), replace=False)
+        # Randomly assign which position gets the must_include city
+        if np.random.random() < 0.5:
+            all_pairs_i.append(must_idx)
+            all_pairs_j.append(other_idx)
+        else:
+            all_pairs_i.append(other_idx)
+            all_pairs_j.append(must_idx)
 
-        cross_must = must_repeated[selected]
-        cross_other = other_tiled[selected]
-
-        all_pairs_i.extend(cross_must)
-        all_pairs_j.extend(cross_other)
-
-    # Shuffle all pairs
-    shuffle_idx = np.random.permutation(len(all_pairs_i))
-    return np.array(all_pairs_i)[shuffle_idx], np.array(all_pairs_j)[shuffle_idx]
+    return np.array(all_pairs_i), np.array(all_pairs_j)

@@ -1,0 +1,14 @@
+checkpoints: all
+cities_csv: /n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv
+dataset_path: /n/home12/cfpark00/WM_1/data/datasets/multitask_pt1
+device: cuda
+do_sample: false
+eval_batch_size: 512
+experiment_dir: data/experiments/pt1_ft2-2
+max_generation_length: 224
+output_dir: /n/home12/cfpark00/WM_1/data/experiments/pt1_ft2-2/evals/multi_task
+plot_log_scale: false
+save_full_results: true
+seed: 42
+temperature: 0.0
+top_k: 1

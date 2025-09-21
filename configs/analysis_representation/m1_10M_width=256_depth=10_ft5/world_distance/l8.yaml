@@ -1,0 +1,32 @@
+# Analysis: dist_1M_no_atlantis_15epochs  
+# Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
+
+output_dir: "data/experiments/m1_10M_width=256_depth=10_ft5/analysis/world_distance_l8"
+
+experiment_dir: "data/experiments/m1_10M_width=256_depth=10_ft5"
+cities_csv: "data/datasets/cities/cities.csv"
+
+# Analysis parameters
+layers: [8]
+n_train_cities: 3500
+n_test_cities: 1500
+
+# Task configuration
+prompt_format: "dist_firstcity_last_and_comma"
+
+method:
+  name: "linear"
+
+probe_train: ".*"  # Exclude Atlantis
+probe_test: ".*"  # Exclude Atlantis
+
+# Highlighting
+highlight: "region:Atlantis"
+highlight_label: "Atlantis"
+highlight_color: "#FF69B4"  # Hot Pink
+
+# Compute
+device: "cuda"
+seed: 42
+
+save_repr_ckpts: [-1]

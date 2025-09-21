@@ -1,0 +1,15 @@
+
+
+output_dir: data/datasets/multitask_pt1 #~7M
+mode: concat  # Full concatenation of all datasets
+shuffle: true  # Mix different task types together
+seed: 42
+
+datasets:
+  - path: data/datasets/distance_1M_no_atlantis
+  - path: data/datasets/trianglearea_1M_no_atlantis
+  - path: data/datasets/angle_1M_no_atlantis
+  - path: data/datasets/compass_1M_no_atlantis
+  - path: data/datasets/inside_1M_no_atlantis
+  - path: data/datasets/perimeter_1M_no_atlantis
+  - path: data/datasets/crossing_1M_no_atlantis

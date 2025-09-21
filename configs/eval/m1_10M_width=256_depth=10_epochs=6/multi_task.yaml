@@ -1,0 +1,33 @@
+# Evaluation configuration for m1_10M experiment
+
+output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10_epochs=6/evals/multi_task"
+
+# Experiment to evaluate
+experiment_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10_epochs=6"
+
+# Dataset path - should match what was used for training
+dataset_path: "/n/home12/cfpark00/WM_1/data/datasets/multitask_m1"
+
+# Cities CSV for tasks that need coordinate validation (randomwalk, randring, center)
+cities_csv: "/n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv"
+
+# Evaluation settings
+eval_batch_size: 512
+
+# Generation parameters
+max_generation_length: 224
+temperature: 0.0
+top_k: 1
+do_sample: false
+
+# Checkpoint selection
+checkpoints: "all" #[5921] # , 17763, 47368, 88815, 142104, 2013156, 236838]  # Options: "all", "last", or list like [0, 1000, 5000]
+
+# Compute
+device: "cuda"
+
+# Random seed
+seed: 42
+
+# Save full details
+save_full_results: true  # Save all rows with text, prompt, expected, generation, metric

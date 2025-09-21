@@ -174,6 +174,13 @@ def generate_compass_samples(df, config, n_samples):
     # Use the generate_pairs function from data_utils
     indices_i, indices_j = generate_pairs(df, config, n_samples)
 
+    # Apply random swapping to make pairs symmetric
+    print("Applying random pair swapping for symmetry...")
+    swap_mask = np.random.random(len(indices_i)) < 0.5
+    indices_i_swapped = np.where(swap_mask, indices_j, indices_i)
+    indices_j_swapped = np.where(swap_mask, indices_i, indices_j)
+    indices_i, indices_j = indices_i_swapped, indices_j_swapped
+
     samples = []
 
     # Count directions for balance check

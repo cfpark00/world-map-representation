@@ -242,6 +242,21 @@ def generate_crossing_pairs(df, config, n_samples):
     samples = true_samples + false_samples
     np.random.shuffle(samples)
 
+    # Apply random shuffling of all 4 cities for symmetry
+    print("Applying random city shuffling for symmetry...")
+    for sample in samples:
+        # Randomly shuffle all 4 cities
+        cities = [sample['city1'], sample['city2'], sample['city3'], sample['city4']]
+        np.random.shuffle(cities)
+        sample['city1'], sample['city2'], sample['city3'], sample['city4'] = cities
+
+        # Recalculate intersection with the new arrangement
+        x1, y1 = sample['city1']['x'], sample['city1']['y']
+        x2, y2 = sample['city2']['x'], sample['city2']['y']
+        x3, y3 = sample['city3']['x'], sample['city3']['y']
+        x4, y4 = sample['city4']['x'], sample['city4']['y']
+        sample['intersects'] = segments_intersect(x1, y1, x2, y2, x3, y3, x4, y4)
+
     if len(samples) < n_samples:
         print(f"Warning: Could only generate {len(samples)} samples out of {n_samples} requested")
         print(f"  TRUE samples: {len(true_samples)}")
