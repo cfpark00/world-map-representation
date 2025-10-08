@@ -1,0 +1,17 @@
+output_dir: data/datasets/pft2-7
+
+# Combination mode: 'sample' to take specific amounts from each dataset
+mode: sample
+
+# Random seed for reproducibility
+seed: 42
+
+# Whether to shuffle the final combined dataset
+shuffle: true
+
+# List of datasets to combine
+datasets:
+  - path: data/datasets/trianglearea_1M_no_atlantis
+    n_samples: 20000
+  - path: data/datasets/crossing_1M_no_atlantis
+    n_samples: 100000

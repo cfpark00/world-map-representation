@@ -52,60 +52,47 @@ def get_prompt_config(prompt_format, city):
             - position_names: Names for each extracted position
     """
 
-    if prompt_format == 'dist':
-        # Format: "<bos> d i s t ( c _ X X X X , c _"
-        dist_str = f"dist(c_{city['row_id']},c_"
-        spaced_str = ' '.join(dist_str)
-        prompt = f"<bos> {spaced_str}"
-        extraction_indices = [-3, -2, -1]  # comma, c, underscore
-        position_names = ['comma', 'c', 'underscore']
-
-    elif prompt_format == 'dist_city_and_transition':
-        # Format: "<bos> d i s t ( c _ X X X X , c _"
-        # Extract full first city and transition
-        dist_str = f"dist(c_{city['row_id']},c_"
-        spaced_str = ' '.join(dist_str)
-        prompt = f"<bos> {spaced_str}"
-        extraction_indices = [6, 7, 8, 9, 10, 11, 12, 13, 14]  # c _ i1 i2 i3 i4 , c _
-        position_names = ['c1', '_1', 'i1', 'i2', 'i3', 'i4', ',', 'c2', '_2']
-
-    elif prompt_format == 'dist_firstcity_last_and_comma':
+    if prompt_format == 'distance_firstcity_last_and_trans':
         # Format: "<bos> d i s t ( c _ X X X X ,"
-        # Extract last digit and comma - no need for "c_" after since causal attention can't see it
+        # Extract last digit and transition token (comma) - no need for "c_" after since causal attention can't see it
         dist_str = f"dist(c_{city['row_id']},"
         spaced_str = ' '.join(dist_str)
         prompt = f"<bos> {spaced_str}"
         extraction_indices = [11, 12]  # i4 (last digit), comma
-        position_names = ['last_digit', 'comma']
+        position_names = ['last_digit', 'trans']
 
-    elif prompt_format == 'trianglearea_firstcity_last_and_comma':
+    elif prompt_format == 'distance_firstcity_last':
+        # Format: "<bos> d i s t ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        dist_str = f"dist(c_{city['row_id']},"
+        spaced_str = ' '.join(dist_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [11]  # i4 (last digit) only
+        position_names = ['last_digit']
+
+    elif prompt_format == 'trianglearea_firstcity_last_and_trans':
         # Format: "<bos> t r i a r e a ( c _ X X X X ,"
-        # Extract last digit and comma - no need for "c_" after since causal attention can't see it
+        # Extract last digit and transition token (comma) - no need for "c_" after since causal attention can't see it
         # Note: The actual dataset uses "triarea" not "trianglearea"
         triarea_str = f"triarea(c_{city['row_id']},"
         spaced_str = ' '.join(triarea_str)
         prompt = f"<bos> {spaced_str}"
         # "triarea" has 7 chars vs "dist" with 4, so positions shift by 3
         extraction_indices = [14, 15]  # i4 (last digit), comma
-        position_names = ['last_digit', 'comma']
+        position_names = ['last_digit', 'trans']
 
     elif prompt_format == 'trianglearea_firstcity_last':
-        # Format: "<bos> t r i a r e a ( c _ X X X X"
-        # Extract only last digit of first city (no comma)
-        # Just the city ID without comma at the end
-        # Note: The actual dataset uses "triarea" not "trianglearea"
-        city_id_str = str(city['row_id'])
-        triarea_str = f"triarea(c_{city_id_str}"  # No comma
+        # Format: "<bos> t r i a r e a ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        triarea_str = f"triarea(c_{city['row_id']},"
         spaced_str = ' '.join(triarea_str)
         prompt = f"<bos> {spaced_str}"
-        # "triarea" has 7 chars, ( is 1, c is 1, _ is 1, then city digits
-        # Position 14 is the last digit of a 4-digit city ID
-        extraction_indices = [14]  # Just i4 (last digit)
+        extraction_indices = [14]  # i4 (last digit) only
         position_names = ['last_digit']
 
-    elif prompt_format == 'crossing_firstcity_last_and_comma':
+    elif prompt_format == 'crossing_firstcity_last_and_trans':
         # Format: "<bos> c r o s s ( c _ X X X X ,"
-        # Extract last digit and comma of first city
+        # Extract last digit and transition token (comma) of first city
         cross_str = f"cross(c_{city['row_id']},"
         spaced_str = ' '.join(cross_str)
         prompt = f"<bos> {spaced_str}"
@@ -119,40 +106,172 @@ def get_prompt_config(prompt_format, city):
         # Position 9-12: city ID digits (for 4-digit ID)
         # Position 13: ,
         extraction_indices = [12, 13]  # last digit, comma
-        position_names = ['last_digit', 'comma']
+        position_names = ['last_digit', 'trans']
 
-    elif prompt_format == 'randomwalk_firstcity_last_and_comma':
-        # Format: "<bos> r w ( max_dist , chain_len ) = c _ X X X X ,"
-        # For random walk, we need to construct a valid prompt
-        # Use average values from typical dataset config (50-500 for dist, 5-20 for length)
-        max_dist = 275  # Average of typical range 50-500
-        chain_len = 12   # Average of typical range 5-20
-        rw_str = f"rw({max_dist},{chain_len})=c_{city['row_id']},"
-        spaced_str = ' '.join(rw_str)
+    elif prompt_format == 'crossing_firstcity_last':
+        # Format: "<bos> c r o s s ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        cross_str = f"cross(c_{city['row_id']},"
+        spaced_str = ' '.join(cross_str)
         prompt = f"<bos> {spaced_str}"
+        extraction_indices = [12]  # last digit only
+        position_names = ['last_digit']
 
-        # The tokenizer splits on spaces, so spaces are NOT tokens!
-        # Token positions for: <bos> r w ( 2 7 5 , 1 2 ) = c _ X X X X ,
+    elif prompt_format == 'angle_firstcity_last_and_trans':
+        # Format: "<bos> a n g l e ( c _ X X X X ,"
+        # Extract last digit and transition token (comma) of first city
+        angle_str = f"angle(c_{city['row_id']},"
+        spaced_str = ' '.join(angle_str)
+        prompt = f"<bos> {spaced_str}"
+        # "angle" has 5 chars, same as "cross"
+        # Token positions: <bos> a n g l e ( c _ X X X X ,
         # Position 0: <bos>
-        # Position 1: r
-        # Position 2: w
-        # Position 3: (
-        # Position 4-6: digits of max_dist (2 7 5)
-        # Position 7: ,
-        # Position 8-9: digits of chain_len (1 2)
-        # Position 10: )
+        # Position 1-5: a n g l e
+        # Position 6: (
+        # Position 7: c
+        # Position 8: _
+        # Position 9-12: city ID digits (for 4-digit ID)
+        # Position 13: ,
+        extraction_indices = [12, 13]  # last digit, comma
+        position_names = ['last_digit', 'trans']
+
+    elif prompt_format == 'angle_firstcity_last':
+        # Format: "<bos> a n g l e ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        angle_str = f"angle(c_{city['row_id']},"
+        spaced_str = ' '.join(angle_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [12]  # last digit only
+        position_names = ['last_digit']
+
+    elif prompt_format == 'compass_firstcity_last_and_trans':
+        # Format: "<bos> c o m p a s s ( c _ X X X X ,"
+        # Extract last digit and transition token (comma) of first city
+        compass_str = f"compass(c_{city['row_id']},"
+        spaced_str = ' '.join(compass_str)
+        prompt = f"<bos> {spaced_str}"
+        # "compass" has 7 chars, same as "triarea"
+        # Token positions: <bos> c o m p a s s ( c _ X X X X ,
+        # Position 0: <bos>
+        # Position 1-7: c o m p a s s
+        # Position 8: (
+        # Position 9: c
+        # Position 10: _
+        # Position 11-14: city ID digits (for 4-digit ID)
+        # Position 15: ,
+        extraction_indices = [14, 15]  # last digit, comma
+        position_names = ['last_digit', 'trans']
+
+    elif prompt_format == 'compass_firstcity_last':
+        # Format: "<bos> c o m p a s s ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        compass_str = f"compass(c_{city['row_id']},"
+        spaced_str = ' '.join(compass_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [14]  # last digit only
+        position_names = ['last_digit']
+
+    elif prompt_format == 'inside_firstcity_last_and_trans':
+        # Format: "<bos> i n s i d e ( c _ X X X X ;"
+        # Extract last digit and transition token (semicolon) of test city
+        inside_str = f"inside(c_{city['row_id']};"
+        spaced_str = ' '.join(inside_str)
+        prompt = f"<bos> {spaced_str}"
+        # "inside" has 6 chars
+        # Token positions: <bos> i n s i d e ( c _ X X X X ;
+        # Position 0: <bos>
+        # Position 1-6: i n s i d e
+        # Position 7: (
+        # Position 8: c
+        # Position 9: _
+        # Position 10-13: city ID digits (for 4-digit ID)
+        # Position 14: ;
+        extraction_indices = [13, 14]  # last digit, semicolon
+        position_names = ['last_digit', 'trans']
+
+    elif prompt_format == 'inside_firstcity_last':
+        # Format: "<bos> i n s i d e ( c _ X X X X ;"
+        # Extract only last digit - no transition token
+        inside_str = f"inside(c_{city['row_id']};"
+        spaced_str = ' '.join(inside_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [13]  # last digit only
+        position_names = ['last_digit']
+
+    elif prompt_format == 'perimeter_firstcity_last_and_trans':
+        # Format: "<bos> p e r i m e t e r ( c _ X X X X ,"
+        # Extract last digit and transition token (comma) of first city
+        perimeter_str = f"perimeter(c_{city['row_id']},"
+        spaced_str = ' '.join(perimeter_str)
+        prompt = f"<bos> {spaced_str}"
+        # "perimeter" has 9 chars
+        # Token positions: <bos> p e r i m e t e r ( c _ X X X X ,
+        # Position 0: <bos>
+        # Position 1-9: p e r i m e t e r
+        # Position 10: (
+        # Position 11: c
+        # Position 12: _
+        # Position 13-16: city ID digits (for 4-digit ID)
+        # Position 17: ,
+        extraction_indices = [16, 17]  # last digit, comma
+        position_names = ['last_digit', 'trans']
+
+    elif prompt_format == 'perimeter_firstcity_last':
+        # Format: "<bos> p e r i m e t e r ( c _ X X X X ,"
+        # Extract only last digit - no transition token
+        perimeter_str = f"perimeter(c_{city['row_id']},"
+        spaced_str = ' '.join(perimeter_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [16]  # last digit only
+        position_names = ['last_digit']
+
+    elif prompt_format == 'randomwalk_firstcity_last_and_trans':
+        # Format: "<bos> r a n d o m w a l k = c _ X X X X ,"
+        # Extract last digit and transition token (comma) of first city after equals sign
+        randomwalk_str = f"randomwalk=c_{city['row_id']},"
+        spaced_str = ' '.join(randomwalk_str)
+        prompt = f"<bos> {spaced_str}"
+        # "randomwalk" has 10 chars
+        # Token positions: <bos> r a n d o m w a l k = c _ X X X X ,
+        # Position 0: <bos>
+        # Position 1-10: r a n d o m w a l k
         # Position 11: =
         # Position 12: c
         # Position 13: _
-        # Position 14-17: city ID digits (assuming 4-digit ID)
+        # Position 14-17: city ID digits (for 4-digit ID)
         # Position 18: ,
+        extraction_indices = [17, 18]  # last digit, comma
+        position_names = ['last_digit', 'trans']
 
-        # For a 4-digit city ID:
-        extraction_indices = [17, 18]  # last digit at pos 17, comma at pos 18
-        position_names = ['last_digit', 'comma']
+    elif prompt_format == 'randomwalk_firstcity_last':
+        # Format: "<bos> r a n d o m w a l k = c _ X X X X ,"
+        # Extract only last digit - no transition token
+        randomwalk_str = f"randomwalk=c_{city['row_id']},"
+        spaced_str = ' '.join(randomwalk_str)
+        prompt = f"<bos> {spaced_str}"
+        extraction_indices = [17]  # last digit only
+        position_names = ['last_digit']
 
     else:
-        raise ValueError(f"Unknown prompt_format: {prompt_format}")
+        valid_formats = [
+            'distance_firstcity_last_and_trans',
+            'distance_firstcity_last',
+            'trianglearea_firstcity_last_and_trans',
+            'trianglearea_firstcity_last',
+            'crossing_firstcity_last_and_trans',
+            'crossing_firstcity_last',
+            'angle_firstcity_last_and_trans',
+            'angle_firstcity_last',
+            'compass_firstcity_last_and_trans',
+            'compass_firstcity_last',
+            'inside_firstcity_last_and_trans',
+            'inside_firstcity_last',
+            'perimeter_firstcity_last_and_trans',
+            'perimeter_firstcity_last',
+            'randomwalk_firstcity_last_and_trans',
+            'randomwalk_firstcity_last'
+        ]
+        raise ValueError(f"Unknown prompt_format: {prompt_format}. Valid formats are: {', '.join(valid_formats)}")
 
     return {
         'prompt': prompt,

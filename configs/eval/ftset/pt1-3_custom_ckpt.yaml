@@ -1,0 +1,46 @@
+# Output directory - all outputs go here
+output_dir: "data/experiments/pt1-3_cc"
+
+# Dataset - PADDED VERSION
+dataset:
+  path: "data/datasets/angle_1M_no_atlantis"
+  max_sequence_length: 256
+
+# Tokenizer
+tokenizer_path: "data/tokenizers/default_tokenizer"
+
+# Model (Qwen2.5-like)
+model:
+  vocab_size: 98  # New ASCII tokenizer vocab size
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+
+# Training
+training:
+  batch_size: 128  # Larger batch size since we have 1M samples
+  eval_batch_size: 64
+  num_epochs: 42
+  optimizer: "adamw"
+  learning_rate: 3e-4
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # More warmup for larger dataset
+  seed: 42
+
+# Checkpointing
+checkpointing:
+  save_at_steps: [0, 10, 30, 60, 100, 200, 300, 500, 700, 1000, 2000, 3000, 5000, 6000, 7000, 8000, 9000, 10000, 13000, 16000, 19000, 22000, 25000, 28000, 31000, 34000, 37000, 40000, 43000, 46000, 49000, 52000, 55000, 58000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000, 170000, 180000, 190000, 200000, 210000, 220000, 230000, 240000, 250000, 260000, 270000, 280000, 290000, 300000, 310000, 320000, 328146]
+  eval_strategy: "steps"
+  eval_steps: 0.005
+
+logging:
+  logging_steps: 10
+  report_to: "none"
+
+# Evaluation settings for randomwalk task
+eval:
+  randomwalk:
+    cities_csv: "data/datasets/cities/cities.csv"

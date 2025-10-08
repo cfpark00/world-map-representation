@@ -19,6 +19,7 @@ from src.utils import (
     save_training_plots,
     preprocess_config,
     GenerationEvalCallback,
+    CustomCheckpointCallback,
     init_directory,
     get_model,
     get_dataset,
@@ -80,35 +81,76 @@ def main():
     tokenizer.save_pretrained(str(checkpoint_0_path))
     print(f"Saved initial model state to {checkpoint_0_path}")
     
-    # Setup training arguments
-    training_args = TrainingArguments(
-        output_dir=str(exp_dir / 'checkpoints'),
-        num_train_epochs=config['training']['num_epochs'],
-        per_device_train_batch_size=config['training']['batch_size'],
-        per_device_eval_batch_size=config['training']['eval_batch_size'],
-        warmup_steps=config['training']['warmup_steps'],
-        weight_decay=config['training']['weight_decay'],
-        logging_dir=str(exp_dir / 'logs'),
-        logging_steps=config.get('logging', {}).get('logging_steps', 10),  # Use config or default to 10
-        report_to=config.get('logging', {}).get('report_to', 'none'),  # Use config or default to 'none'
-        eval_strategy="steps",
-        eval_steps=config['checkpointing']['eval_steps'],  # HF handles fractional values
-        save_strategy="steps",
-        save_steps=config['checkpointing']['save_steps'],  # HF handles fractional values
-        save_total_limit=None,  # Keep ALL checkpoints
-        load_best_model_at_end=False,  # Don't mess with loading "best" model
-        metric_for_best_model=None,  # Not using best model selection
-        greater_is_better=False,  # Lower is better
-        seed=config['training']['seed'],
-        data_seed=config['training']['seed'],
-        fp16=torch.cuda.is_available(),  # Use FP16 if GPU available
-        dataloader_num_workers=2,
-        remove_unused_columns=False,
-        lr_scheduler_type="linear" if config['training']['scheduler'] == "linear_with_warmup" else config['training']['scheduler'],
-        learning_rate=config['training']['learning_rate'],
-    )
-    
-    # Initialize trainer with callback for generation evaluation and plot updates
+    # Check if we're using custom checkpoint steps or regular intervals
+    use_custom_checkpoints = 'save_at_steps' in config.get('checkpointing', {})
+
+    # Setup training arguments based on checkpoint strategy
+    if use_custom_checkpoints:
+        # Use custom checkpoint steps - disable automatic saving
+        training_args = TrainingArguments(
+            output_dir=str(exp_dir / 'checkpoints'),
+            num_train_epochs=config['training']['num_epochs'],
+            per_device_train_batch_size=config['training']['batch_size'],
+            per_device_eval_batch_size=config['training']['eval_batch_size'],
+            warmup_steps=config['training']['warmup_steps'],
+            weight_decay=config['training']['weight_decay'],
+            logging_dir=str(exp_dir / 'logs'),
+            logging_steps=config.get('logging', {}).get('logging_steps', 10),  # Use config or default to 10
+            report_to=config.get('logging', {}).get('report_to', 'none'),  # Use config or default to 'none'
+            eval_strategy="steps",
+            eval_steps=config['checkpointing']['eval_steps'],  # HF handles fractional values
+            save_strategy="no",  # Disable automatic saving - will use callback
+            save_total_limit=None,  # Keep ALL checkpoints
+            load_best_model_at_end=False,  # Don't mess with loading "best" model
+            metric_for_best_model=None,  # Not using best model selection
+            greater_is_better=False,  # Lower is better
+            seed=config['training']['seed'],
+            data_seed=config['training']['seed'],
+            fp16=torch.cuda.is_available(),  # Use FP16 if GPU available
+            dataloader_num_workers=2,
+            remove_unused_columns=False,
+            lr_scheduler_type="linear" if config['training']['scheduler'] == "linear_with_warmup" else config['training']['scheduler'],
+            learning_rate=config['training']['learning_rate'],
+        )
+    else:
+        # Use regular interval-based checkpointing (backward compatible)
+        training_args = TrainingArguments(
+            output_dir=str(exp_dir / 'checkpoints'),
+            num_train_epochs=config['training']['num_epochs'],
+            per_device_train_batch_size=config['training']['batch_size'],
+            per_device_eval_batch_size=config['training']['eval_batch_size'],
+            warmup_steps=config['training']['warmup_steps'],
+            weight_decay=config['training']['weight_decay'],
+            logging_dir=str(exp_dir / 'logs'),
+            logging_steps=config.get('logging', {}).get('logging_steps', 10),  # Use config or default to 10
+            report_to=config.get('logging', {}).get('report_to', 'none'),  # Use config or default to 'none'
+            eval_strategy="steps",
+            eval_steps=config['checkpointing']['eval_steps'],  # HF handles fractional values
+            save_strategy="steps",
+            save_steps=config['checkpointing']['save_steps'],  # HF handles fractional values
+            save_total_limit=None,  # Keep ALL checkpoints
+            load_best_model_at_end=False,  # Don't mess with loading "best" model
+            metric_for_best_model=None,  # Not using best model selection
+            greater_is_better=False,  # Lower is better
+            seed=config['training']['seed'],
+            data_seed=config['training']['seed'],
+            fp16=torch.cuda.is_available(),  # Use FP16 if GPU available
+            dataloader_num_workers=2,
+            remove_unused_columns=False,
+            lr_scheduler_type="linear" if config['training']['scheduler'] == "linear_with_warmup" else config['training']['scheduler'],
+            learning_rate=config['training']['learning_rate'],
+        )
+
+    # Build callbacks list
+    callbacks = [GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, config)]
+
+    # Add custom checkpoint callback if using save_at_steps
+    if use_custom_checkpoints:
+        save_at_steps = config['checkpointing']['save_at_steps']
+        callbacks.append(CustomCheckpointCallback(save_at_steps))
+        print(f"Using custom checkpoint steps: {sorted(save_at_steps)}")
+
+    # Initialize trainer with callbacks
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -116,7 +158,7 @@ def main():
         eval_dataset=eval_dataset,
         data_collator=collator,  # Use task-specific collator
         processing_class=tokenizer,  # Use processing_class instead of tokenizer (deprecated)
-        callbacks=[GenerationEvalCallback(exp_dir, tokenizer, eval_dataset, device, config)],  # Generation eval + plots
+        callbacks=callbacks,  # All callbacks
     )
     
     # Always evaluate initial model (step 0) - whether from checkpoint or random init

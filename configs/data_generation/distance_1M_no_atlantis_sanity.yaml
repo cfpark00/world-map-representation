@@ -1,0 +1,23 @@
+# 1M pairs random cities NO atlantis WITH PADDING
+# Excludes all Atlantis cities from pair generation
+# All city IDs padded to 4 digits with leading zeros
+
+output_dir: data/datasets/distance_1M_no_atlantis_sanity
+cities_csv: data/datasets/cities/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+
+groups:
+  world:
+    city_names: "^(?!Atlantis_).*"  # Everything NOT starting with Atlantis_
+
+pair_generation:
+  strategy: within_groups
+  groups: [world]
+
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4

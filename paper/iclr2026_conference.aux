@@ -1,0 +1,197 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{hubel1962receptive,rosenblatt1958perceptron,fukushima1980neocognitron,rumelhart1986learning}
+\citation{bengio2014representationlearningreviewnew}
+\citation{radford2018improving,devlin2018bert,brown2020language,openai2024gpt4technicalreport}
+\citation{bender2021dangers,dziri2023faithfatelimitstransformers,shojaee2025illusionthinkingunderstandingstrengths}
+\citation{li2022emergent,gurnee2023language,nanda2023emergent,vafa2024evaluatingworldmodelimplicit}
+\citation{pearce2025tree,higgins2016beta}
+\citation{towardsmonosemanticity,templeton2024scaling}
+\citation{marks2024geometrytruthemergentlinear,lee2025geometryselfverificationtaskspecificreasoning,arditi2024refusal}
+\citation{locatello2019challenging}
+\citation{kumar2025questioningrepresentationaloptimismdeep}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {Overview.} Our World-Data-Model framework decouples three components to study representation learning: (1) a fixed world of 5,175 city coordinates, (2) varied data generation through 7 geometric tasks, and (3) neural network models that learn from task outputs without seeing coordinates. We probe how different tasks shape internal world representations, then test adaptability by introducing 100 synthetic ``Atlantis'' cities. The framework reveals that task type controls representational geometry, while multi-task training drives convergence toward aligned representations.\relax }}{2}{figure.caption.1}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:fig1}{{1}{2}{\textbf {Overview.} Our World-Data-Model framework decouples three components to study representation learning: (1) a fixed world of 5,175 city coordinates, (2) varied data generation through 7 geometric tasks, and (3) neural network models that learn from task outputs without seeing coordinates. We probe how different tasks shape internal world representations, then test adaptability by introducing 100 synthetic ``Atlantis'' cities. The framework reveals that task type controls representational geometry, while multi-task training drives convergence toward aligned representations.\relax }{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{This work.}{2}{section*.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Experimental Setup: Seven geometric tasks.} All tasks operate on the same 5,175 real city coordinates (map shown above) but require different geometric computations: (a) \texttt  {Distance}: Euclidean distance, (b) \texttt  {Triangle Area}: Area from three cities, (c) \texttt  {Angle}: Angle at middle vertex, (d) \texttt  {Compass}: 8-way cardinal direction, (e) \texttt  {Inside}: Point-in-polygon test, (f) \texttt  {Perimeter}: Polygon perimeter, (g) \texttt  {Crossing}: Line segment intersection.\relax }}{3}{figure.caption.3}}
+\newlabel{fig:setup}{{2}{3}{\textbf {Experimental Setup: Seven geometric tasks.} All tasks operate on the same 5,175 real city coordinates (map shown above) but require different geometric computations: (a) \texttt {Distance}: Euclidean distance, (b) \texttt {Triangle Area}: Area from three cities, (c) \texttt {Angle}: Angle at middle vertex, (d) \texttt {Compass}: 8-way cardinal direction, (e) \texttt {Inside}: Point-in-polygon test, (f) \texttt {Perimeter}: Polygon perimeter, (g) \texttt {Crossing}: Line segment intersection.\relax }{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Experimental Framework: Geographic Reasoning with Controllable World Structure}{3}{section.2}}
+\newlabel{sec:setup}{{2}{3}{Experimental Framework: Geographic Reasoning with Controllable World Structure}{section.2}{}}
+\citation{berglund2024reversalcursellmstrained}
+\citation{vaswani2023attention}
+\citation{nanda2023progressmeasuresgrokkingmechanistic}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Task-dependent world representations converge under multi-task learning}{4}{section.3}}
+\newlabel{sec:pretraining}{{3}{4}{Task-dependent world representations converge under multi-task learning}{section.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Result 1: World representations emerge through autoregressive training.}{4}{figure.caption.5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Emergence of World Representations.} Training dynamics on the \texttt  {angle} task reveal how world representations form through autoregressive learning. Top panels show training/validation loss and angle prediction accuracy over training steps. Middle panel tracks linear probe $R^2$ for decoding (x,y) coordinates from layer 5 activations, showing coordinate decodability emerges before task accuracy improves. Bottom panels display PCA projections and linearly probed representations at different training stages, progressing from random initialization through city clustering to final world-aligned geometry. Cities are colored by geographic region throughout.\relax }}{5}{figure.caption.5}}
+\newlabel{fig:result1-1}{{3}{5}{\textbf {Emergence of World Representations.} Training dynamics on the \texttt {angle} task reveal how world representations form through autoregressive learning. Top panels show training/validation loss and angle prediction accuracy over training steps. Middle panel tracks linear probe $R^2$ for decoding (x,y) coordinates from layer 5 activations, showing coordinate decodability emerges before task accuracy improves. Bottom panels display PCA projections and linearly probed representations at different training stages, progressing from random initialization through city clustering to final world-aligned geometry. Cities are colored by geographic region throughout.\relax }{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {World representation geometry depends on data generation process.} (a) Different tasks create distinct geometries: \texttt  {distance} (thread-like), \texttt  {angle} (2D manifold), \texttt  {compass} (fragmented), \texttt  {inside} (diffuse). Row 1: PCA. Row 2: Linear probe projections. Row 3: Rotated views showing hidden structure. (b,c) CKA matrices at layers 4 and 5. \texttt  {Crossing} (Cr) fails to train alone.\relax }}{5}{figure.caption.7}}
+\newlabel{fig:result1-2}{{4}{5}{\textbf {World representation geometry depends on data generation process.} (a) Different tasks create distinct geometries: \texttt {distance} (thread-like), \texttt {angle} (2D manifold), \texttt {compass} (fragmented), \texttt {inside} (diffuse). Row 1: PCA. Row 2: Linear probe projections. Row 3: Rotated views showing hidden structure. (b,c) CKA matrices at layers 4 and 5. \texttt {Crossing} (Cr) fails to train alone.\relax }{figure.caption.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Result 2: Data generation process controls world representation geometry.}{5}{figure.caption.7}}
+\citation{pezeshki2021gradient,shah2020pitfallssimplicitybiasneural,hoffmann2024eurekamomentstransformersmultisteptasks,bachmann2025pitfallsnexttokenprediction,gopalani2025happenslossplateauunderstanding}
+\citation{kornblithcka}
+\citation{michaud2024quantizationmodelneuralscaling,zhang2025intelligenceedgechaos}
+\citation{huh2024platonicrepresentationhypothesis}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Multi-task pretraining drives representational convergence.} (a,b) Pairwise task training creates more structured 2D manifolds than single-task models. (c) CKA matrix for all 21 pairwise combinations shows higher alignment. (d) Average CKA increases with task count (1→2→3), saturating at \nobreakspace  {}0.8 for layers 4-6 while layer 3 continues improving. 3D visualizations: \href  {https://osf.io/4huk3/?view_only=8ddee09b18ed43b0a302b96f6bfecd50}{link}.\relax }}{6}{figure.caption.9}}
+\newlabel{fig:result1-3}{{5}{6}{\textbf {Multi-task pretraining drives representational convergence.} (a,b) Pairwise task training creates more structured 2D manifolds than single-task models. (c) CKA matrix for all 21 pairwise combinations shows higher alignment. (d) Average CKA increases with task count (1→2→3), saturating at ~0.8 for layers 4-6 while layer 3 continues improving. 3D visualizations: \href {https://osf.io/4huk3/?view_only=8ddee09b18ed43b0a302b96f6bfecd50}{link}.\relax }{figure.caption.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Result 3: Task diversity aligns representations: Evidence for the Platonic Hypothesis.}{6}{figure.caption.9}}
+\citation{kumar2025questioningrepresentationaloptimismdeep}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {7-task model.} (a) PCA reveals world structure. (b) Linear probe projections. (c) Training curves for all tasks.\relax }}{7}{figure.caption.10}}
+\newlabel{fig:7taskmodel}{{6}{7}{\textbf {7-task model.} (a) PCA reveals world structure. (b) Linear probe projections. (c) Training curves for all tasks.\relax }{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Fine-tuning's Representational Shift Predicts Downstream Generalization}{7}{section.4}}
+\newlabel{sec:fine_tuning}{{4}{7}{Fine-tuning's Representational Shift Predicts Downstream Generalization}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Result 1: Pretraining Phase representational alignment predicts fine-tuning generalization \textit  {despite} joint pretraining on all tasks.}{7}{section*.11}}
+\citation{Kirkpatrick2017}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces \textbf  {Fine-tuning generalization and its correlation with representational similarity.} (a) Generalization matrix showing normalized improvement on Atlantis queries after fine-tuning. Each row represents an evaluation task, each column represents a fine-tuning task. Values indicate the normalized performance gain when evaluating task Y after fine-tuning on task X with Atlantis. Some tasks (e.g., \texttt  {perimeter}) trigger broad generalization while others (e.g., \texttt  {distance}) remain isolated. (b) Scatter plot revealing the relationship between cross-task generalization and representational similarity. Y-axis: improvement on task Y when fine-tuned on task X. X-axis: CKA between models trained solely on task X vs. task Y. The negative correlation suggests that tasks with divergent single-task representations fail to propagate fine-tuning updates across the shared representational space.\relax }}{8}{figure.caption.12}}
+\newlabel{fig:result2-1}{{7}{8}{\textbf {Fine-tuning generalization and its correlation with representational similarity.} (a) Generalization matrix showing normalized improvement on Atlantis queries after fine-tuning. Each row represents an evaluation task, each column represents a fine-tuning task. Values indicate the normalized performance gain when evaluating task Y after fine-tuning on task X with Atlantis. Some tasks (e.g., \texttt {perimeter}) trigger broad generalization while others (e.g., \texttt {distance}) remain isolated. (b) Scatter plot revealing the relationship between cross-task generalization and representational similarity. Y-axis: improvement on task Y when fine-tuned on task X. X-axis: CKA between models trained solely on task X vs. task Y. The negative correlation suggests that tasks with divergent single-task representations fail to propagate fine-tuning updates across the shared representational space.\relax }{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Result 2: Divergent tasks catastrophically harm generalization.}{8}{section*.13}}
+\bibdata{iclr2026_conference}
+\bibcite{allen2023physics}{{1}{2023{a}}{{Allen-Zhu \& Li}}{{Allen-Zhu and Li}}}
+\bibcite{allen2023physics1}{{2}{2023{b}}{{Allen-Zhu \& Li}}{{Allen-Zhu and Li}}}
+\bibcite{towardsmonosemanticity}{{3}{2023}{{Anthropic AI}}{{}}}
+\@writefile{toc}{\contentsline {paragraph}{Result 3: Divergent tasks disrupt representational integration of new entities.}{9}{section*.14}}
+\bibcite{arditi2024refusal}{{4}{2024}{{Arditi et~al.}}{{Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee, and Nanda}}}
+\bibcite{bachmann2025pitfallsnexttokenprediction}{{5}{2025}{{Bachmann \& Nagarajan}}{{Bachmann and Nagarajan}}}
+\bibcite{baker2022videopretrainingvptlearning}{{6}{2022}{{Baker et~al.}}{{Baker, Akkaya, Zhokhov, Huizinga, Tang, Ecoffet, Houghton, Sampedro, and Clune}}}
+\bibcite{bender2021dangers}{{7}{2021}{{Bender et~al.}}{{Bender, Gebru, McMillan-Major, and Shmitchell}}}
+\bibcite{bengio2014representationlearningreviewnew}{{8}{2014}{{Bengio et~al.}}{{Bengio, Courville, and Vincent}}}
+\bibcite{berglund2024reversalcursellmstrained}{{9}{2024}{{Berglund et~al.}}{{Berglund, Tong, Kaufmann, Balesni, Stickland, Korbak, and Evans}}}
+\bibcite{betley2025emergentmisalignmentnarrowfinetuning}{{10}{2025}{{Betley et~al.}}{{Betley, Tan, Warncke, Sztyber-Betley, Bao, Soto, Labenz, and Evans}}}
+\bibcite{brown2020language}{{11}{2020}{{Brown et~al.}}{{Brown, Mann, Ryder, Subbiah, Kaplan, Dhariwal, Neelakantan, Shyam, Sastry, Askell, et~al.}}}
+\bibcite{chan2022datadistributionalpropertiesdrive}{{12}{2022}{{Chan et~al.}}{{Chan, Santoro, Lampinen, Wang, Singh, Richemond, McClelland, and Hill}}}
+\bibcite{christiano2017deep}{{13}{2017}{{Christiano et~al.}}{{Christiano, Leike, Brown, Martic, Legg, and Amodei}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces \textbf  {Divergent tasks harm multi-task fine-tuning and disrupt representational integration.} (a) Top: Performance matrix showing generalization across all 7 tasks when fine-tuning on 21 two-task combinations. Bottom: Deviation from non-interference expectation reveals ``red vertical bands'' where \texttt  {distance} task combinations degrade performance below single-task baselines. (b,c) Representational analysis comparing models fine-tuned on non-divergent tasks (\texttt  {angle} + \texttt  {compass}) versus divergent task combinations (\texttt  {distance} + \texttt  {perimeter}). PCA projections (top) and linear probe reconstructions (bottom) show Atlantis cities (red) integrate into the world manifold for non-divergent tasks but remain segregated in orthogonal subspaces when divergent tasks are involved.\relax }}{10}{figure.caption.15}}
+\newlabel{fig:result2-2}{{8}{10}{\textbf {Divergent tasks harm multi-task fine-tuning and disrupt representational integration.} (a) Top: Performance matrix showing generalization across all 7 tasks when fine-tuning on 21 two-task combinations. Bottom: Deviation from non-interference expectation reveals ``red vertical bands'' where \texttt {distance} task combinations degrade performance below single-task baselines. (b,c) Representational analysis comparing models fine-tuned on non-divergent tasks (\texttt {angle} + \texttt {compass}) versus divergent task combinations (\texttt {distance} + \texttt {perimeter}). PCA projections (top) and linear probe reconstructions (bottom) show Atlantis cities (red) integrate into the world manifold for non-divergent tasks but remain segregated in orthogonal subspaces when divergent tasks are involved.\relax }{figure.caption.15}{}}
+\bibcite{devlin2018bert}{{14}{2018}{{Devlin et~al.}}{{Devlin, Chang, Lee, and Toutanova}}}
+\bibcite{dosovitskiy2021imageworth16x16words}{{15}{2021}{{Dosovitskiy et~al.}}{{Dosovitskiy, Beyer, Kolesnikov, Weissenborn, Zhai, Unterthiner, Dehghani, Minderer, Heigold, Gelly, Uszkoreit, and Houlsby}}}
+\bibcite{dziri2023faithfatelimitstransformers}{{16}{2023}{{Dziri et~al.}}{{Dziri, Lu, Sclar, Li, Jiang, Lin, West, Bhagavatula, Bras, Hwang, Sanyal, Welleck, Ren, Ettinger, Harchaoui, and Choi}}}
+\bibcite{fukushima1980neocognitron}{{17}{1980}{{Fukushima}}{{}}}
+\bibcite{ge2025evolutionconceptslanguagemodel}{{18}{2025}{{Ge et~al.}}{{Ge, Shu, Wu, Zhou, He, and Qiu}}}
+\bibcite{goodfellow2016deep}{{19}{2016}{{Goodfellow et~al.}}{{Goodfellow, Bengio, Courville, and Bengio}}}
+\bibcite{gopalani2025happenslossplateauunderstanding}{{20}{2025}{{Gopalani \& Hu}}{{Gopalani and Hu}}}
+\bibcite{gurnee2023language}{{21}{2023}{{Gurnee \& Tegmark}}{{Gurnee and Tegmark}}}
+\bibcite{he2015deep}{{22}{2015}{{He et~al.}}{{He, Zhang, Ren, and Sun}}}
+\bibcite{higgins2016beta}{{23}{2017}{{Higgins et~al.}}{{Higgins, Matthey, Pal, Burgess, Glorot, Botvinick, Mohamed, and Lerchner}}}
+\bibcite{hindupur2025projectingassumptionsdualitysparse}{{24}{2025}{{Hindupur et~al.}}{{Hindupur, Lubana, Fel, and Ba}}}
+\bibcite{hoffmann2024eurekamomentstransformersmultisteptasks}{{25}{2024}{{Hoffmann et~al.}}{{Hoffmann, Schrodi, Bratulić, Behrmann, Fischer, and Brox}}}
+\bibcite{howard2018universallanguagemodelfinetuning}{{26}{2018}{{Howard \& Ruder}}{{Howard and Ruder}}}
+\bibcite{hu2021loralowrankadaptationlarge}{{27}{2021}{{Hu et~al.}}{{Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and Chen}}}
+\bibcite{hubel1962receptive}{{28}{1962}{{Hubel \& Wiesel}}{{Hubel and Wiesel}}}
+\bibcite{huh2024platonicrepresentationhypothesis}{{29}{2024}{{Huh et~al.}}{{Huh, Cheung, Wang, and Isola}}}
+\bibcite{ilharco2023editingmodelstaskarithmetic}{{30}{2023}{{Ilharco et~al.}}{{Ilharco, Ribeiro, Wortsman, Gururangan, Schmidt, Hajishirzi, and Farhadi}}}
+\bibcite{jain2023mechanistically}{{31}{2023}{{Jain et~al.}}{{Jain, Kirk, Lubana, Dick, Tanaka, Grefenstette, Rockt{\"a}schel, and Krueger}}}
+\bibcite{kornblithcka}{{32}{2019}{{Kornblith et~al.}}{{Kornblith, Norouzi, Lee, and Hinton}}}
+\bibcite{krizhevsky2012imagenet}{{33}{2012}{{Krizhevsky et~al.}}{{Krizhevsky, Sutskever, and Hinton}}}
+\bibcite{kumar2025questioningrepresentationaloptimismdeep}{{34}{2025}{{Kumar et~al.}}{{Kumar, Clune, Lehman, and Stanley}}}
+\bibcite{lecun2015deep}{{35}{2015}{{LeCun et~al.}}{{LeCun, Bengio, and Hinton}}}
+\bibcite{lee2024mechanistic}{{36}{2024}{{Lee et~al.}}{{Lee, Bai, Pres, Wattenberg, Kummerfeld, and Mihalcea}}}
+\bibcite{lee2025geometryselfverificationtaskspecificreasoning}{{37}{2025}{{Lee et~al.}}{{Lee, Sun, Wendler, Viégas, and Wattenberg}}}
+\bibcite{lester2021powerscaleparameterefficientprompt}{{38}{2021}{{Lester et~al.}}{{Lester, Al-Rfou, and Constant}}}
+\bibcite{li2022emergent}{{39}{2022}{{Li et~al.}}{{Li, Hopkins, Bau, Vi{\'e}gas, Pfister, and Wattenberg}}}
+\bibcite{li2025tracing}{{40}{2025}{{Li et~al.}}{{Li, Agrawal, Ghosh, Teru, Lajoie, and Richards}}}
+\bibcite{li2016convergentlearningdifferentneural}{{41}{2016}{{Li et~al.}}{{Li, Yosinski, Clune, Lipson, and Hopcroft}}}
+\bibcite{locatello2019challenging}{{42}{2019}{{Locatello et~al.}}{{Locatello, Bauer, Lucic, Raetsch, Gelly, Sch{\"o}lkopf, and Bachem}}}
+\bibcite{malladi2024finetuninglanguagemodelsjust}{{43}{2024}{{Malladi et~al.}}{{Malladi, Gao, Nichani, Damian, Lee, Chen, and Arora}}}
+\bibcite{marks2024geometrytruthemergentlinear}{{44}{2024}{{Marks \& Tegmark}}{{Marks and Tegmark}}}
+\bibcite{menon2025analyzinginabilitiessaesformal}{{45}{2025}{{Menon et~al.}}{{Menon, Shrivastava, Krueger, and Lubana}}}
+\bibcite{minder2025overcomingsparsityartifactscrosscoders}{{46}{2025}{{Minder et~al.}}{{Minder, Dumas, Juang, Chugtai, and Nanda}}}
+\bibcite{nanda2023emergent}{{47}{2023}{{Nanda et~al.}}{{Nanda, Lee, and Wattenberg}}}
+\bibcite{nishi2024representation}{{48}{2024}{{Nishi et~al.}}{{Nishi, Okawa, Ramesh, Khona, Lubana, and Tanaka}}}
+\bibcite{okawa2024compositional}{{49}{2024}{{Okawa et~al.}}{{Okawa, Lubana, Dick, and Tanaka}}}
+\bibcite{openai2024gpt4technicalreport}{{50}{2024}{{OpenAI}}{{}}}
+\bibcite{park2024iclrincontextlearningrepresentations}{{51}{2024{a}}{{Park et~al.}}{{Park, Lee, Lubana, Yang, Okawa, Nishi, Wattenberg, and Tanaka}}}
+\bibcite{park2024competition}{{52}{2024{b}}{{Park et~al.}}{{Park, Lubana, Pres, and Tanaka}}}
+\bibcite{park2024emergencehiddencapabilitiesexploring}{{53}{2024{c}}{{Park et~al.}}{{Park, Okawa, Lee, Lubana, and Tanaka}}}
+\bibcite{park2025textitnewnewssystem2finetuning}{{54}{2025}{{Park et~al.}}{{Park, Zhang, and Tanaka}}}
+\bibcite{pearce2025tree}{{55}{2025}{{Pearce et~al.}}{{Pearce, Simon, Byun, and Balsam}}}
+\bibcite{peters2018deepcontextualizedwordrepresentations}{{56}{2018}{{Peters et~al.}}{{Peters, Neumann, Iyyer, Gardner, Clark, Lee, and Zettlemoyer}}}
+\bibcite{pezeshki2021gradient}{{57}{2021}{{Pezeshki et~al.}}{{Pezeshki, Kaba, Bengio, Courville, Precup, and Lajoie}}}
+\bibcite{qin2025decomposingelementsproblemsolving}{{58}{2025}{{Qin et~al.}}{{Qin, Park, Kwun, Walsman, Malach, Anand, Tanaka, and Alvarez-Melis}}}
+\bibcite{radford2018improving}{{59}{2018}{{Radford et~al.}}{{Radford, Narasimhan, Salimans, Sutskever, et~al.}}}
+\bibcite{radford2019language}{{60}{2019}{{Radford et~al.}}{{Radford, Wu, Child, Luan, Amodei, Sutskever, et~al.}}}
+\bibcite{raventós2023pretrainingtaskdiversityemergence}{{61}{2023}{{Raventós et~al.}}{{Raventós, Paul, Chen, and Ganguli}}}
+\bibcite{reddy2023mechanisticbasisdatadependence}{{62}{2023}{{Reddy}}{{}}}
+\bibcite{rosenblatt1958perceptron}{{63}{1958}{{Rosenblatt}}{{}}}
+\bibcite{rumelhart1986learning}{{64}{1986}{{Rumelhart et~al.}}{{Rumelhart, Hinton, and Williams}}}
+\bibcite{shah2020pitfallssimplicitybiasneural}{{65}{2020}{{Shah et~al.}}{{Shah, Tamuly, Raghunathan, Jain, and Netrapalli}}}
+\bibcite{shojaee2025illusionthinkingunderstandingstrengths}{{66}{2025}{{Shojaee et~al.}}{{Shojaee, Mirzadeh, Alizadeh, Horton, Bengio, and Farajtabar}}}
+\bibcite{simonyan2015deepconvolutionalnetworkslargescale}{{67}{2015}{{Simonyan \& Zisserman}}{{Simonyan and Zisserman}}}
+\bibcite{simateam2024scalinginstructableagentssimulated}{{68}{2024}{{Team et~al.}}{{Team, Raad, Ahuja, Barros, Besse, Bolt, Bolton, Brownfield, Buttimore, Cant, Chakera, Chan, Clune, Collister, Copeman, Cullum, Dasgupta, de~Cesare, Trapani, Donchev, Dunleavy, Engelcke, Faulkner, Garcia, Gbadamosi, Gong, Gonzales, Gupta, Gregor, Hallingstad, Harley, Haves, Hill, Hirst, Hudson, Hudson, Hughes-Fitt, Rezende, Jasarevic, Kampis, Ke, Keck, Kim, Knagg, Kopparapu, Lawton, Lampinen, Legg, Lerchner, Limont, Liu, Loks-Thompson, Marino, Cussons, Matthey, Mcloughlin, Mendolicchio, Merzic, Mitenkova, Moufarek, Oliveira, Oliveira, Openshaw, Pan, Pappu, Platonov, Purkiss, Reichert, Reid, Richemond, Roberts, Ruscoe, Elias, Sandars, Sawyer, Scholtes, Simmons, Slater, Soyer, Strathmann, Stys, Tam, Teplyashin, Terzi, Vercelli, Vujatovic, Wainwright, Wang, Wang, Wierstra, Williams, Wong, York, and Young}}}
+\bibcite{templeton2024scaling}{{69}{2024}{{Templeton et~al.}}{{Templeton, Conerly, Marcus, Lindsey, Bricken, Chen, Pearce, Citro, Ameisen, Jones, Cunningham, Turner, McDougall, MacDiarmid, Freeman, Sumers, Rees, Batson, Jermyn, Carter, Olah, and Henighan}}}
+\bibcite{treutlein2024connectingdotsllmsinfer}{{70}{2024}{{Treutlein et~al.}}{{Treutlein, Choi, Betley, Marks, Anil, Grosse, and Evans}}}
+\bibcite{vafa2024evaluatingworldmodelimplicit}{{71}{2024}{{Vafa et~al.}}{{Vafa, Chen, Kleinberg, Mullainathan, and Rambachan}}}
+\bibcite{vaswani2023attention}{{72}{2023}{{Vaswani et~al.}}{{Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin}}}
+\bibcite{ward2025reasoningfinetuningrepurposeslatentrepresentations}{{73}{2025}{{Ward et~al.}}{{Ward, Lin, Venhoff, and Nanda}}}
+\bibcite{wu2024reftrepresentationfinetuninglanguage}{{74}{2024}{{Wu et~al.}}{{Wu, Arora, Wang, Geiger, Jurafsky, Manning, and Potts}}}
+\bibcite{wurgaft2025incontextlearningstrategiesemerge}{{75}{2025}{{Wurgaft et~al.}}{{Wurgaft, Lubana, Park, Tanaka, Reddy, and Goodman}}}
+\bibcite{xie2021explanation}{{76}{2021}{{Xie et~al.}}{{Xie, Raghunathan, Liang, and Ma}}}
+\bibcite{yue2025doesreinforcementlearningreally}{{77}{2025}{{Yue et~al.}}{{Yue, Chen, Lu, Zhao, Wang, Yue, Song, and Huang}}}
+\bibcite{zhao2025echochamberrlposttraining}{{78}{2025}{{Zhao et~al.}}{{Zhao, Meterez, Kakade, Pehlevan, Jelassi, and Malach}}}
+\bibcite{zweiger2025selfadaptinglanguagemodels}{{79}{2025}{{Zweiger et~al.}}{{Zweiger, Pari, Guo, Akyürek, Kim, and Agrawal}}}
+\bibstyle{iclr2026_conference}
+\citation{lecun2015deep,goodfellow2016deep}
+\citation{krizhevsky2012imagenet,simonyan2015deepconvolutionalnetworkslargescale,he2015deep,dosovitskiy2021imageworth16x16words}
+\citation{howard2018universallanguagemodelfinetuning,peters2018deepcontextualizedwordrepresentations,devlin2018bert}
+\citation{simateam2024scalinginstructableagentssimulated,baker2022videopretrainingvptlearning,christiano2017deep,radford2018improving,radford2019language}
+\citation{hu2021loralowrankadaptationlarge,lester2021powerscaleparameterefficientprompt}
+\citation{malladi2024finetuninglanguagemodelsjust}
+\citation{ilharco2023editingmodelstaskarithmetic}
+\citation{wu2024reftrepresentationfinetuninglanguage}
+\citation{berglund2024reversalcursellmstrained}
+\citation{treutlein2024connectingdotsllmsinfer}
+\citation{betley2025emergentmisalignmentnarrowfinetuning}
+\citation{jain2023mechanistically,ward2025reasoningfinetuningrepurposeslatentrepresentations}
+\citation{yue2025doesreinforcementlearningreally,zhao2025echochamberrlposttraining,qin2025decomposingelementsproblemsolving}
+\citation{park2025textitnewnewssystem2finetuning,zweiger2025selfadaptinglanguagemodels}
+\citation{hubel1962receptive}
+\citation{rosenblatt1958perceptron,fukushima1980neocognitron,rumelhart1986learning,bengio2014representationlearningreviewnew}
+\citation{li2022emergent,gurnee2023language,nanda2023emergent,vafa2024evaluatingworldmodelimplicit}
+\citation{park2024iclrincontextlearningrepresentations}
+\citation{li2016convergentlearningdifferentneural,huh2024platonicrepresentationhypothesis}
+\citation{li2025tracing,ge2025evolutionconceptslanguagemodel}
+\citation{minder2025overcomingsparsityartifactscrosscoders,lee2024mechanistic}
+\citation{xie2021explanation,chan2022datadistributionalpropertiesdrive,reddy2023mechanisticbasisdatadependence,raventós2023pretrainingtaskdiversityemergence,park2024competition,wurgaft2025incontextlearningstrategiesemerge}
+\citation{okawa2024compositional,park2024emergencehiddencapabilitiesexploring}
+\citation{allen2023physics1,allen2023physics}
+\citation{menon2025analyzinginabilitiessaesformal,hindupur2025projectingassumptionsdualitysparse}
+\citation{jain2023mechanistically}
+\citation{nishi2024representation}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Related Works}{16}{appendix.A}}
+\newlabel{app:related}{{A}{16}{Related Works}{appendix.A}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Discussion}{16}{appendix.B}}
+\newlabel{app:discussion}{{B}{16}{Discussion}{appendix.B}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}3D Visualizations}{17}{appendix.C}}
+\newlabel{app:vis}{{C}{17}{3D Visualizations}{appendix.C}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {D}World Setup}{17}{appendix.D}}
+\@writefile{toc}{\contentsline {section}{\numberline {E}Tasks and Datasets}{17}{appendix.E}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces \leavevmode {\color  {red}[Caption: Geographic distribution of 5,175 cities used in our experiments. Cities span all continents and provide a fixed, measurable world structure. The synthetic Atlantis region (100 cities in Atlantic Ocean) is used for out-of-distribution testing.]}\relax }}{18}{figure.caption.19}}
+\newlabel{fig:cities_map}{{9}{18}{\todo {Caption: Geographic distribution of 5,175 cities used in our experiments. Cities span all continents and provide a fixed, measurable world structure. The synthetic Atlantis region (100 cities in Atlantic Ocean) is used for out-of-distribution testing.}\relax }{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {F}Model and Training}{18}{appendix.F}}
+\newlabel{app:model_training}{{F}{18}{Model and Training}{appendix.F}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {F.1}Pretraining Details}{18}{subsection.F.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {F.2}Fine-tuning}{18}{subsection.F.2}}
+\@writefile{toc}{\contentsline {paragraph}{Fine-tuning's sensitivity to batch size.}{18}{section*.20}}
+\@writefile{toc}{\contentsline {section}{\numberline {G}Analysis Methods}{19}{appendix.G}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {G.1}Probing Details}{19}{subsection.G.1}}
+\newlabel{app:probing}{{G.1}{19}{Probing Details}{subsection.G.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Omitting irrelevant features}{19}{section*.21}}
+\@writefile{toc}{\contentsline {section}{\numberline {H}Code and Data Availability}{19}{appendix.H}}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Additional Figures}{19}{appendix.I}}

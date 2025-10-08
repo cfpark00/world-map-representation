@@ -1,15 +1,15 @@
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/multi_task.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/distance.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_distance.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/trianglearea.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_trianglearea.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/angle.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_angle.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/compass.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_compass.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/inside.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_inside.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/perimeter.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_perimeter.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/crossing.yaml
-uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_crossing.yaml
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/multi_task.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/distance.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_distance.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/trianglearea.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_trianglearea.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/angle.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_angle.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/compass.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_compass.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/inside.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_inside.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/perimeter.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_perimeter.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/crossing.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/eval/ftset/pt1_ft2-6/atlantis_crossing.yaml --overwrite

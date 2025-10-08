@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Experimental Framework: Geographic Reasoning with Controllable World Structure}{}% 2
+\BOOKMARK [1][-]{section.3}{Task-dependent world representations converge under multi-task learning}{}% 3
+\BOOKMARK [1][-]{section.4}{Fine-tuning's Representational Shift Predicts Downstream Generalization}{}% 4
+\BOOKMARK [1][-]{appendix.A}{Related Works}{}% 5
+\BOOKMARK [1][-]{appendix.B}{Discussion}{}% 6
+\BOOKMARK [1][-]{appendix.C}{3D Visualizations}{}% 7
+\BOOKMARK [1][-]{appendix.D}{World Setup}{}% 8
+\BOOKMARK [1][-]{appendix.E}{Tasks and Datasets}{}% 9
+\BOOKMARK [1][-]{appendix.F}{Model and Training}{}% 10
+\BOOKMARK [2][-]{subsection.F.1}{Pretraining Details}{appendix.F}% 11
+\BOOKMARK [2][-]{subsection.F.2}{Fine-tuning}{appendix.F}% 12
+\BOOKMARK [1][-]{appendix.G}{Analysis Methods}{}% 13
+\BOOKMARK [2][-]{subsection.G.1}{Probing Details}{appendix.G}% 14
+\BOOKMARK [1][-]{appendix.H}{Code and Data Availability}{}% 15
+\BOOKMARK [1][-]{appendix.I}{Additional Figures}{}% 16

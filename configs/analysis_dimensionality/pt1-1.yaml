@@ -1,0 +1,16 @@
+output_dir: data/experiments/pt1-1/analysis_dimensionality
+
+# Path to representations
+representations_base_path: data/experiments/pt1-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+
+# Use latest checkpoint
+checkpoint: null
+
+# Filter pattern (same format as probe_test in PCA configs)
+filter: "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$" #null  # Set to filter like "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$"
+
+# Sampling for efficiency
+max_samples: 5000
+
+# Local PCA neighborhood size
+local_pca_k: 20

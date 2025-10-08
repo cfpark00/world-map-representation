@@ -1,0 +1,22 @@
+#!/bin/bash
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-1.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-2.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-3.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-4.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-5.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-6.yaml --overwrite
+#uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-7.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-8.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-9.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-10.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-11.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-12.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-13.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-14.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-15.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-16.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-17.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-18.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-19.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-20.yaml --overwrite
+uv run python src/data_processing/combine_datasets.py configs/data_generation/ftset/combine_ftwb2-21.yaml --overwrite

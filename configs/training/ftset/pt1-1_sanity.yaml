@@ -1,0 +1,47 @@
+# Output directory - all outputs go here
+output_dir: "data/experiments/pt1-1_sanity"
+
+# Dataset - PADDED VERSION
+dataset:
+  path: "data/datasets/distance_1M_no_atlantis_sanity"
+  max_sequence_length: 256
+
+# Tokenizer
+tokenizer_path: "data/tokenizers/default_tokenizer"
+
+# Model (Qwen2.5-like)
+model:
+  vocab_size: 98  # New ASCII tokenizer vocab size
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1  # Standard deviation for weight initialization (GPT-2 style)
+
+# Training
+training:
+  batch_size: 128  # Larger batch size since we have 1M samples
+  eval_batch_size: 64
+  num_epochs: 42
+  optimizer: "adamw"
+  learning_rate: 3e-4
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50  # More warmup for larger dataset
+  seed: 42
+
+# Checkpointing
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.025
+  eval_strategy: "steps"
+  eval_steps: 0.005
+
+logging:
+  logging_steps: 10
+  report_to: "none"
+
+# Evaluation settings for randomwalk task
+eval:
+  randomwalk:
+    cities_csv: "data/datasets/cities/cities.csv"

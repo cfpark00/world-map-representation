@@ -1,0 +1,4 @@
+#uv run python src/analysis/analyze_representations_higher.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_representation_higher/ftset/pt1-3/angle_firstcity_last_and_trans_l3.yaml --overwrite
+#uv run python src/analysis/analyze_representations_higher.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_representation_higher/ftset/pt1-3/angle_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_representation_higher/ftset/pt1-3/angle_firstcity_last_and_trans_l5.yaml --overwrite
+#uv run python src/analysis/analyze_representations_higher.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_representation_higher/ftset/pt1-3/angle_firstcity_last_and_trans_l6.yaml --overwrite

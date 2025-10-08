@@ -79,17 +79,31 @@ def main():
                   label=f'Atlantis (n={len(atlantis_cities):,})')
     
     # Set proper bounds (degrees)
-    ax.set_xlim([-180, 180])
-    ax.set_ylim([-90, 90])
+    xlim = config.get('xlim', [-180, 180])
+    ylim = config.get('ylim', [-90, 90])
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     
     # Grid and labels
     ax.grid(True, alpha=0.3, linestyle='--')
-    ax.set_xlabel('Longitude (°)', fontsize=14)
-    ax.set_ylabel('Latitude (°)', fontsize=14)
-    ax.set_title('World Cities Distribution', fontsize=16, fontweight='bold')
+    # No axis labels or title
+    # ax.set_xlabel('Longitude (°)', fontsize=14)
+    # ax.set_ylabel('Latitude (°)', fontsize=14)
+    # ax.set_title('World Cities Distribution', fontsize=16, fontweight='bold')
+
+    # Keep spines visible
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
+    # ax.spines['bottom'].set_visible(False)
+    # ax.spines['left'].set_visible(False)
+
+    # Make tick labels even bigger with padding
+    ax.tick_params(axis='both', which='major', labelsize=20, pad=10)
     
-    # Legend
-    ax.legend(loc='upper left', fontsize=11)
+    ax.set_aspect('equal', adjustable='box')
+
+    # No legend
+    # ax.legend(loc='upper left', fontsize=11)
     
     # Save
     plt.tight_layout()

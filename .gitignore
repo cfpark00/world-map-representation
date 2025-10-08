@@ -1,3 +1,8 @@
+all_pt1_ft2_pca_htmls.zip
+all_pt1_ftwb2_pca_htmls.zip
+
+
+
 # Python
 __pycache__/
 *.py[cod]
@@ -8,6 +13,10 @@ __pycache__/
 venv/
 ENV/
 env/
+
+
+configs/analysis_representation_higher/
+configs/analysis_pca_timeline/
 
 # Jupyter
 .ipynb_checkpoints

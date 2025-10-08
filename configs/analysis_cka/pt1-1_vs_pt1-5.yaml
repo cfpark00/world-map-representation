@@ -1,0 +1,13 @@
+# CKA between pt1-1 (distance) and pt1-5 (inside)
+
+center_kernels: true
+checkpoint_steps: null
+cities_csv: data/datasets/cities/cities.csv
+city_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
+kernel_type: linear
+layer_index: -1
+output_dir: data/experiments/cka_analysis/pt1-1_vs_pt1-5_l5
+representations_path_1: data/experiments/pt1-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+representations_path_2: data/experiments/pt1-5/analysis_higher/inside_firstcity_last_and_trans_l5/representations
+token_index: -1
+use_gpu: true

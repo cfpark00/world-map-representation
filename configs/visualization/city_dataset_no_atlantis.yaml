@@ -10,8 +10,12 @@ region_filter: "region:^(?!Atlantis).*"
 figsize: [20, 12]
 dpi: 300
 
+# Map bounds
+xlim: [-140, 180]
+ylim: [-60, 75]
+
 # Colors: red for normal cities, blue for Atlantis
 regular_color: 'red'
 atlantis_color: 'blue'
 atlantis_size: 30
-regular_size: 5
+regular_size: 8

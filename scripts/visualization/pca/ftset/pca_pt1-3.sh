@@ -1,0 +1,12 @@
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l3.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l5.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l6.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l3_na.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l4_na.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l5_na.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l6_na.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l3_raw.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l4_raw.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l5_raw.yaml --overwrite
+#uv run python src/analysis/visualize_pca_3d_timeline.py /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs/analysis_pca_timeline/ftset/pt1-3/angle_firstcity_last_and_trans_l6_raw.yaml --overwrite

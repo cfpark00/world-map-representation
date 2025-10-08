@@ -1,0 +1,29 @@
+# Configuration for computing kernel matrices from representations
+# These kernel matrices will be used for CKA analysis between models
+
+# Path to saved representations from analyze_representations_higher.py
+representations_base_path: data/experiments/pt1-3/analysis_higher/angle_firstcity_last_and_trans_l5/representations
+
+# Output directory for kernel matrices
+output_dir: data/experiments/pt1-3/analysis_kernel/angle_firstcity_last_and_trans_l5
+
+# Token and layer selection
+# -1 means use all tokens/layers (concatenate)
+# Specific indices select that token/layer only
+token_index: -1  # Use all tokens
+layer_index: -1  # Use all layers (in this case just layer 5)
+
+# Kernel configuration
+kernel_type: linear  # Options: 'linear', 'rbf'
+center_kernels: true  # Whether to center the kernel matrices
+
+# Optional: Specify which checkpoint steps to process
+# If not specified or null, process all available checkpoints
+checkpoint_steps: null  # Process all checkpoints
+# checkpoint_steps: [0, 164080, 328146]  # Example: process specific steps only
+
+# City filtering (optional)
+# Uses same pattern syntax as probe_train/probe_test in other configs
+cities_csv: data/datasets/cities/cities.csv
+city_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
+# city_filter: "region:.* && city_id:^[1-9][0-9]{3,}$"  # Example: filter to 4+ digit city IDs

@@ -2,6 +2,17 @@
 ├── configs
 │   ├── analysis_3d_plots        # 3D visualization analysis configs
 │   ├── analysis_activation_gradients  # Gradient analysis configs for token activations
+│   ├── analysis_cka            # CKA analysis configs for model comparisons
+│   ├── analysis_cka_l3         # CKA configs for layer 3 (pt1, pt2, pt3)
+│   ├── analysis_cka_l4         # CKA configs for layer 4 (pt1, pt2, pt3)
+│   ├── analysis_cka_l6         # CKA configs for layer 6 (pt1, pt2, pt3)
+│   ├── analysis_cka_pt2        # CKA configs for pt2 experiments
+│   ├── analysis_cka_pt3        # CKA configs for pt3 experiments
+│   ├── analysis_dimensionality # Intrinsic dimensionality analysis (TwoNN, correlation dim)
+│   │   ├── pt1                 # PT1 single-task model configs
+│   │   └── pt2                 # PT2 multi-task model configs
+│   ├── analysis_kernel         # Kernel matrix computation configs
+│   ├── analysis_manifold       # Manifold analysis configs
 │   ├── analysis_pca_timeline    # PCA timeline visualization configs
 │   ├── analysis_representation  # Representation analysis configs
 │   │   └── randomwalk_pretrain_no_atlantis_15ep_llr_pad
@@ -9,11 +20,16 @@
 │   │       └── regions          # Regional analysis configs
 │   ├── analysis_representation_higher  # Stripped representation analysis (no world map)
 │   ├── data_generation
+│   │   ├── pftset              # Partial fine-tuning dataset combinations (asymmetric)
+│   │   └── ftset               # Full fine-tuning dataset combinations
+│   ├── extract_representations  # Configs for extracting model representations
 │   ├── eval                     # Checkpoint evaluation configs
 │   │   ├── m1_10M_ft1          # Fine-tuning 1 (distance only) evaluation configs
 │   │   └── m1_10M_ft2          # Fine-tuning 2 (multi-task) evaluation configs
 │   ├── tokenizers
 │   ├── training
+│   │   ├── pftset              # Partial fine-tuning training configs (pftX-Y)
+│   │   └── ftset               # Full fine-tuning training configs
 │   ├── visualization
 │   ├── atlantis_region_mapping.json
 │   └── tasks.json
@@ -42,7 +58,11 @@
 │   │   ├── 2025-09-17
 │   │   ├── 2025-09-18
 │   │   ├── 2025-09-20
-│   │   └── 2025-09-21
+│   │   ├── 2025-09-21
+│   │   ├── 2025-09-22
+│   │   ├── 2025-09-23
+│   │   ├── 2025-09-24
+│   │   └── 2025-09-25
 │   ├── reports
 │   ├── closing_tasks.md
 │   ├── repo_usage.md
@@ -51,7 +71,56 @@
 ├── old_commits                  # Previous versions for reference
 │   ├── aug31_snapshot          # Old files from August 31
 │   └── b9c7d24                 # Commit b9c7d24a0e02cebe1d966d591487ef4ffd857e6e
-├── scratch                      # Temporary work directory (gitignored)
+├── scratch                      # Temporary work directory (gitignored, organized 2025-09-21)
+│   ├── analysis                 # Analysis scripts and outputs
+│   │   ├── atlantis            # Atlantis-specific analysis
+│   │   ├── city_id             # City ID pattern analysis
+│   │   ├── clusters            # Cluster detection and analysis
+│   │   └── gradients           # Gradient analysis
+│   ├── cka_analysis_clean      # Clean CKA analysis outputs (2025-09-24)
+│   │   ├── cka_checkpoints.csv # All checkpoint CKA values (12,628 measurements)
+│   │   ├── cka_summary.csv     # Summary statistics (308 pair-layer combinations)
+│   │   ├── cka_organized.json  # Hierarchical organization with statistics
+│   │   └── timelines_non_overlap # CKA timeline plots for non-overlapping pairs
+│   ├── cka_to_generalization   # CKA-generalization correlation analysis (2025-09-25)
+│   │   ├── plot_cka_generalization_correlation.py # CKA vs transfer, task reciprocity (FT1/FTWB1)
+│   │   ├── plot_generalization_heatmap.py # Single-task generalization heatmaps (FT1/FTWB1)
+│   │   ├── plot_multi_task_evaluation.py # Multi-task evaluation plots (FT2/FT3/FTWB2/FTWB3)
+│   │   ├── experiment_task_mapping.txt # Complete experiment and task documentation
+│   │   ├── ft1_cka_vs_generalization_scatter.png # FT1 CKA vs generalization
+│   │   ├── ft1_task_reciprocity_scatter.png # FT1 task helping vs benefiting
+│   │   ├── ft1_generalization_heatmap.png # FT1 single-task generalization
+│   │   ├── ftwb1_cka_vs_generalization_scatter.png # FTWB1 CKA vs generalization
+│   │   ├── ftwb1_task_reciprocity_scatter.png # FTWB1 task helping vs benefiting
+│   │   ├── ftwb1_generalization_heatmap.png # FTWB1 single-task generalization
+│   │   ├── ft2_evaluation_plot.png # FT2 actual vs predicted performance
+│   │   ├── ft3_evaluation_plot.png # FT3 actual vs predicted performance
+│   │   ├── ftwb2_evaluation_plot.png # FTWB2 actual vs predicted performance
+│   │   └── ftwb3_evaluation_plot.png # FTWB3 actual vs predicted performance
+│   ├── dimensionality          # Dimensionality analysis (2025-09-24)
+│   │   └── test_manifold_metrics.py # Core metrics: TwoNN, correlation dim, local PCA 2D
+│   ├── archive                  # Old analyses for reference
+│   ├── dataproperties          # Data property analysis
+│   ├── eval_plots              # Evaluation comparison plots
+│   ├── external                # External test scripts
+│   ├── m1_10M_plots            # Model evaluation plots
+│   ├── plots                   # Visualization scripts and outputs
+│   │   ├── analysis            # Analysis plots
+│   │   ├── evaluation          # FT evaluation plots and scripts (updated 2025-09-25)
+│   │   │   ├── plot_ft1_heatmap.py    # Single-task fine-tuning heatmaps
+│   │   │   ├── plot_ft2_heatmap.py    # 2-task fine-tuning heatmaps (RdBu colormap)
+│   │   │   ├── plot_ft3_heatmap.py    # 3-task fine-tuning heatmaps (RdBu colormap)
+│   │   │   ├── plot_ftwb1_heatmap.py  # Single-task warmup+bias heatmaps
+│   │   │   ├── plot_ftwb2_heatmap.py  # 2-task warmup+bias heatmaps (RdBu colormap)
+│   │   │   └── plot_ftwb3_heatmap.py  # 3-task warmup+bias heatmaps (RdBu colormap, created 2025-09-25)
+│   │   └── metrics             # Metric visualization
+│   ├── tempplots               # Temporary plots
+│   ├── testing                 # Test scripts
+│   │   ├── circlecount         # Circle count testing
+│   │   ├── gradients           # Gradient testing
+│   │   ├── integration         # Integration tests
+│   │   └── metrics             # Metric testing
+│   └── utils                   # Utility functions
 ├── scripts
 │   ├── analysis
 │   ├── analysis_representations  # Scripts for running representation analysis
@@ -60,6 +129,8 @@
 │   │   ├── multi               # Multi-task dataset scripts
 │   │   └── single_tasks        # Individual task dataset scripts
 │   ├── eval                    # Checkpoint evaluation scripts
+│   ├── meta                    # Meta-scripts for project management
+│   │   └── zip                 # HTML collection and zipping scripts
 │   ├── tokenizers
 │   ├── training
 │   ├── utils
@@ -69,7 +140,11 @@
 │   │   ├── past                # Archived analysis scripts
 │   │   ├── analyze_activation_gradients.py  # Gradient flow analysis from loss to activations
 │   │   ├── analyze_representations.py  # Full-featured analysis with all visualizations
+│   │   ├── compute_cka_from_representations.py  # CKA computation between model representations
+│   │   ├── compute_kernel_matrices.py  # GPU-accelerated kernel matrix computation
 │   │   ├── analyze_representations_higher.py  # Minimal version for dynamics plot only
+│   │   ├── compute_cka_matrix_direct.py    # Direct CKA matrix computation from kernel matrices
+│   │   ├── recreate_pca_plot_from_data.py  # Recreate PCA visualizations from saved data
 │   │   ├── visualize_pca_3d.py
 │   │   ├── visualize_pca_3d_timeline.py    # PCA timeline animation
 │   │   ├── visualize_prediction_error_3d.py
@@ -92,11 +167,15 @@
 │   │   └── data_utils.py                   # Shared pair generation strategies
 │   ├── eval
 │   │   └── evaluate_checkpoints.py         # Checkpoint evaluation script
+│   ├── scripts                   # Orchestration scripts (entry points)
+│   │   ├── zip_pt1_ft2_htmls.py       # Collect PCA timeline HTMLs for pt1_ft2-X experiments
+│   │   └── zip_pt1_ftwb2_htmls.py     # Collect PCA timeline HTMLs for pt1_ftwb2-X experiments
 │   ├── training
 │   │   └── train.py
 │   ├── visualization
 │   │   └── visualize_cities.py
 │   ├── create_tokenizer.py
+│   ├── dimensionality.py        # 2D manifold testing (TwoNN, correlation dim, local PCA)
 │   ├── evaluation.py            # Unified evaluation module (single source of truth)
 │   ├── metrics.py               # Centralized task metric calculations
 │   ├── representation_extractor.py
@@ -107,6 +186,30 @@
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
+
+## Key Changes (2025-09-25 - 05:43 Session)
+- Created HTML collection scripts for PCA visualization review
+  - scripts/meta/zip/ directory for organizational scripts
+  - src/scripts/zip_pt1_ft2_htmls.py - Collects pt1_ft2-X PCA timeline HTMLs
+  - src/scripts/zip_pt1_ftwb2_htmls.py - Collects pt1_ftwb2-X PCA timeline HTMLs
+  - Bash wrappers: all_pt1_ft2-X_htmls.sh and all_pt1_ftwb2-X_htmls.sh
+  - Implements fail-fast validation (checks all 63 files exist before proceeding)
+  - Outputs organized zip files to ~/WM_1/ with clear naming conventions
+
+## Key Changes (2025-09-25 - Earlier)
+- Fixed evaluation heatmap colormap issue (changed from coolwarm to RdBu)
+  - Negative values (underperformance) now correctly shown as red
+  - Positive values (exceeding expectations) now correctly shown as blue
+  - Fixed in plot_ft2_heatmap.py, plot_ft3_heatmap.py, plot_ftwb2_heatmap.py
+- Created plot_ftwb3_heatmap.py for 3-task fine-tuning with warmup+bias
+  - Shows FTWB3 outperforms FT3 by +12% average (+20% on untrained tasks)
+- Created CKA-to-generalization correlation analysis in scratch/cka_to_generalization/
+  - Scatter plot showing CKA scores vs FTWB1 transfer performance
+  - Excluded crossing task due to training instabilities
+  - Found moderate positive correlation (r=0.354, p=0.055)
+- Added task reciprocity visualization revealing asymmetric transfer relationships
+  - "Net givers" (help others more): perimeter, angle, trianglearea
+  - "Net takers" (benefit more): inside, compass, distance
 
 ## Key Changes (2025-09-17 12:11)
 - Fixed critical evaluation bug causing ~130 error discrepancy

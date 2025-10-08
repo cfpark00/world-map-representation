@@ -1,0 +1,37 @@
+# Configuration for computing CKA between pt1-1 (distance) and pt1-2 (trianglearea) representations
+
+# Paths to representation directories (from analyze_representations_higher.py)
+representations_path_1: data/experiments/pt1-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+representations_path_2: data/experiments/pt1-2/analysis_higher/trianglearea_firstcity_last_and_trans_l5/representations
+
+# Output directory for CKA results
+output_dir: data/experiments/cka_analysis/pt1-1_distance_vs_pt1-2_triangle_l5
+
+# Token and layer selection
+# -1 means use all tokens/layers (concatenate)
+token_index: -1  # Use all tokens
+layer_index: -1  # Use all layers
+
+# Kernel and CKA configuration
+kernel_type: linear  # Currently only 'linear' is supported
+center_kernels: true  # Whether to center the kernel matrices before CKA
+
+# GPU acceleration
+use_gpu: true  # Use GPU if available (recommended for speed)
+
+# Optional: Specify which checkpoint steps to process
+# If not specified or null, process all available checkpoints
+checkpoint_steps: null  # Process all common checkpoints
+# checkpoint_steps: [0, 164080, 328146]  # Example: process specific steps only
+
+# City filtering (optional)
+# Uses same pattern syntax as probe_train/probe_test in other configs
+# IMPORTANT: Both representation sets must have the same cities after filtering
+cities_csv: data/datasets/cities/cities.csv
+
+# Filter to exclude Atlantis cities and keep only 4+ digit city IDs
+city_filter: "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$"
+
+# Alternative filters:
+# city_filter: null  # No filtering - use all cities
+# city_filter: "region:.* && city_id:^[1-9][0-9]{3,}$"  # All regions, 4+ digit IDs

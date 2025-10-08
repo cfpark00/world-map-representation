@@ -41,8 +41,8 @@
   },
   "inside": {
     "description": "Check if test city (first) is inside convex hull of remaining cities. Returns TRUE or FALSE.",
-    "format": "inside(c_TEST,c_ID1,c_ID2,...)=TRUE/FALSE",
-    "example": "<bos> i n s i d e ( c _ 9 0 1 2 , c _ 3 4 5 6 , c _ 7 8 9 0 , c _ 1 2 3 4 , c _ 5 6 7 8 ) = F A L S E <eos>"
+    "format": "inside(c_TEST;c_ID1,c_ID2,...)=TRUE/FALSE",
+    "example": "<bos> i n s i d e ( c _ 9 0 1 2 ; c _ 3 4 5 6 , c _ 7 8 9 0 , c _ 1 2 3 4 , c _ 5 6 7 8 ) = F A L S E <eos>"
   },
   "nearest_neighbor": {
     "description": "Find k nearest cities to query city. Returns k city IDs ordered by distance.",

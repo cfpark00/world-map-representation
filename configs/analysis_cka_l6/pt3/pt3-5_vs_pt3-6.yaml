@@ -1,0 +1,13 @@
+# CKA between pt3-5 (perimeter) and pt3-6 (trianglearea)
+
+center_kernels: true
+checkpoint_steps: null
+cities_csv: data/datasets/cities/cities.csv
+city_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
+kernel_type: linear
+layer_index: -1
+output_dir: data/experiments/cka_analysis_pt3/pt3-5_vs_pt3-6_l6
+representations_path_1: data/experiments/pt3-5/analysis_higher/perimeter_firstcity_last_and_trans_l6/representations
+representations_path_2: data/experiments/pt3-6/analysis_higher/trianglearea_firstcity_last_and_trans_l6/representations
+token_index: -1
+use_gpu: true

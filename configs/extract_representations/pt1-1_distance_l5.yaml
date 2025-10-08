@@ -1,0 +1,19 @@
+# Extract representations for pt1-1 distance at layer 5
+output_dir: data/experiments/pt1-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+
+# Experiment details
+experiment: pt1-1
+experiment_dir: data/experiments/pt1-1
+prompt_format: distance_firstcity_last_and_trans
+
+# Cities data
+cities_csv: data/datasets/cities/cities.csv
+
+# Layer to extract (0-based, so 5 means layer 5 out of 0-5)
+layer_index: 5
+
+# Token index (-1 for concatenation of all positions)
+token_index: -1
+
+# Sampling
+max_samples: 5000

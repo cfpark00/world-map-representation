@@ -907,10 +907,21 @@ def preprocess_config(config):
         'training.scheduler': ('str', ['linear_with_warmup'], "Learning rate scheduler"),
         
         # Checkpointing configuration
-        'checkpointing.save_steps': ('float', None, "Save checkpoint frequency"),
         'checkpointing.eval_steps': ('float', None, "Evaluation frequency"),
     }
-    
+
+    # Add conditional requirement for save_steps OR save_at_steps
+    if 'checkpointing' in config:
+        if 'save_at_steps' not in config['checkpointing'] and 'save_steps' not in config['checkpointing']:
+            print(f"Error: Missing required config field: Either 'checkpointing.save_steps' or 'checkpointing.save_at_steps'")
+            sys.exit(1)
+        # If save_steps exists, add it to field_specs for validation
+        if 'save_steps' in config['checkpointing']:
+            field_specs['checkpointing.save_steps'] = ('float', None, "Save checkpoint frequency")
+    else:
+        print(f"Error: Missing required config section 'checkpointing'")
+        sys.exit(1)
+
     # Validate and convert each field
     for field_path, (field_type, allowed_values, description) in field_specs.items():
         # Navigate to the field
@@ -1168,9 +1179,31 @@ class GenerationEvalCallback(TrainerCallback):
                 else:
                     print(f"  Metric Mean: {gen_metrics['eval_metric_mean']:.2f} (±{gen_metrics['eval_metric_std']:.2f})")
                 print(f"  Valid generations: {gen_metrics['eval_valid_count']}/{num_samples} ({gen_metrics['eval_valid_ratio']*100:.1f}%)")
-        
+
         return control
 
+
+class CustomCheckpointCallback(TrainerCallback):
+    """
+    Callback to save checkpoints at predefined steps instead of intervals.
+    Used when config has 'save_at_steps' instead of 'save_steps'.
+    """
+
+    def __init__(self, save_at_steps):
+        self.save_at_steps = set(save_at_steps)
+        self.saved_steps = set()
+
+    def on_step_end(self, args, state, control, **kwargs):
+        """Check if we should save at this specific step."""
+        current_step = state.global_step
+
+        if current_step in self.save_at_steps and current_step not in self.saved_steps:
+            # Mark that we want to save
+            control.should_save = True
+            self.saved_steps.add(current_step)
+            print(f"Triggering checkpoint save at step {current_step} (predefined)")
+
+        return control
 
 
 def filter_dataframe_by_pattern_backup(df, pattern, column_name='name'):
