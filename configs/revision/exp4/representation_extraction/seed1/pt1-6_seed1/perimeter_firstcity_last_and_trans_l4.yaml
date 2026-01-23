@@ -1,0 +1,17 @@
+cities_csv: data/datasets/cities/cities.csv
+device: cuda
+experiment_dir: data/experiments/revision/exp4/pt1-6_seed1
+layers:
+- 4
+method:
+  name: linear
+n_test_cities: 1250
+n_train_cities: 3250
+output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/pt1-6_seed1/analysis_higher/perimeter_firstcity_last_and_trans_l4
+perform_pca: true
+probe_test: region:.* && city_id:^[1-9][0-9]{3,}$
+probe_train: region:.* && city_id:^[1-9][0-9]{3,}$
+prompt_format: perimeter_firstcity_last_and_trans
+save_repr_ckpts:
+- -2
+seed: 1

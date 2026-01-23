@@ -1,0 +1,37 @@
+output_dir: "data/experiments/revision/exp6/pt1_ftwb2-20"
+
+dataset:
+  path: "data/experiments/revision/exp6/datasets/ftwb2-20"
+  max_sequence_length: 256
+
+tokenizer_path: "data/tokenizers/default_tokenizer"
+
+model:
+  vocab_size: 98
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1
+  ckpt: data/experiments/revision/exp6/pt1/checkpoints/final
+
+training:
+  batch_size: 128
+  eval_batch_size: 64
+  num_epochs: 30
+  optimizer: "adamw"
+  learning_rate: 1e-5
+  weight_decay: 0.01
+  scheduler: "linear_with_warmup"
+  warmup_steps: 50
+  seed: 42
+
+checkpointing:
+  save_strategy: "steps"
+  save_steps: 0.025
+  eval_strategy: "steps"
+  eval_steps: 0.005
+
+logging:
+  logging_steps: 10
+  report_to: "none"

@@ -252,6 +252,20 @@ def get_prompt_config(prompt_format, city):
         extraction_indices = [17]  # last digit only
         position_names = ['last_digit']
 
+    elif prompt_format == 'raw':
+        # Format: "<bos> c _ X X X X"
+        # Just the city ID, extract last token (last digit)
+        raw_str = f"c_{city['row_id']}"
+        spaced_str = ' '.join(raw_str)
+        prompt = f"<bos> {spaced_str}"
+        # Token positions: <bos> c _ X X X X
+        # Position 0: <bos>
+        # Position 1: c
+        # Position 2: _
+        # Position 3-6: city ID digits (for 4-digit ID)
+        extraction_indices = [6]  # last digit only
+        position_names = ['last_digit']
+
     else:
         valid_formats = [
             'distance_firstcity_last_and_trans',
@@ -269,7 +283,8 @@ def get_prompt_config(prompt_format, city):
             'perimeter_firstcity_last_and_trans',
             'perimeter_firstcity_last',
             'randomwalk_firstcity_last_and_trans',
-            'randomwalk_firstcity_last'
+            'randomwalk_firstcity_last',
+            'raw'
         ]
         raise ValueError(f"Unknown prompt_format: {prompt_format}. Valid formats are: {', '.join(valid_formats)}")
 

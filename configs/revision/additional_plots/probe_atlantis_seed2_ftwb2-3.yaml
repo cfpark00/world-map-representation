@@ -1,0 +1,3 @@
+output_dir: data/experiments/revision/additional_plots/probe_atlantis_seed2_ftwb2-3
+cities_csv: data/datasets/cities/cities.csv
+predictions_csv: data/experiments/revision/exp1/pt1_seed2_ftwb2-3/probe_generalization/atlantis/test_predictions.csv

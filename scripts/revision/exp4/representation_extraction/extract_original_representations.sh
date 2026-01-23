@@ -1,0 +1,30 @@
+#!/bin/bash
+cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-1/distance_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-1/distance_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-1/distance_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-1/distance_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-2/trianglearea_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-2/trianglearea_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-2/trianglearea_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-2/trianglearea_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-3/angle_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-3/angle_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-3/angle_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-3/angle_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-4/compass_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-4/compass_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-4/compass_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-4/compass_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-5/inside_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-5/inside_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-5/inside_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-5/inside_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-6/perimeter_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-6/perimeter_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-6/perimeter_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-6/perimeter_firstcity_last_and_trans_l6.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-7/crossing_firstcity_last_and_trans_l3.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-7/crossing_firstcity_last_and_trans_l4.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-7/crossing_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp4/representation_extraction/original/pt1-7/crossing_firstcity_last_and_trans_l6.yaml --overwrite

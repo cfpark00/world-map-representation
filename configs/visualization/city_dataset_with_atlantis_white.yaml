@@ -1,0 +1,11 @@
+# Visualization config for city dataset - white background
+
+dataset_path: data/datasets/cities
+output_dir: data/datasets/cities/visualization_white
+
+figsize: [20, 12]
+dpi: 300
+background_color: 'white'
+
+xlim: [-140, 180]
+ylim: [-60, 75]

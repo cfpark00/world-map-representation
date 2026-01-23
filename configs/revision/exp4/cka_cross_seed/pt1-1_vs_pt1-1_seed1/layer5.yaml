@@ -1,0 +1,17 @@
+center_kernels: true
+checkpoint_steps:
+- 328146
+city_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
+exp1:
+  name: pt1-1
+  repr_dir: data/experiments/pt1-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+  task: distance
+exp2:
+  name: pt1-1_seed1
+  repr_dir: data/experiments/revision/exp4/pt1-1_seed1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+  task: distance
+kernel_type: linear
+layer: 5
+output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/pt1-1_vs_pt1-1_seed1/layer5
+save_timeline_plot: false
+use_gpu: true

@@ -1,0 +1,9 @@
+#!/bin/bash
+cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb1/distance_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb2/trianglearea_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb3/angle_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb4/compass_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb5/inside_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb6/perimeter_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/analyze_representations_higher.py configs/revision/exp3/representation_extraction/pt1_narrow_ftwb7/crossing_firstcity_last_and_trans_l5.yaml --overwrite

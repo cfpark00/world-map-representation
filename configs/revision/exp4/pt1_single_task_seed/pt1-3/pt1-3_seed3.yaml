@@ -1,0 +1,33 @@
+checkpointing:
+  eval_steps: 0.005
+  eval_strategy: steps
+  save_steps: 0.025
+  save_strategy: steps
+dataset:
+  max_sequence_length: 256
+  path: data/datasets/angle_1M_no_atlantis
+eval:
+  randomwalk:
+    cities_csv: data/datasets/cities/cities.csv
+logging:
+  logging_steps: 10
+  report_to: none
+model:
+  hidden_size: 128
+  init_scale: 0.1
+  intermediate_size: 512
+  num_attention_heads: 4
+  num_hidden_layers: 6
+  vocab_size: 98
+output_dir: data/experiments/revision/exp4/pt1-3_seed3
+tokenizer_path: data/tokenizers/default_tokenizer
+training:
+  batch_size: 128
+  eval_batch_size: 64
+  learning_rate: 0.0003
+  num_epochs: 42
+  optimizer: adamw
+  scheduler: linear_with_warmup
+  seed: 3
+  warmup_steps: 50
+  weight_decay: 0.01

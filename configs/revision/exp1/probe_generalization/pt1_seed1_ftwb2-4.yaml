@@ -1,0 +1,26 @@
+# Probe generalization evaluation for pt1_seed1_ftwb2-4
+# Trains probe on non-Atlantis cities, evaluates on Atlantis cities
+
+output_dir: data/experiments/revision/exp1/pt1_seed1_ftwb2-4/probe_generalization/atlantis
+
+# Path to representations directory
+repr_dir: data/experiments/revision/exp1/pt1_seed1_ftwb2-4/analysis_higher/crossing_firstcity_last_and_trans_l5/representations
+
+# Which checkpoint to use ("final", "last", or specific step number)
+checkpoint: final
+
+# Pattern for training cities (non-Atlantis)
+probe_train: "region:^(?!Atlantis).*"
+
+# Pattern for test cities (Atlantis only)
+probe_test: "region:^Atlantis$"
+
+# Number of cities to train on (rest used for baseline)
+n_train: 4000
+n_baseline: 100
+
+# Probe method configuration
+method:
+  name: linear
+
+seed: 42

@@ -1,0 +1,16 @@
+#!/bin/bash
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_distance.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_trianglearea.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_angle.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_compass.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_inside.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_perimeter.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/atlantis_crossing.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/distance.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/trianglearea.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/angle.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/compass.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/inside.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/perimeter.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/crossing.yaml --overwrite
+uv run python src/eval/evaluate_checkpoints.py configs/revision/exp6/eval/pt1/multi_task.yaml --overwrite

@@ -59,22 +59,21 @@ def main():
             atlantis_region_mapping = json.load(f)
     
     atlantis_dfs = []
-    for region in atlantis_regions:
-        print(f"Generating {region['n_cities']} cities with prefix '{region['city_prefix']}'...")
-        
-        # Generate random points using Gaussian distribution
-        # Note: Config values are in original scale (-180 to 180, -90 to 90)
-        np.random.seed(seed + hash(region['city_prefix']) % 1000)  # Unique seed per region
-        x_atlantis = np.random.normal(region['center_x'], region['std_dev'], region['n_cities'])
-        y_atlantis = np.random.normal(region['center_y'], region['std_dev'], region['n_cities'])
-        
-        # Clip to valid coordinate ranges (original scale)
-        x_atlantis = np.clip(x_atlantis, -180, 180)
-        y_atlantis = np.clip(y_atlantis, -90, 90)
-        
+
+    # Handle scattered_atlantis (uniform distribution) if specified
+    scattered_atlantis = config.get('scattered_atlantis', None)
+    if scattered_atlantis:
+        region = scattered_atlantis
+        print(f"Generating {region['n_cities']} SCATTERED cities with prefix '{region['city_prefix']}'...")
+
+        # Generate random points using UNIFORM distribution
+        np.random.seed(seed + hash(region['city_prefix']) % 1000)
+        x_atlantis = np.random.uniform(region['x_min'], region['x_max'], region['n_cities'])
+        y_atlantis = np.random.uniform(region['y_min'], region['y_max'], region['n_cities'])
+
         # Create city names using the specified prefix
         city_names = [f"{region['city_prefix']}_{i:03d}" for i in range(1, region['n_cities'] + 1)]
-        
+
         # Create DataFrame for this region
         region_df = pd.DataFrame({
             'Geoname ID': [-1000000 - hash(region['city_prefix']) % 100000 - i for i in range(region['n_cities'])],
@@ -84,7 +83,35 @@ def main():
             'Country Code': [region['country_code']] * region['n_cities']
         })
         atlantis_dfs.append(region_df)
-        print(f"  Generated: center=({region['center_x']}, {region['center_y']}), std={region['std_dev']}, country_code={region['country_code']}")
+        print(f"  Generated: UNIFORM x=[{region['x_min']}, {region['x_max']}], y=[{region['y_min']}, {region['y_max']}], country_code={region['country_code']}")
+
+    # Handle atlantis_regions (Gaussian distribution) - original behavior
+    for region in atlantis_regions:
+        print(f"Generating {region['n_cities']} CLUSTERED cities with prefix '{region['city_prefix']}'...")
+
+        # Generate random points using Gaussian distribution
+        # Note: Config values are in original scale (-180 to 180, -90 to 90)
+        np.random.seed(seed + hash(region['city_prefix']) % 1000)  # Unique seed per region
+        x_atlantis = np.random.normal(region['center_x'], region['std_dev'], region['n_cities'])
+        y_atlantis = np.random.normal(region['center_y'], region['std_dev'], region['n_cities'])
+
+        # Clip to valid coordinate ranges (original scale)
+        x_atlantis = np.clip(x_atlantis, -180, 180)
+        y_atlantis = np.clip(y_atlantis, -90, 90)
+
+        # Create city names using the specified prefix
+        city_names = [f"{region['city_prefix']}_{i:03d}" for i in range(1, region['n_cities'] + 1)]
+
+        # Create DataFrame for this region
+        region_df = pd.DataFrame({
+            'Geoname ID': [-1000000 - hash(region['city_prefix']) % 100000 - i for i in range(region['n_cities'])],
+            'ASCII Name': city_names,
+            'x': np.round(x_atlantis, 5),
+            'y': np.round(y_atlantis, 5),
+            'Country Code': [region['country_code']] * region['n_cities']
+        })
+        atlantis_dfs.append(region_df)
+        print(f"  Generated: GAUSSIAN center=({region['center_x']}, {region['center_y']}), std={region['std_dev']}, country_code={region['country_code']}")
     
     # Combine all Atlantis regions with world cities
     if atlantis_dfs:

@@ -1,0 +1,31 @@
+checkpointing:
+  eval_steps: 0.005
+  eval_strategy: steps
+  save_steps: 0.025
+  save_strategy: steps
+dataset:
+  max_sequence_length: 256
+  path: data/datasets/ftwb1-2
+logging:
+  logging_steps: 10
+  report_to: none
+model:
+  init_scale: 0.1
+  num_hidden_layers: 6
+  vocab_size: 98
+  hidden_size: 256
+  num_attention_heads: 8
+  intermediate_size: 1024
+  ckpt: data/experiments/revision/exp3/pt1_wide/checkpoints/final
+tokenizer_path: data/tokenizers/default_tokenizer
+training:
+  batch_size: 128
+  eval_batch_size: 64
+  learning_rate: 1.0e-05
+  num_epochs: 30
+  optimizer: adamw
+  scheduler: linear_with_warmup
+  seed: 42
+  warmup_steps: 50
+  weight_decay: 0.01
+output_dir: data/experiments/revision/exp3/pt1_wide_ftwb2

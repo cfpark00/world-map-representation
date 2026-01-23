@@ -1,0 +1,3 @@
+output_dir: data/experiments/revision/additional_plots/probe_3d_nullspace_ftwb2-2
+repr_path: data/experiments/pt1_ftwb2-2/analysis_higher/distance_firstcity_last_and_trans_l5/representations/checkpoint-56670
+n_train: 4000

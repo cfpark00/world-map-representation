@@ -1,0 +1,22 @@
+#!/bin/bash
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-1.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-2.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-3.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-4.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-5.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-6.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-7.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-8.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-9.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-10.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-11.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-12.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-13.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-14.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-15.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-16.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-17.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-18.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-19.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-20.yaml
+uv run python src/training/train.py configs/revision/exp1/ftwb2/pt1_seed1_ftwb2-21.yaml

@@ -1,0 +1,11 @@
+output_dir: data/experiments/revision/exp6/datasets/compass_1M_with_atlantis
+cities_csv: data/experiments/revision/exp6/datasets/cities_scattered_atlantis/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+pair_generation:
+  strategy: all_pairs
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42
+leading_zeros: true
+n_id_digits: 4

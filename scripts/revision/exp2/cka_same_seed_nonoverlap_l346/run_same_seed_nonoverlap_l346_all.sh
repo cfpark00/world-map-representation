@@ -1,0 +1,5 @@
+#!/bin/bash
+bash scripts/revision/exp2/cka_same_seed_nonoverlap_l346/run_same_seed_nonoverlap_l346_chunk1.sh
+bash scripts/revision/exp2/cka_same_seed_nonoverlap_l346/run_same_seed_nonoverlap_l346_chunk2.sh
+bash scripts/revision/exp2/cka_same_seed_nonoverlap_l346/run_same_seed_nonoverlap_l346_chunk3.sh
+bash scripts/revision/exp2/cka_same_seed_nonoverlap_l346/run_same_seed_nonoverlap_l346_chunk4.sh

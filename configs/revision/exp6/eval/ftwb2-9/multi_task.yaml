@@ -1,0 +1,14 @@
+checkpoints: last
+cities_csv: data/experiments/revision/exp6/datasets/cities_scattered_atlantis/cities.csv
+dataset_path: data/experiments/revision/exp6/datasets/multitask_pt1_with_atlantis
+device: cuda
+do_sample: false
+eval_batch_size: 512
+experiment_dir: data/experiments/revision/exp6/pt1_ftwb2-9
+max_generation_length: 256
+output_dir: data/experiments/revision/exp6/pt1_ftwb2-9/evals/multi_task
+plot_log_scale: false
+save_full_results: false
+seed: 42
+temperature: 0.0
+top_k: 1

@@ -1,0 +1,21 @@
+output_dir: data/experiments/revision/exp6/datasets/angle_100k_atlantis_required
+cities_csv: data/experiments/revision/exp6/datasets/cities_scattered_atlantis/cities.csv
+tokenizer_path: data/tokenizers/default_tokenizer
+groups:
+  atlantis:
+    city_names: ^Atlantis_
+  world:
+    city_names: ^(?!Atlantis_).*
+pair_generation:
+  strategy: must_include
+  must_include_groups:
+  - atlantis
+  other_groups:
+  - world
+  - atlantis
+n_train: 100000
+n_val: 128
+n_test: 10000
+seed: 42
+leading_zeros: true
+n_id_digits: 4

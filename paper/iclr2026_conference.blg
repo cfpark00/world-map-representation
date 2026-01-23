@@ -3,49 +3,44 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: iclr2026_conference.aux
 The style file: iclr2026_conference.bst
 Database file #1: iclr2026_conference.bib
-Warning--I didn't find a database entry for "nanda2023progressmeasuresgrokkingmechanistic"
-Warning--I didn't find a database entry for "michaud2024quantizationmodelneuralscaling"
-Warning--I didn't find a database entry for "zhang2025intelligenceedgechaos"
-Warning--I didn't find a database entry for "Kirkpatrick2017"
-You've used 79 entries,
+You've used 97 entries,
             2773 wiz_defined-function locations,
-            952 strings with 24820 characters,
-and the built_in function-call counts, 47234 in all, are:
-= -- 3610
-> -- 4814
-< -- 17
-+ -- 1612
-- -- 1530
-* -- 4375
-:= -- 7654
-add.period$ -- 239
-call.type$ -- 79
-change.case$ -- 743
-chr.to.int$ -- 76
-cite$ -- 158
-duplicate$ -- 1422
-empty$ -- 2686
-format.name$ -- 1627
-if$ -- 9448
-int.to.chr$ -- 4
+            1030 strings with 26829 characters,
+and the built_in function-call counts, 50973 in all, are:
+= -- 4023
+> -- 4677
+< -- 21
++ -- 1568
+- -- 1467
+* -- 4528
+:= -- 8135
+add.period$ -- 297
+call.type$ -- 97
+change.case$ -- 777
+chr.to.int$ -- 93
+cite$ -- 194
+duplicate$ -- 1706
+empty$ -- 3268
+format.name$ -- 1588
+if$ -- 10334
+int.to.chr$ -- 5
 int.to.str$ -- 1
 missing$ -- 31
-newline$ -- 404
-num.names$ -- 316
-pop$ -- 1638
+newline$ -- 497
+num.names$ -- 388
+pop$ -- 1746
 preamble$ -- 1
-purify$ -- 665
+purify$ -- 680
 quote$ -- 0
-skip$ -- 1541
+skip$ -- 1752
 stack$ -- 0
-substring$ -- 341
-swap$ -- 110
+substring$ -- 399
+swap$ -- 128
 text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 864
+type$ -- 1067
 warning$ -- 0
-while$ -- 254
+while$ -- 309
 width$ -- 0
-write$ -- 971
-(There were 4 warnings)
+write$ -- 1193

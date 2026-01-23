@@ -1,0 +1,17 @@
+exp1:
+  name: pt3-3
+  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt3-3/analysis_higher/crossing_firstcity_last_and_trans_l5/representations
+  task: crossing
+exp2:
+  name: pt3-4
+  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt3-4/analysis_higher/angle_firstcity_last_and_trans_l5/representations
+  task: angle
+layer: 5
+checkpoint_steps: null
+use_final_only: true
+city_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
+kernel_type: linear
+center_kernels: true
+use_gpu: true
+save_timeline_plot: false
+output_dir: data/experiments/revision/exp2/cka_analysis_all/pt3-3_vs_pt3-4/layer5

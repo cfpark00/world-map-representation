@@ -1,0 +1,8 @@
+#!/bin/bash
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb1_na/pt1_wide_ftwb1_distance_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb2_na/pt1_wide_ftwb2_trianglearea_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb3_na/pt1_wide_ftwb3_angle_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb4_na/pt1_wide_ftwb4_compass_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb5_na/pt1_wide_ftwb5_inside_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb6_na/pt1_wide_ftwb6_perimeter_firstcity_last_and_trans_l5.yaml --overwrite
+uv run python src/analysis/visualize_pca_3d_timeline.py configs/revision/exp3/pca_timeline/pt1_wide_ftwb7_na/pt1_wide_ftwb7_crossing_firstcity_last_and_trans_l5.yaml --overwrite

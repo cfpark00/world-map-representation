@@ -260,14 +260,15 @@ def main():
         )
 
         metrics = result['metrics']
-        detailed = result['detailed_results']
 
         # Convert numpy types to Python native types for JSON serialization
         all_results[ckpt_name] = convert_numpy_to_python(metrics)
 
         # Store detailed results if available
-        if save_full and detailed:
-            all_detailed_results[ckpt_name] = detailed
+        if save_full:
+            detailed = result.get('detailed_results')
+            if detailed:
+                all_detailed_results[ckpt_name] = detailed
 
         # Print summary - metrics are in format: eval_{task}_metric_mean
         for key, value in metrics.items():

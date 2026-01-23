@@ -1,0 +1,13 @@
+checkpoints: last
+dataset_path: data/datasets/crossing_1M_no_atlantis
+device: cuda
+do_sample: false
+eval_batch_size: 512
+experiment_dir: data/experiments/revision/exp1/pt1_seed2_ftwb2-8
+max_generation_length: 256
+output_dir: data/experiments/revision/exp1/pt1_seed2_ftwb2-8/evals/crossing
+plot_log_scale: false
+save_full_results: false
+seed: 42
+temperature: 0.0
+top_k: 1

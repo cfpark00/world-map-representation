@@ -1,0 +1,17 @@
+cities_csv: data/datasets/cities/cities.csv
+device: cuda
+layers:
+- 3
+method:
+  name: linear
+n_test_cities: 1250
+n_train_cities: 3250
+perform_pca: true
+probe_test: region:.* && city_id:^[1-9][0-9]{3,}$
+probe_train: region:.* && city_id:^[1-9][0-9]{3,}$
+save_repr_ckpts:
+- -2
+seed: 42
+experiment_dir: data/experiments/revision/exp2/pt2-2_seed1
+output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp2/pt2-2_seed1/analysis_higher/angle_firstcity_last_and_trans_l3
+prompt_format: angle_firstcity_last_and_trans

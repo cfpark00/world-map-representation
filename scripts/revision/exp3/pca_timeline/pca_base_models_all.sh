@@ -1,0 +1,3 @@
+#!/bin/bash
+bash scripts/revision/exp3/pca_timeline/pca_base_models_mixed.sh
+bash scripts/revision/exp3/pca_timeline/pca_base_models_raw.sh

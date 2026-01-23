@@ -1,0 +1,12 @@
+output_dir: data/experiments/revision/exp6/datasets/multitask_pt1
+mode: concat
+shuffle: true
+seed: 42
+datasets:
+- path: data/experiments/revision/exp6/datasets/distance_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/trianglearea_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/angle_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/compass_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/inside_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/perimeter_1M_no_atlantis
+- path: data/experiments/revision/exp6/datasets/crossing_1M_no_atlantis

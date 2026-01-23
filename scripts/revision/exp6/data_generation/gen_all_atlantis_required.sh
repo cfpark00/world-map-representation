@@ -1,0 +1,8 @@
+#!/bin/bash
+uv run python src/tasks/distance.py configs/revision/exp6/data_generation/distance_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/trianglearea.py configs/revision/exp6/data_generation/trianglearea_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/angle.py configs/revision/exp6/data_generation/angle_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/compass.py configs/revision/exp6/data_generation/compass_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/inside.py configs/revision/exp6/data_generation/inside_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/perimeter.py configs/revision/exp6/data_generation/perimeter_100k_atlantis_required.yaml --overwrite
+uv run python src/tasks/crossing.py configs/revision/exp6/data_generation/crossing_100k_atlantis_required.yaml --overwrite

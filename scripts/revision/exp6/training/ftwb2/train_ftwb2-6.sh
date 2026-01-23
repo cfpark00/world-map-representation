@@ -1,0 +1,2 @@
+#!/bin/bash
+uv run python src/training/train.py configs/revision/exp6/training/ftwb2/pt1_ftwb2-6.yaml --overwrite

@@ -1,0 +1,33 @@
+output_dir: data/experiments/revision/exp2/pt2-6_seed1
+dataset:
+  path: data/datasets/pt2-6
+  max_sequence_length: 256
+tokenizer_path: data/tokenizers/default_tokenizer
+model:
+  vocab_size: 98
+  hidden_size: 128
+  num_hidden_layers: 6
+  num_attention_heads: 4
+  intermediate_size: 512
+  init_scale: 0.1
+training:
+  batch_size: 128
+  eval_batch_size: 64
+  num_epochs: 21
+  optimizer: adamw
+  learning_rate: 3e-4
+  weight_decay: 0.01
+  scheduler: linear_with_warmup
+  warmup_steps: 50
+  seed: 1
+checkpointing:
+  save_strategy: steps
+  save_steps: 0.025
+  eval_strategy: steps
+  eval_steps: 0.005
+logging:
+  logging_steps: 10
+  report_to: none
+eval:
+  randomwalk:
+    cities_csv: data/datasets/cities/cities.csv

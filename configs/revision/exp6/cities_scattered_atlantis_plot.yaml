@@ -1,0 +1,2 @@
+output_dir: data/experiments/revision/exp6/plots/cities_scattered_atlantis
+cities_csv: data/experiments/revision/exp6/datasets/cities_scattered_atlantis/cities.csv

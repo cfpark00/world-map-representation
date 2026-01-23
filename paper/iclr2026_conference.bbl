@@ -1,9 +1,22 @@
-\begin{thebibliography}{79}
+\begin{thebibliography}{97}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Achille et~al.(2019)Achille, Rovere, and
+  Soatto]{achille2019criticallearningperiodsdeep}
+Alessandro Achille, Matteo Rovere, and Stefano Soatto.
+\newblock Critical learning periods in deep neural networks, 2019.
+\newblock URL \url{https://arxiv.org/abs/1711.08856}.
+
+\bibitem[Aghajanyan et~al.(2021)Aghajanyan, Gupta, Shrivastava, Chen,
+  Zettlemoyer, and Gupta]{aghajanyan2021muppetmassivemultitaskrepresentations}
+Armen Aghajanyan, Anchit Gupta, Akshat Shrivastava, Xilun Chen, Luke
+  Zettlemoyer, and Sonal Gupta.
+\newblock Muppet: Massive multi-task representations with pre-finetuning, 2021.
+\newblock URL \url{https://arxiv.org/abs/2101.11038}.
 
 \bibitem[Allen-Zhu \& Li(2023{\natexlab{a}})Allen-Zhu and Li]{allen2023physics}
 Zeyuan Allen-Zhu and Yuanzhi Li.
@@ -37,21 +50,11 @@ Gregor Bachmann and Vaishnavh Nagarajan.
 \newblock The pitfalls of next-token prediction, 2025.
 \newblock URL \url{https://arxiv.org/abs/2403.06963}.
 
-\bibitem[Baker et~al.(2022)Baker, Akkaya, Zhokhov, Huizinga, Tang, Ecoffet,
-  Houghton, Sampedro, and Clune]{baker2022videopretrainingvptlearning}
-Bowen Baker, Ilge Akkaya, Peter Zhokhov, Joost Huizinga, Jie Tang, Adrien
-  Ecoffet, Brandon Houghton, Raul Sampedro, and Jeff Clune.
-\newblock Video pretraining (vpt): Learning to act by watching unlabeled online
-  videos, 2022.
-\newblock URL \url{https://arxiv.org/abs/2206.11795}.
-
-\bibitem[Bender et~al.(2021)Bender, Gebru, McMillan-Major, and
-  Shmitchell]{bender2021dangers}
-Emily~M Bender, Timnit Gebru, Angelina McMillan-Major, and Shmargaret
-  Shmitchell.
-\newblock On the dangers of stochastic parrots: Can language models be too big?
-\newblock In \emph{Proceedings of the 2021 ACM conference on fairness,
-  accountability, and transparency}, pp.\  610--623, 2021.
+\bibitem[Behrouz et~al.(2024)Behrouz, Zhong, and
+  Mirrokni]{behrouz2024titanslearningmemorizetest}
+Ali Behrouz, Peilin Zhong, and Vahab Mirrokni.
+\newblock Titans: Learning to memorize at test time, 2024.
+\newblock URL \url{https://arxiv.org/abs/2501.00663}.
 
 \bibitem[Bengio et~al.(2014)Bengio, Courville, and
   Vincent]{bengio2014representationlearningreviewnew}
@@ -75,6 +78,21 @@ Jan Betley, Daniel Tan, Niels Warncke, Anna Sztyber-Betley, Xuchan Bao, Martín
   misaligned llms, 2025.
 \newblock URL \url{https://arxiv.org/abs/2502.17424}.
 
+\bibitem[Bigelow et~al.(2025)Bigelow, Wurgaft, Wang, Goodman, Ullman, Tanaka,
+  and Lubana]{bigelow2025beliefdynamicsrevealdual}
+Eric Bigelow, Daniel Wurgaft, YingQiao Wang, Noah Goodman, Tomer Ullman,
+  Hidenori Tanaka, and Ekdeep~Singh Lubana.
+\newblock Belief dynamics reveal the dual nature of in-context learning and
+  activation steering, 2025.
+\newblock URL \url{https://arxiv.org/abs/2511.00617}.
+
+\bibitem[Bronstein et~al.(2021)Bronstein, Bruna, Cohen, and
+  Veličković]{bronstein2021geometricdeeplearninggrids}
+Michael~M. Bronstein, Joan Bruna, Taco Cohen, and Petar Veličković.
+\newblock Geometric deep learning: Grids, groups, graphs, geodesics, and
+  gauges, 2021.
+\newblock URL \url{https://arxiv.org/abs/2104.13478}.
+
 \bibitem[Brown et~al.(2020)Brown, Mann, Ryder, Subbiah, Kaplan, Dhariwal,
   Neelakantan, Shyam, Sastry, Askell, et~al.]{brown2020language}
 Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared~D Kaplan, Prafulla
@@ -84,6 +102,20 @@ Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared~D Kaplan, Prafulla
 \newblock \emph{Advances in neural information processing systems},
   33:\penalty0 1877--1901, 2020.
 
+\bibitem[Caruana(1997)]{caruana1997multitask}
+Rich Caruana.
+\newblock Multitask learning.
+\newblock \emph{Machine learning}, 28\penalty0 (1):\penalty0 41--75, 1997.
+
+\bibitem[Casademunt et~al.(2025)Casademunt, Juang, Karvonen, Marks,
+  Rajamanoharan, and
+  Nanda]{casademunt2025steeringoutofdistributiongeneralizationconcept}
+Helena Casademunt, Caden Juang, Adam Karvonen, Samuel Marks, Senthooran
+  Rajamanoharan, and Neel Nanda.
+\newblock Steering out-of-distribution generalization with concept ablation
+  fine-tuning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2507.16795}.
+
 \bibitem[Chan et~al.(2022)Chan, Santoro, Lampinen, Wang, Singh, Richemond,
   McClelland, and Hill]{chan2022datadistributionalpropertiesdrive}
 Stephanie C.~Y. Chan, Adam Santoro, Andrew~K. Lampinen, Jane~X. Wang, Aaditya
@@ -92,12 +124,40 @@ Stephanie C.~Y. Chan, Adam Santoro, Andrew~K. Lampinen, Jane~X. Wang, Aaditya
   transformers, 2022.
 \newblock URL \url{https://arxiv.org/abs/2205.05055}.
 
-\bibitem[Christiano et~al.(2017)Christiano, Leike, Brown, Martic, Legg, and
-  Amodei]{christiano2017deep}
-Paul~F Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg, and Dario
-  Amodei.
-\newblock Deep reinforcement learning from human preferences.
-\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+\bibitem[Charakorn et~al.(2025)Charakorn, Cetin, Tang, and
+  Lange]{charakorn2025texttolorainstanttransformeradaption}
+Rujikorn Charakorn, Edoardo Cetin, Yujin Tang, and Robert~Tjarko Lange.
+\newblock Text-to-lora: Instant transformer adaption, 2025.
+\newblock URL \url{https://arxiv.org/abs/2506.06105}.
+
+\bibitem[Chen et~al.(2024)Chen, Fang, Xia, Liu, Durme, Zettlemoyer, Gao, and
+  Cheng]{chen2024generativeadaptercontextualizinglanguage}
+Tong Chen, Hao Fang, Patrick Xia, Xiaodong Liu, Benjamin~Van Durme, Luke
+  Zettlemoyer, Jianfeng Gao, and Hao Cheng.
+\newblock Generative adapter: Contextualizing language models in parameters
+  with a single forward pass, 2024.
+\newblock URL \url{https://arxiv.org/abs/2411.05877}.
+
+\bibitem[Cohen \& Welling(2016)Cohen and
+  Welling]{cohen2016groupequivariantconvolutionalnetworks}
+Taco~S. Cohen and Max Welling.
+\newblock Group equivariant convolutional networks, 2016.
+\newblock URL \url{https://arxiv.org/abs/1602.07576}.
+
+\bibitem[Csord{\'a}s et~al.(2024)Csord{\'a}s, Potts, Manning, and
+  Geiger]{csordas2024recurrent}
+R{\'o}bert Csord{\'a}s, Christopher Potts, Christopher~D Manning, and Atticus
+  Geiger.
+\newblock Recurrent neural networks learn to store and generate sequences using
+  non-linear representations.
+\newblock \emph{arXiv preprint arXiv:2408.10920}, 2024.
+
+\bibitem[Demircan et~al.(2024)Demircan, Saanum, Jagadish, Binz, and
+  Schulz]{demircan2024sparseautoencodersrevealtemporal}
+Can Demircan, Tankred Saanum, Akshay~K. Jagadish, Marcel Binz, and Eric Schulz.
+\newblock Sparse autoencoders reveal temporal difference learning in large
+  language models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.01280}.
 
 \bibitem[Devlin et~al.(2018)Devlin, Chang, Lee, and Toutanova]{devlin2018bert}
 Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
@@ -105,25 +165,25 @@ Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
   understanding.
 \newblock \emph{arXiv preprint arXiv:1810.04805}, 2018.
 
-\bibitem[Dosovitskiy et~al.(2021)Dosovitskiy, Beyer, Kolesnikov, Weissenborn,
-  Zhai, Unterthiner, Dehghani, Minderer, Heigold, Gelly, Uszkoreit, and
-  Houlsby]{dosovitskiy2021imageworth16x16words}
-Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn,
-  Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg
-  Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby.
-\newblock An image is worth 16x16 words: Transformers for image recognition at
-  scale, 2021.
-\newblock URL \url{https://arxiv.org/abs/2010.11929}.
+\bibitem[Dohare et~al.(2024)Dohare, Hernandez-Garcia, Rahman, Mahmood, and
+  Sutton]{dohare2024maintainingplasticitydeepcontinual}
+Shibhansh Dohare, J.~Fernando Hernandez-Garcia, Parash Rahman, A.~Rupam
+  Mahmood, and Richard~S. Sutton.
+\newblock Maintaining plasticity in deep continual learning, 2024.
+\newblock URL \url{https://arxiv.org/abs/2306.13812}.
 
-\bibitem[Dziri et~al.(2023)Dziri, Lu, Sclar, Li, Jiang, Lin, West, Bhagavatula,
-  Bras, Hwang, Sanyal, Welleck, Ren, Ettinger, Harchaoui, and
-  Choi]{dziri2023faithfatelimitstransformers}
-Nouha Dziri, Ximing Lu, Melanie Sclar, Xiang~Lorraine Li, Liwei Jiang,
-  Bill~Yuchen Lin, Peter West, Chandra Bhagavatula, Ronan~Le Bras, Jena~D.
-  Hwang, Soumya Sanyal, Sean Welleck, Xiang Ren, Allyson Ettinger, Zaid
-  Harchaoui, and Yejin Choi.
-\newblock Faith and fate: Limits of transformers on compositionality, 2023.
-\newblock URL \url{https://arxiv.org/abs/2305.18654}.
+\bibitem[Engels et~al.(2024)Engels, Liao, Michaud, Gurnee, and
+  Tegmark]{engels2024languagemodelfeatureslinear}
+Joshua Engels, Isaac Liao, Eric~J. Michaud, Wes Gurnee, and Max Tegmark.
+\newblock Not all language model features are linear, 2024.
+\newblock URL \url{https://arxiv.org/abs/2405.14860}.
+
+\bibitem[Fu et~al.(2025)Fu, Bonnen, Guillory, and
+  Darrell]{fu2025hiddenplainsightvlms}
+Stephanie Fu, Tyler Bonnen, Devin Guillory, and Trevor Darrell.
+\newblock Hidden in plain sight: Vlms overlook their visual representations,
+  2025.
+\newblock URL \url{https://arxiv.org/abs/2506.08008}.
 
 \bibitem[Fukushima(1980)]{fukushima1980neocognitron}
 Kunihiko Fukushima.
@@ -137,12 +197,6 @@ Kunihiko Fukushima.
 Xuyang Ge, Wentao Shu, Jiaxing Wu, Yunhua Zhou, Zhengfu He, and Xipeng Qiu.
 \newblock Evolution of concepts in language model pre-training, 2025.
 \newblock URL \url{https://arxiv.org/abs/2509.17196}.
-
-\bibitem[Goodfellow et~al.(2016)Goodfellow, Bengio, Courville, and
-  Bengio]{goodfellow2016deep}
-Ian Goodfellow, Yoshua Bengio, Aaron Courville, and Yoshua Bengio.
-\newblock \emph{Deep learning}, volume~1.
-\newblock MIT Press, 2016.
 
 \bibitem[Gopalani \& Hu(2025)Gopalani and
   Hu]{gopalani2025happenslossplateauunderstanding}
@@ -176,6 +230,12 @@ Sai Sumedh~R. Hindupur, Ekdeep~Singh Lubana, Thomas Fel, and Demba Ba.
   concept geometry, 2025.
 \newblock URL \url{https://arxiv.org/abs/2503.01822}.
 
+\bibitem[Hochreiter \& Schmidhuber(1997)Hochreiter and
+  Schmidhuber]{hochreiter1997long}
+Sepp Hochreiter and J{\"u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock \emph{Neural computation}, 9\penalty0 (8):\penalty0 1735--1780, 1997.
+
 \bibitem[Hoffmann et~al.(2024)Hoffmann, Schrodi, Bratulić, Behrmann, Fischer,
   and Brox]{hoffmann2024eurekamomentstransformersmultisteptasks}
 David~T. Hoffmann, Simon Schrodi, Jelena Bratulić, Nadine Behrmann, Volker
@@ -183,12 +243,6 @@ David~T. Hoffmann, Simon Schrodi, Jelena Bratulić, Nadine Behrmann, Volker
 \newblock Eureka-moments in transformers: Multi-step tasks reveal softmax
   induced optimization problems, 2024.
 \newblock URL \url{https://arxiv.org/abs/2310.12956}.
-
-\bibitem[Howard \& Ruder(2018)Howard and
-  Ruder]{howard2018universallanguagemodelfinetuning}
-Jeremy Howard and Sebastian Ruder.
-\newblock Universal language model fine-tuning for text classification, 2018.
-\newblock URL \url{https://arxiv.org/abs/1801.06146}.
 
 \bibitem[Hu et~al.(2021)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and
   Chen]{hu2021loralowrankadaptationlarge}
@@ -225,6 +279,13 @@ Samyak Jain, Robert Kirk, Ekdeep~Singh Lubana, Robert~P Dick, Hidenori Tanaka,
   defined tasks.
 \newblock \emph{arXiv preprint arXiv:2311.12786}, 2023.
 
+\bibitem[Kim et~al.(2025)Kim, Kwon, Choi, Park, Cho, Lee, and
+  Ryu]{kim2025taskdiversityshortensicl}
+Jaeyeon Kim, Sehyun Kwon, Joo~Young Choi, Jongho Park, Jaewoong Cho, Jason~D.
+  Lee, and Ernest~K. Ryu.
+\newblock Task diversity shortens the icl plateau, 2025.
+\newblock URL \url{https://arxiv.org/abs/2410.05448}.
+
 \bibitem[Kornblith et~al.(2019)Kornblith, Norouzi, Lee, and
   Hinton]{kornblithcka}
 Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton.
@@ -245,10 +306,22 @@ Akarsh Kumar, Jeff Clune, Joel Lehman, and Kenneth~O. Stanley.
   entangled representation hypothesis, 2025.
 \newblock URL \url{https://arxiv.org/abs/2505.11581}.
 
-\bibitem[LeCun et~al.(2015)LeCun, Bengio, and Hinton]{lecun2015deep}
-Yann LeCun, Yoshua Bengio, and Geoffrey Hinton.
-\newblock Deep learning.
-\newblock \emph{nature}, 521\penalty0 (7553):\penalty0 436--444, 2015.
+\bibitem[Kumar et~al.(2022)Kumar, Raghunathan, Jones, Ma, and
+  Liang]{kumar2022finetuningdistortpretrainedfeatures}
+Ananya Kumar, Aditi Raghunathan, Robbie Jones, Tengyu Ma, and Percy Liang.
+\newblock Fine-tuning can distort pretrained features and underperform
+  out-of-distribution, 2022.
+\newblock URL \url{https://arxiv.org/abs/2202.10054}.
+
+\bibitem[Lampinen et~al.(2025)Lampinen, Chaudhry, Chan, Wild, Wan, Ku,
+  Bornschein, Pascanu, Shanahan, and
+  McClelland]{lampinen2025generalizationlanguagemodelsincontext}
+Andrew~K. Lampinen, Arslan Chaudhry, Stephanie C.~Y. Chan, Cody Wild, Diane
+  Wan, Alex Ku, Jörg Bornschein, Razvan Pascanu, Murray Shanahan, and James~L.
+  McClelland.
+\newblock On the generalization of language models from in-context learning and
+  finetuning: a controlled study, 2025.
+\newblock URL \url{https://arxiv.org/abs/2505.00661}.
 
 \bibitem[Lee et~al.(2024)Lee, Bai, Pres, Wattenberg, Kummerfeld, and
   Mihalcea]{lee2024mechanistic}
@@ -291,20 +364,21 @@ Melody~Zixuan Li, Kumar~Krishna Agrawal, Arna Ghosh, Komal~Kumar Teru,
 \newblock In \emph{High-dimensional Learning Dynamics 2025}, 2025.
 \newblock URL \url{https://openreview.net/forum?id=9nKmDLXg9v}.
 
-\bibitem[Li et~al.(2016)Li, Yosinski, Clune, Lipson, and
-  Hopcroft]{li2016convergentlearningdifferentneural}
-Yixuan Li, Jason Yosinski, Jeff Clune, Hod Lipson, and John Hopcroft.
-\newblock Convergent learning: Do different neural networks learn the same
-  representations?, 2016.
-\newblock URL \url{https://arxiv.org/abs/1511.07543}.
+\bibitem[Loshchilov \& Hutter(2019)Loshchilov and
+  Hutter]{loshchilov2019decoupled}
+Ilya Loshchilov and Frank Hutter.
+\newblock Decoupled weight decay regularization, 2019.
 
-\bibitem[Locatello et~al.(2019)Locatello, Bauer, Lucic, Raetsch, Gelly,
-  Sch{\"o}lkopf, and Bachem]{locatello2019challenging}
-Francesco Locatello, Stefan Bauer, Mario Lucic, Gunnar Raetsch, Sylvain Gelly,
-  Bernhard Sch{\"o}lkopf, and Olivier Bachem.
-\newblock {Challenging common assumptions in the unsupervised learning of
-  disentangled representations}.
-\newblock In \emph{Proc.\ int.\ conf.\ on machine learning (ICML)}, 2019.
+\bibitem[Lubana et~al.(2025)Lubana, Rager, Hindupur, Costa, Tuckute, Patel,
+  Murthy, Fel, Wurgaft, Bigelow, Lin, Ba, Wattenberg, Viegas, Weber, and
+  Mueller]{lubana2025priorstimemissinginductive}
+Ekdeep~Singh Lubana, Can Rager, Sai Sumedh~R. Hindupur, Valerie Costa, Greta
+  Tuckute, Oam Patel, Sonia~Krishna Murthy, Thomas Fel, Daniel Wurgaft, Eric~J.
+  Bigelow, Johnny Lin, Demba Ba, Martin Wattenberg, Fernanda Viegas, Melanie
+  Weber, and Aaron Mueller.
+\newblock Priors in time: Missing inductive biases for language model
+  interpretability, 2025.
+\newblock URL \url{https://arxiv.org/abs/2511.01836}.
 
 \bibitem[Malladi et~al.(2024)Malladi, Gao, Nichani, Damian, Lee, Chen, and
   Arora]{malladi2024finetuninglanguagemodelsjust}
@@ -320,11 +394,25 @@ Samuel Marks and Max Tegmark.
   model representations of true/false datasets, 2024.
 \newblock URL \url{https://arxiv.org/abs/2310.06824}.
 
+\bibitem[McCloskey \& Cohen(1989)McCloskey and
+  Cohen]{mccloskey1989catastrophic}
+Michael McCloskey and Neal~J Cohen.
+\newblock Catastrophic interference in connectionist networks: The sequential
+  learning problem.
+\newblock In \emph{Psychology of learning and motivation}, volume~24, pp.\
+  109--165. Elsevier, 1989.
+
 \bibitem[Menon et~al.(2025)Menon, Shrivastava, Krueger, and
   Lubana]{menon2025analyzinginabilitiessaesformal}
 Abhinav Menon, Manish Shrivastava, David Krueger, and Ekdeep~Singh Lubana.
 \newblock Analyzing (in)abilities of saes via formal languages, 2025.
 \newblock URL \url{https://arxiv.org/abs/2410.11767}.
+
+\bibitem[Michaud et~al.(2023)Michaud, Liu, Girit, and
+  Tegmark]{michaud2023quantization}
+Eric~J Michaud, Ziming Liu, Uzay Girit, and Max Tegmark.
+\newblock The quantization model of neural scaling.
+\newblock \emph{arXiv preprint arXiv:2303.13506}, 2023.
 
 \bibitem[Minder et~al.(2025)Minder, Dumas, Juang, Chugtai, and
   Nanda]{minder2025overcomingsparsityartifactscrosscoders}
@@ -333,12 +421,28 @@ Julian Minder, Clément Dumas, Caden Juang, Bilal Chugtai, and Neel Nanda.
   chat-tuning, 2025.
 \newblock URL \url{https://arxiv.org/abs/2504.02922}.
 
-\bibitem[Nanda et~al.(2023)Nanda, Lee, and Wattenberg]{nanda2023emergent}
+\bibitem[Mircea et~al.(2025)Mircea, Chakraborty, Chitsazan, Naphade, Sahu,
+  Rish, and Lobacheva]{mircea2025trainingdynamicsunderlyinglanguage}
+Andrei Mircea, Supriyo Chakraborty, Nima Chitsazan, Milind Naphade, Sambit
+  Sahu, Irina Rish, and Ekaterina Lobacheva.
+\newblock Training dynamics underlying language model scaling laws: Loss
+  deceleration and zero-sum learning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2506.05447}.
+
+\bibitem[Nanda et~al.(2023{\natexlab{a}})Nanda, Chan, Lieberum, Smith, and
+  Steinhardt]{nanda2023progressmeasuresgrokkingmechanistic}
+Neel Nanda, Lawrence Chan, Tom Lieberum, Jess Smith, and Jacob Steinhardt.
+\newblock Progress measures for grokking via mechanistic interpretability,
+  2023{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2301.05217}.
+
+\bibitem[Nanda et~al.(2023{\natexlab{b}})Nanda, Lee, and
+  Wattenberg]{nanda2023emergent}
 Neel Nanda, Andrew Lee, and Martin Wattenberg.
 \newblock Emergent linear representations in world models of self-supervised
   sequence models.
 \newblock In \emph{Proceedings of the 6th BlackboxNLP Workshop: Analyzing and
-  Interpreting Neural Networks for NLP}, pp.\  16--30, 2023.
+  Interpreting Neural Networks for NLP}, pp.\  16--30, 2023{\natexlab{b}}.
 \newblock URL \url{https://arxiv.org/abs/2309.00941}.
 
 \bibitem[Nishi et~al.(2024)Nishi, Okawa, Ramesh, Khona, Lubana, and
@@ -355,10 +459,20 @@ Maya Okawa, Ekdeep~Singh Lubana, Robert~P. Dick, and Hidenori Tanaka.
 \newblock Compositional abilities emerge multiplicatively: Exploring diffusion
   models on a synthetic task, 2024.
 
-\bibitem[OpenAI(2024)]{openai2024gpt4technicalreport}
-OpenAI.
-\newblock Gpt-4 technical report, 2024.
-\newblock URL \url{https://arxiv.org/abs/2303.08774}.
+\bibitem[Olah et~al.(2017)Olah, Mordvintsev, and Schubert]{olah2017feature}
+Chris Olah, Alexander Mordvintsev, and Ludwig Schubert.
+\newblock Feature visualization.
+\newblock \emph{Distill}, 2017.
+\newblock \doi{10.23915/distill.00007}.
+\newblock https://distill.pub/2017/feature-visualization.
+
+\bibitem[{OpenDataSoft / GeoNames}(2025)]{geonames_all_cities_1000}
+{OpenDataSoft / GeoNames}.
+\newblock Geonames – all cities with a population > 1000.
+\newblock
+  \url{https://public.opendatasoft.com/explore/dataset/geonames-all-cities-with-a-population-1000},
+  2025.
+\newblock Accessed: 2025.
 
 \bibitem[Park et~al.(2024{\natexlab{a}})Park, Lee, Lubana, Yang, Okawa, Nishi,
   Wattenberg, and Tanaka]{park2024iclrincontextlearningrepresentations}
@@ -394,13 +508,6 @@ Michael Pearce, Elana Simon, Michael Byun, and Daniel Balsam.
 \newblock \emph{Goodfire Research}, August 2025.
 \newblock Correspondence to michael@goodfire.ai.
 
-\bibitem[Peters et~al.(2018)Peters, Neumann, Iyyer, Gardner, Clark, Lee, and
-  Zettlemoyer]{peters2018deepcontextualizedwordrepresentations}
-Matthew~E. Peters, Mark Neumann, Mohit Iyyer, Matt Gardner, Christopher Clark,
-  Kenton Lee, and Luke Zettlemoyer.
-\newblock Deep contextualized word representations, 2018.
-\newblock URL \url{https://arxiv.org/abs/1802.05365}.
-
 \bibitem[Pezeshki et~al.(2021)Pezeshki, Kaba, Bengio, Courville, Precup, and
   Lajoie]{pezeshki2021gradient}
 Mohammad Pezeshki, Oumar Kaba, Yoshua Bengio, Aaron~C Courville, Doina Precup,
@@ -421,13 +528,6 @@ Tian Qin, Core~Francisco Park, Mujin Kwun, Aaron Walsman, Eran Malach, Nikhil
   et~al.]{radford2018improving}
 Alec Radford, Karthik Narasimhan, Tim Salimans, Ilya Sutskever, et~al.
 \newblock Improving language understanding by generative pre-training, 2018.
-
-\bibitem[Radford et~al.(2019)Radford, Wu, Child, Luan, Amodei, Sutskever,
-  et~al.]{radford2019language}
-Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya
-  Sutskever, et~al.
-\newblock Language models are unsupervised multitask learners.
-\newblock \emph{OpenAI blog}, 1\penalty0 (8):\penalty0 9, 2019.
 
 \bibitem[Raventós et~al.(2023)Raventós, Paul, Chen, and
   Ganguli]{raventós2023pretrainingtaskdiversityemergence}
@@ -454,6 +554,12 @@ David~E Rumelhart, Geoffrey~E Hinton, and Ronald~J Williams.
 \newblock Learning representations by back-propagating errors.
 \newblock \emph{nature}, 323\penalty0 (6088):\penalty0 533--536, 1986.
 
+\bibitem[Schlag et~al.(2021)Schlag, Irie, and
+  Schmidhuber]{schlag2021lineartransformerssecretlyfast}
+Imanol Schlag, Kazuki Irie, and Jürgen Schmidhuber.
+\newblock Linear transformers are secretly fast weight programmers, 2021.
+\newblock URL \url{https://arxiv.org/abs/2102.11174}.
+
 \bibitem[Shah et~al.(2020)Shah, Tamuly, Raghunathan, Jain, and
   Netrapalli]{shah2020pitfallssimplicitybiasneural}
 Harshay Shah, Kaustav Tamuly, Aditi Raghunathan, Prateek Jain, and Praneeth
@@ -461,56 +567,21 @@ Harshay Shah, Kaustav Tamuly, Aditi Raghunathan, Prateek Jain, and Praneeth
 \newblock The pitfalls of simplicity bias in neural networks, 2020.
 \newblock URL \url{https://arxiv.org/abs/2006.07710}.
 
-\bibitem[Shojaee et~al.(2025)Shojaee, Mirzadeh, Alizadeh, Horton, Bengio, and
-  Farajtabar]{shojaee2025illusionthinkingunderstandingstrengths}
-Parshin Shojaee, Iman Mirzadeh, Keivan Alizadeh, Maxwell Horton, Samy Bengio,
-  and Mehrdad Farajtabar.
-\newblock The illusion of thinking: Understanding the strengths and limitations
-  of reasoning models via the lens of problem complexity, 2025.
-\newblock URL \url{https://arxiv.org/abs/2506.06941}.
+\bibitem[Shai et~al.(2025)Shai, Marzen, Teixeira, Oldenziel, and
+  Riechers]{shai2025transformersrepresentbeliefstate}
+Adam~S. Shai, Sarah~E. Marzen, Lucas Teixeira, Alexander~Gietelink Oldenziel,
+  and Paul~M. Riechers.
+\newblock Transformers represent belief state geometry in their residual
+  stream, 2025.
+\newblock URL \url{https://arxiv.org/abs/2405.15943}.
 
-\bibitem[Simonyan \& Zisserman(2015)Simonyan and
-  Zisserman]{simonyan2015deepconvolutionalnetworkslargescale}
-Karen Simonyan and Andrew Zisserman.
-\newblock Very deep convolutional networks for large-scale image recognition,
-  2015.
-\newblock URL \url{https://arxiv.org/abs/1409.1556}.
-
-\bibitem[Team et~al.(2024)Team, Raad, Ahuja, Barros, Besse, Bolt, Bolton,
-  Brownfield, Buttimore, Cant, Chakera, Chan, Clune, Collister, Copeman,
-  Cullum, Dasgupta, de~Cesare, Trapani, Donchev, Dunleavy, Engelcke, Faulkner,
-  Garcia, Gbadamosi, Gong, Gonzales, Gupta, Gregor, Hallingstad, Harley, Haves,
-  Hill, Hirst, Hudson, Hudson, Hughes-Fitt, Rezende, Jasarevic, Kampis, Ke,
-  Keck, Kim, Knagg, Kopparapu, Lawton, Lampinen, Legg, Lerchner, Limont, Liu,
-  Loks-Thompson, Marino, Cussons, Matthey, Mcloughlin, Mendolicchio, Merzic,
-  Mitenkova, Moufarek, Oliveira, Oliveira, Openshaw, Pan, Pappu, Platonov,
-  Purkiss, Reichert, Reid, Richemond, Roberts, Ruscoe, Elias, Sandars, Sawyer,
-  Scholtes, Simmons, Slater, Soyer, Strathmann, Stys, Tam, Teplyashin, Terzi,
-  Vercelli, Vujatovic, Wainwright, Wang, Wang, Wierstra, Williams, Wong, York,
-  and Young]{simateam2024scalinginstructableagentssimulated}
-SIMA Team, Maria~Abi Raad, Arun Ahuja, Catarina Barros, Frederic Besse, Andrew
-  Bolt, Adrian Bolton, Bethanie Brownfield, Gavin Buttimore, Max Cant, Sarah
-  Chakera, Stephanie C.~Y. Chan, Jeff Clune, Adrian Collister, Vikki Copeman,
-  Alex Cullum, Ishita Dasgupta, Dario de~Cesare, Julia~Di Trapani, Yani
-  Donchev, Emma Dunleavy, Martin Engelcke, Ryan Faulkner, Frankie Garcia,
-  Charles Gbadamosi, Zhitao Gong, Lucy Gonzales, Kshitij Gupta, Karol Gregor,
-  Arne~Olav Hallingstad, Tim Harley, Sam Haves, Felix Hill, Ed~Hirst, Drew~A.
-  Hudson, Jony Hudson, Steph Hughes-Fitt, Danilo~J. Rezende, Mimi Jasarevic,
-  Laura Kampis, Rosemary Ke, Thomas Keck, Junkyung Kim, Oscar Knagg, Kavya
-  Kopparapu, Rory Lawton, Andrew Lampinen, Shane Legg, Alexander Lerchner,
-  Marjorie Limont, Yulan Liu, Maria Loks-Thompson, Joseph Marino,
-  Kathryn~Martin Cussons, Loic Matthey, Siobhan Mcloughlin, Piermaria
-  Mendolicchio, Hamza Merzic, Anna Mitenkova, Alexandre Moufarek, Valeria
-  Oliveira, Yanko Oliveira, Hannah Openshaw, Renke Pan, Aneesh Pappu, Alex
-  Platonov, Ollie Purkiss, David Reichert, John Reid, Pierre~Harvey Richemond,
-  Tyson Roberts, Giles Ruscoe, Jaume~Sanchez Elias, Tasha Sandars, Daniel~P.
-  Sawyer, Tim Scholtes, Guy Simmons, Daniel Slater, Hubert Soyer, Heiko
-  Strathmann, Peter Stys, Allison~C. Tam, Denis Teplyashin, Tayfun Terzi,
-  Davide Vercelli, Bojan Vujatovic, Marcus Wainwright, Jane~X. Wang, Zhengdong
-  Wang, Daan Wierstra, Duncan Williams, Nathaniel Wong, Sarah York, and Nick
-  Young.
-\newblock Scaling instructable agents across many simulated worlds, 2024.
-\newblock URL \url{https://arxiv.org/abs/2404.10179}.
+\bibitem[Singh et~al.(2024)Singh, Moskovitz, Hill, Chan, and
+  Saxe]{singh2024needsrightinductionhead}
+Aaditya~K. Singh, Ted Moskovitz, Felix Hill, Stephanie C.~Y. Chan, and
+  Andrew~M. Saxe.
+\newblock What needs to go right for an induction head? a mechanistic study of
+  in-context learning circuits and their formation, 2024.
+\newblock URL \url{https://arxiv.org/abs/2404.07129}.
 
 \bibitem[Templeton et~al.(2024)Templeton, Conerly, Marcus, Lindsey, Bricken,
   Chen, Pearce, Citro, Ameisen, Jones, Cunningham, Turner, McDougall,
@@ -535,18 +606,19 @@ Johannes Treutlein, Dami Choi, Jan Betley, Samuel Marks, Cem Anil, Roger
   from disparate training data, 2024.
 \newblock URL \url{https://arxiv.org/abs/2406.14546}.
 
-\bibitem[Vafa et~al.(2024)Vafa, Chen, Kleinberg, Mullainathan, and
-  Rambachan]{vafa2024evaluatingworldmodelimplicit}
-Keyon Vafa, Justin~Y. Chen, Jon Kleinberg, Sendhil Mullainathan, and Ashesh
-  Rambachan.
-\newblock Evaluating the world model implicit in a generative model, 2024.
-\newblock URL \url{https://arxiv.org/abs/2406.03689}.
+\bibitem[Vafa et~al.(2025)Vafa, Chang, Rambachan, and
+  Mullainathan]{vafa2025foundationmodelfoundusing}
+Keyon Vafa, Peter~G. Chang, Ashesh Rambachan, and Sendhil Mullainathan.
+\newblock What has a foundation model found? using inductive bias to probe for
+  world models, 2025.
+\newblock URL \url{https://arxiv.org/abs/2507.06952}.
 
-\bibitem[Vaswani et~al.(2023)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
-  Kaiser, and Polosukhin]{vaswani2023attention}
-Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
-  Aidan~N. Gomez, Lukasz Kaiser, and Illia Polosukhin.
-\newblock Attention is all you need, 2023.
+\bibitem[Wang et~al.(2025)Wang, Engels, Clive-Griffin, Rajamanoharan, and
+  Nanda]{wang2025simplemechanisticexplanationsoutofcontext}
+Atticus Wang, Joshua Engels, Oliver Clive-Griffin, Senthooran Rajamanoharan,
+  and Neel Nanda.
+\newblock Simple mechanistic explanations for out-of-context reasoning, 2025.
+\newblock URL \url{https://arxiv.org/abs/2507.08218}.
 
 \bibitem[Ward et~al.(2025)Ward, Lin, Venhoff, and
   Nanda]{ward2025reasoningfinetuningrepurposeslatentrepresentations}
@@ -554,6 +626,12 @@ Jake Ward, Chuqiao Lin, Constantin Venhoff, and Neel Nanda.
 \newblock Reasoning-finetuning repurposes latent representations in base
   models, 2025.
 \newblock URL \url{https://arxiv.org/abs/2507.12638}.
+
+\bibitem[Weiler \& Cesa(2021)Weiler and
+  Cesa]{weiler2021generale2equivariantsteerablecnns}
+Maurice Weiler and Gabriele Cesa.
+\newblock General $e(2)$-equivariant steerable cnns, 2021.
+\newblock URL \url{https://arxiv.org/abs/1911.08251}.
 
 \bibitem[Wu et~al.(2024)Wu, Arora, Wang, Geiger, Jurafsky, Manning, and
   Potts]{wu2024reftrepresentationfinetuninglanguage}
@@ -574,6 +652,19 @@ Sang~Michael Xie, Aditi Raghunathan, Percy Liang, and Tengyu Ma.
 \newblock An explanation of in-context learning as implicit bayesian inference.
 \newblock \emph{arXiv preprint arXiv:2111.02080}, 2021.
 
+\bibitem[Yang et~al.(2024)Yang, Yang, Zhang, Hui, Zheng, Yu, Li, Liu, Huang,
+  Wei, et~al.]{yang2024qwen2}
+An~Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo~Zheng, Bowen Yu,
+  Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et~al.
+\newblock Qwen2. 5 technical report.
+\newblock \emph{arXiv preprint arXiv:2412.15115}, 2024.
+
+\bibitem[Yang et~al.(2025)Yang, Kautz, and
+  Hatamizadeh]{yang2025gateddeltanetworksimproving}
+Songlin Yang, Jan Kautz, and Ali Hatamizadeh.
+\newblock Gated delta networks: Improving mamba2 with delta rule, 2025.
+\newblock URL \url{https://arxiv.org/abs/2412.06464}.
+
 \bibitem[Yue et~al.(2025)Yue, Chen, Lu, Zhao, Wang, Yue, Song, and
   Huang]{yue2025doesreinforcementlearningreally}
 Yang Yue, Zhiqi Chen, Rui Lu, Andrew Zhao, Zhaokai Wang, Yang Yue, Shiji Song,
@@ -581,6 +672,13 @@ Yang Yue, Zhiqi Chen, Rui Lu, Andrew Zhao, Zhaokai Wang, Yang Yue, Shiji Song,
 \newblock Does reinforcement learning really incentivize reasoning capacity in
   llms beyond the base model?, 2025.
 \newblock URL \url{https://arxiv.org/abs/2504.13837}.
+
+\bibitem[Zhang et~al.(2025)Zhang, Patel, Rizvi, Liu, He, Karbasi, Zappala, and
+  van Dijk]{zhang2025intelligenceedgechaos}
+Shiyang Zhang, Aakash Patel, Syed~A Rizvi, Nianchen Liu, Sizhuang He, Amin
+  Karbasi, Emanuele Zappala, and David van Dijk.
+\newblock Intelligence at the edge of chaos, 2025.
+\newblock URL \url{https://arxiv.org/abs/2410.02536}.
 
 \bibitem[Zhao et~al.(2025)Zhao, Meterez, Kakade, Pehlevan, Jelassi, and
   Malach]{zhao2025echochamberrlposttraining}

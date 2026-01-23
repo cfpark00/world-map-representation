@@ -1,0 +1,2 @@
+output_dir: data/experiments/revision/additional_plots/cities_basic
+cities_csv: data/datasets/cities/cities.csv

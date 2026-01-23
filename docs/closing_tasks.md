@@ -10,3 +10,5 @@ When done for the day:
    - Format should include hour, minute, and main topic (e.g., `HHMM_main_topic.md`)
 
 3. If you made file or folder structure changes, update `docs/structure.txt`. Even if you didn't try to verify *rough* consistency.
+
+4. Update (or write if non-existing) `docs/research_context.md`, a document with the goal and scope of the research and main findings so far, and current state. At this step, feel free to ask the user if things are unclear where we are or where we are heading. DO NOT hallucinate research directions or goals the user did not mention.
