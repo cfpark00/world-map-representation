@@ -1,0 +1,628 @@
+%%%%%%%% ICML 2026 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2026} with \usepackage[nohyperref]{icml2026} above.
+\usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2026}
+
+% For preprint, use
+% \usepackage[preprint]{icml2026}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{enumitem} % For customizing list spacing
+\usepackage{xcolor} % For colored text
+\usepackage{wrapfig} % For wrapped figures
+\newcommand{\degree}{^\circ} % Define \degree command
+
+
+% if you use cleveref.. (commented out - not available on cluster)
+% \usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development (commented out - not available on cluster)
+% \usepackage[disable,textsize=tiny]{todonotes}
+% \usepackage[textsize=tiny]{todonotes}
+
+% AI-generated text marker (orange) - remove for final submission
+\newcommand{\ai}[1]{\textcolor{orange}{#1}}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Convergent World Representations and Divergent Tasks}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{Convergent World Representations and Divergent Tasks}
+
+  % It is OKAY to include author information, even for blind submissions: the
+  % style file will automatically remove it for you unless you've provided
+  % the [accepted] option to the icml2026 package.
+
+  % List of affiliations: The first argument should be a (short) identifier you
+  % will use later to specify author affiliations Academic affiliations
+  % should list Department, University, City, Region, Country Industry
+  % affiliations should list Company, City, Region, Country
+
+  % You can specify symbols, otherwise they are numbered in order. Ideally, you
+  % should not use this facility. Affiliations will be numbered in order of
+  % appearance and this is the preferred way.
+  \icmlsetsymbol{equal}{*}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Firstname1 Lastname1}{equal,yyy}
+    \icmlauthor{Firstname2 Lastname2}{equal,yyy,comp}
+    \icmlauthor{Firstname3 Lastname3}{comp}
+    \icmlauthor{Firstname4 Lastname4}{sch}
+    \icmlauthor{Firstname5 Lastname5}{yyy}
+    \icmlauthor{Firstname6 Lastname6}{sch,yyy,comp}
+    \icmlauthor{Firstname7 Lastname7}{comp}
+    %\icmlauthor{}{sch}
+    \icmlauthor{Firstname8 Lastname8}{sch}
+    \icmlauthor{Firstname8 Lastname8}{yyy,comp}
+    %\icmlauthor{}{sch}
+    %\icmlauthor{}{sch}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+  \icmlaffiliation{comp}{Company Name, Location, Country}
+  \icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+  \icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+  \icmlcorrespondingauthor{Firstname2 Lastname2}{first2.last2@www.uk}
+
+  % You may provide any keywords that you find helpful for describing your
+  % paper; these are used to populate the "keywords" metadata in the PDF but
+  % will not be shown in the document
+  \icmlkeywords{Machine Learning, ICML}
+
+  \vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column listing the
+% affiliations and the copyright notice. The command takes one argument, which
+% is text to display at the start of the footnote. The \icmlEqualContribution
+% command is standard text for equal contribution. Remove it (just {}) if you
+% do not need this facility.
+
+% Use ONE of the following lines. DO NOT remove the command.
+% If you have no special notice, KEEP empty braces:
+\printAffiliationsAndNotice{}  % no special notice (required even if empty)
+% Or, if applicable, use the standard equal contribution text:
+% \printAffiliationsAndNotice{\icmlEqualContribution}
+
+\begin{abstract}
+While neural representations are central to modern deep learning, the conditions governing their geometry and their roles in downstream adaptability remain poorly understood. We develop a framework clearly separating the underlying world, the data generation process and the resulting model representations to study these questions in a controlled setup: 5,075 city coordinates define the world and 7 geometric tasks generate the training data for autoregressive Transformer training. We find that different tasks give rise to qualitatively and quantitatively distinct world representation geometries. However, multi-task training drives convergence of world representations: models trained on non-overlapping tasks develop aligned geometric representations, providing controlled evidence for the Multitask Scaling Hypothesis of the Platonic Representation Hypothesis. To study adaptation, we pretrain models on all tasks and all cities, then test whether new entities can be consistently integrated into the representation space via fine-tuning. Surprisingly, we find that despite multi-task pretraining, some tasks---which we dub \textit{divergent}---actively harm the representational integration of new entities. Our results show that training on multiple relational tasks reliably produces convergent world representations, but some lurking divergent tasks can catastrophically harm new entity integration via fine-tuning.
+\end{abstract}
+
+\section{Introduction}
+
+The nature of representations and mechanisms learned by deep neural networks, or in fact any intelligent system, and their relation to generalization is a central topic in deep learning research \citep{hubel1962receptive,rosenblatt1958perceptron,fukushima1980neocognitron,rumelhart1986learning}. Recent work has demonstrated that neural networks trained on vast amounts of data can capture diverse, disentangled and sometimes interpretable aspects of their training data, or even of the world underlying the data \citep{bengio2014representationlearningreviewnew}. These rich representations are generally thought to underlie the generalization and adaptability of neural networks to unseen, out-of-distribution scenarios.
+
+Recent work on internal representations of language models has provided evidence that neural networks can develop structured representations of the underlying data rather than merely memorizing surface patterns \citep{li2022emergent,gurnee2023language,nanda2023emergent}.
+
+However, major open questions remain. When interpretable representations are discovered in neural networks, it is often unclear whether their emergence is surprising or inevitable, what geometry they will take and how they support generalization. Even less understood is how these representations adjust during fine-tuning and downstream adaptation.
+
+Answering these questions is difficult in real-world settings, where the key factors, the world, the data and the model, are entangled and costly to vary independently. Even the most accessible factor, the model, becomes expensive to perturb at scale; the data is harder still to control; and the underlying world is effectively immutable. In this work, we develop a synthetic framework where these factors can be precisely controlled and systematically studied.
+
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/fig1.png}
+    \caption{\textbf{Overview of the World-Data-Model framework.} \textbf{Top:} The world consists of 5,075 real city coordinates; we test adaptation by adding 100 synthetic \texttt{Atlantis} cities (App.~\ref{app:world}). \textbf{Middle:} Seven geometric tasks generate training data from city coordinates (App.~\ref{app:data}). \textbf{Bottom:} Training dynamics of one model, showing loss curves, linear probing accuracy for coordinate reconstruction and visualizations of internal representations (PCA and linear probe projections) at different training stages. See App.~Fig.~\ref{fig:app_training} for all training curves.}
+    \label{fig:fig1}
+\end{figure*}
+
+\paragraph{This work.} To study these questions, we decouple the underlying \textit{world} from the \textit{data generation process} to control them independently. Concretely, we adopt the coordinates of real-world cities as our ``world,'' a ready-made complex structure with ground-truth geometry, and define 7 geometric tasks on top of it. We train autoregressive Transformers on this data and study how world representations form and vary across tasks, surfacing preliminary evidence for the Platonic Representation Hypothesis (PRH) \citep{huh2024platonicrepresentationhypothesis}. Crucially, this setup allows us to define consistent updates to the world (adding new cities) that produce predictable changes in the data, letting us test whether models can absorb such updates via fine-tuning. Our contributions are as follows:
+
+\begin{itemize}[leftmargin=*, itemsep=0.5em]
+\item \textbf{A Framework Decoupling World, Data and Model. (Sec.~\ref{sec:setup})} We separate the underlying world (city coordinates) from the data generation process (7 geometric tasks), enabling systematic study of how different tasks shape representations of the same world. The world provides ground-truth coordinates for directly assessing representation quality via probing. This setup also allows defining consistent world updates (adding synthetic \texttt{Atlantis} cities) to test whether models can adapt their representations accordingly.
+
+\item \textbf{Task-Dependent Geometry and Multi-Task Convergence. (Sec.~\ref{sec:pretraining})} We show that different tasks operating on the same world produce highly variable representational geometries across tasks and seeds. However, multi-task training drives convergence: models trained on multiple tasks show higher representational alignment, even when they share no common tasks. This provides partial evidence for the Multitask Scaling Hypothesis, one proposed mechanism for the Platonic Representation Hypothesis.
+
+\item \textbf{Divergent Tasks Harm Fine-Tuning of New Entities Despite Multi-Task Pretraining. (Sec.~\ref{sec:fine_tuning})} We test whether models can integrate new entities (\texttt{Atlantis} cities) via fine-tuning. We find that single-task representational similarity (CKA) partially predicts cross-task generalization. In a multi-task fine-tuning setting, we find surprising ``divergent'' tasks which hinder integration of new entities into the learned manifold, actively harming generalization.
+\end{itemize}
+
+\section{Related Work}\label{sec:related}
+
+\textbf{Internal Representations.} Understanding internal representations has been fundamental since the development of neural networks \citep{rosenblatt1958perceptron,rumelhart1986learning}. Recent work has revealed that language models develop structured ``world models'' encoding geographic, temporal and relational information \citep{li2022emergent,gurnee2023language,nanda2023emergent,marks2024geometrytruthemergentlinear}. Mechanistic interpretability and sparse autoencoders have further enabled decomposition of neural activations into interpretable features \citep{towardsmonosemanticity,templeton2024scaling}. Furthermore, PRH posits that diverse models converge toward similar representational structures \citep{huh2024platonicrepresentationhypothesis}. However, recent work questions this representational optimism, suggesting that deep network representations may be more brittle than previously assumed \citep{kumar2025questioningrepresentationaloptimismdeep}. Our work takes a complementary perspective, studying the factors that control the formation of these representations and how networks integrate new entities into their representation space via fine-tuning.
+
+\textbf{Fine-tuning.} The pretraining-finetuning paradigm has become central to modern deep learning, with seminal works establishing its effectiveness in computer vision \citep{krizhevsky2012imagenet,he2015deep} and natural language processing \citep{devlin2018bert,radford2018improving}. Despite widespread success, fine-tuning exhibits poorly understood behaviors such as the reversal curse \citep{berglund2024reversalcursellmstrained,lampinen2025generalizationlanguagemodelsincontext}. On this background, careful studies of fine-tuning and other low-compute adaptation methods have raised pessimism about whether models can learn fundamentally new abilities, suggesting they may merely form ``thin wrappers'' around pretrained representations \citep{jain2023mechanistically,ward2025reasoningfinetuningrepurposeslatentrepresentations,yue2025doesreinforcementlearningreally,qin2025decomposingelementsproblemsolving}. Work on feature distortion \citep{kumar2022finetuningdistortpretrainedfeatures} is perhaps most related to ours, though representational changes are assumed rather than directly measured. Our work examines this question in a controlled setup where ground-truth world structure enables precise measurement of representation adaptation.
+
+\textbf{Multi-task Learning.} Multi-task learning has long been studied as a way to improve generalization through shared representations \citep{caruana1997multitask}; in some sense, modern foundation models represent an extreme form of multi-task training. Large-scale multi-task pretraining typically assumes rich representations emerge from data diversity \citep{aghajanyan2021muppetmassivemultitaskrepresentations}, but the precise mechanisms remain underexplored. Recent work has begun studying task diversity in controlled settings \citep{michaud2023quantization,zhang2025intelligenceedgechaos}, though most studies still focus on aggregate behaviors such as capabilities and scaling laws rather than characterizing tasks or the knowledge they operate on. Our framework explicitly defines tasks as geometric functions over a shared world, enabling direct investigation of how task structure shapes representations.
+
+\textbf{Synthetic Data.} The cost and complexity of foundation models has motivated synthetic approaches for controlled study of in-context learning \citep{xie2021explanation,chan2022datadistributionalpropertiesdrive,reddy2023mechanisticbasisdatadependence,raventos2023pretrainingtaskdiversityemergence,park2024competition,wurgaft2025incontextlearningstrategiesemerge}, compositional generalization \citep{okawa2024compositional,park2024emergencehiddencapabilitiesexploring}, grammar/knowledge acquisition \citep{allen2023physics1,allen2023physics}, and interpretability methods \citep{menon2025analyzinginabilitiessaesformal,hindupur2025projectingassumptionsdualitysparse}. Most relevant to our work, \citet{jain2023mechanistically} used synthetic data to argue fine-tuning creates only thin wrappers over pretrained capabilities, while \citet{nishi2024representation} studied formation and destruction of representational structure. However, existing synthetic frameworks typically design data generation processes without explicitly distinguishing between the underlying world and how data is sampled from it. Our work introduces a framework that makes this distinction explicit, enabling systematic study of how different views of the same world shape neural representations and their downstream adaptability.
+
+\section{Experimental Framework: Decoupling World, Data and Model}\label{sec:setup}
+
+Our framework uses geographic tasks where models solve geometric problems involving city coordinates. This naturally separates the underlying world (coordinates) from data generation (tasks), while providing ground-truth for measuring representation quality. Our framework provides three key properties:
+\begin{enumerate}[noitemsep, topsep=0pt]
+    \item \textbf{Learnability:} All tasks are deterministically generated from the same underlying coordinates. A model that learns the world structure can leverage it across all tasks.
+    \item \textbf{Latent State:} Models never see coordinates directly, only task outputs, allowing us to probe whether they internally reconstruct the world structure.
+    \item \textbf{Consistent Updates:} Modifying the world (e.g., adding new cities) produces self-consistent updates across all tasks, defining a clear expectation for what a model with proper world representations should internalize.
+\end{enumerate}
+
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/result1-1.png}
+    \caption{\textbf{World representation geometry depends on the data generation process.} (a) Different tasks create distinct geometries: \texttt{distance} (thread-like), \texttt{angle} (2D manifold), \texttt{compass} (fragmented), \texttt{inside} (diffuse). Row 1: PCA. Row 2: Linear probe projections. Row 3: Rotated views showing hidden structure. See App.~Fig.~\ref{fig:app_reprs} for more seeds. (b) CKA matrix at layer 5, estimated across 3 seeds. \texttt{Crossing} (Cr) fails to train alone. See App.~Fig.~\ref{fig:app_cka_pt1} for SEM and layers 3, 4, 6.}
+    \label{fig:result1-1}
+\end{figure*}
+
+\paragraph{Framework.}
+Let $\mathcal{W}$ denote a \textit{world}: a set of entities $\{e_1, \ldots, e_N\}$ each with latent attributes $z_i \in \mathcal{Z}$. A \textit{data generation process} is a set of tasks $\mathcal{T} = \{T_1, \ldots, T_K\}$, where each task $T_k: \mathcal{Z}^{n_k} \rightarrow \mathcal{Y}_k$ maps $n_k$ entity attributes to an output space $\mathcal{Y}_k$. Training data for task $T_k$ is generated by sampling entity tuples $(e_{i_1}, \ldots, e_{i_{n_k}})$ from $\mathcal{W}$ and computing $y = T_k(z_{i_1}, \ldots, z_{i_{n_k}})$.
+
+A model $M$ observes only entity identifiers and task outputs, never the latent attributes $z_i$ directly. We say $M$ has learned a \textit{world representation} if there exists a probe $P$ such that $P(M(e_i)) \approx z_i$ for all entities.
+
+A \textit{world update} $\mathcal{W} \rightarrow \mathcal{W}'$ (e.g., adding or modifying entities) induces consistent updates across all tasks by simply applying the same $T_k$ to the new or modified entities.
+
+\paragraph{Instantiation.}
+Concretely, our world consists of 5,075 real-world cities filtered by population $>$ 100,000 (Fig.~\ref{fig:fig1}, top). We define 7 geometric tasks that take 2 or more city coordinates as input and compute a geometric value (Fig.~\ref{fig:fig1}, middle).
+
+Each task query follows a structured format where city IDs (e.g., \texttt{c\_1234}) serve as inputs to geometric functions, all character-tokenized for autoregressive prediction. For instance, \texttt{dist(c\_0865,c\_4879)=769} queries the distance between two cities, while \texttt{cross(c\_2345,c\_6789;c\_0123,c\_4567)=TRUE} checks whether two line segments intersect.
+
+To test adaptation, we define \texttt{Atlantis}: 100 synthetic cities placed in the Atlantic Ocean. Models never observe \texttt{Atlantis} during pretraining; we use it in Sec.~\ref{sec:fine_tuning} to test whether fine-tuning can integrate new entities into world representations in a way that generalizes across tasks.
+
+
+\section{World Representations Converge Under Multi-Task Learning}\label{sec:pretraining}
+
+We now study how the task composition in the pretraining data shapes internal world representations by training Transformers on different task subsets and probing their representation geometry (see App.~\ref{app:model_training} for training details).
+
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/result1-2.png}
+    \caption{\textbf{Multi-task pretraining drives representational convergence.} (a,b) Two-task training creates more regular structures than single-task models. (c) CKA matrix (7$\times$7) for two-task models shows higher alignment (see App.~Fig.~\ref{fig:app_cka_pt2} for SEM). (d) Average CKA increases with task count (1$\rightarrow$2$\rightarrow$3), saturating at $\sim$0.85 for layers 4-6 while layer 3 continues improving (see App.~Fig.~\ref{fig:app_cka_3seed} for SEM). \texttt{Crossing}, which failed to learn in single-task training, is excluded; including it would only strengthen the convergence finding.}
+    \label{fig:result1-2}
+\end{figure*}
+
+\paragraph{Result 1: World Representations Emerge through Autoregressive Training}
+
+We first demonstrate that world representations emerge through autoregressive training (Fig.~\ref{fig:fig1}, bottom). Training on the \texttt{angle} task, the model starts with random representations, goes through a loss plateau while clustering nearby cities, then forms world-aligned geometry as loss drops and task accuracy improves. The linear probe $R^2$ for coordinate decoding rises slightly before angle accuracy improves, reminiscent of hidden progress measures found during grokking \citep{nanda2023progressmeasuresgrokkingmechanistic}. \textit{Notably, once representational structure forms, it remains largely fixed for the remainder of training: representations are essentially fixed in the first ${\sim}$15\% of training, remaining static while loss continues to decrease and accuracy rises} (see App.~\ref{fig:app_repr_dynamics} for visualization across tasks). This early saturation of representations echoes findings on critical learning periods in deep networks \citep{achille2019criticallearningperiodsdeep} and loss of plasticity in continual learning \citep{dohare2024maintainingplasticitydeepcontinual}. Overall, we find stable formation of internal world representations through pure autoregressive modeling. While the emergence of linearly decodable coordinates might be anticipated given the geometric nature of the task\footnote{We regard \textit{linear} decodability of world representations as non-trivial (albeit expected). However, this is not the focus of our study.}, it provides a useful validation of our framework and sets the stage for our main question: how do different tasks shape these representations?
+
+
+\paragraph{Result 2: Data Generation Process Controls World Representation Geometry}
+
+We train models from scratch for each of the seven tasks and visualize their representations in Fig.~\ref{fig:result1-1}(a): PCA projections, linear probe reconstructions and rotated views.
+
+Different tasks produce qualitatively distinct geometries: \texttt{distance} forms thread-like structures, \texttt{angle} forms 2D manifolds, \texttt{compass} forms fragmented clusters, and \texttt{inside} forms diffuse representations. These qualitative patterns are relatively consistent across random seeds (see App.~\ref{app:reprs}). Despite geometric differences, we can linearly decode (x,y) coordinates from most tasks (row 2), though some tasks (\texttt{angle}) yield cleaner reconstructions than others, a phenomenon worth further investigation. The third row shows manually rotated views revealing that representations differ substantially in non-probe directions, a reminder that \textit{linear probing only surfaces what we look for}.
+
+We quantify representational similarity using CKA \citep{kornblithcka} (Fig.~\ref{fig:result1-1}b). We find substantial variability even across seeds for the same task (see App.~Fig.~\ref{fig:app_cka_pt1}), but cross-task differences remain clear: \texttt{distance} produces particularly divergent representations, a result not obvious from PCA visualizations or from intuition about the task. Note: the \texttt{crossing} task fails to train in isolation\footnote{This likely connects to known hard-to-learn dynamics and gradient plateaus in training transformers \citep{pezeshki2021gradient,shah2020pitfallssimplicitybiasneural,hoffmann2024eurekamomentstransformersmultisteptasks,bachmann2025pitfallsnexttokenprediction,gopalani2025happenslossplateauunderstanding}.}, explaining its near-zero CKA; intriguingly, it succeeds in multi-task settings (Result 3).
+
+
+\paragraph{Result 3: Multi-Task Learning Drives Representational Convergence}
+
+
+Having established that single-task training produces variable representations, we now ask: does multi-task training reduce this variability? This question partially connects to PRH \citep{huh2024platonicrepresentationhypothesis}, which observes that neural networks trained on diverse data develop aligned representations even across different modalities and architectures. One potential mechanism they suggest is the Multitask Scaling Hypothesis:
+\begin{quote}
+\textit{``There are fewer representations that are competent for N tasks than there are for M $\leq$ N tasks. As we train more general models that solve more tasks at once, we should expect fewer possible solutions.''}
+\end{quote}
+Our setup provides a potential testbed for this hypothesis, with a ground-truth world model and multiple tasks defined over it. We trained models on selected two-task combinations (3 seeds each; see App.~Fig.~\ref{fig:app_cka_additional} for all 21 combinations). Fig.~\ref{fig:result1-2}(a) shows representations when trained jointly on \texttt{distance} and \texttt{triangle area} (with single-task models shown for comparison), while (b) shows \texttt{inside} and \texttt{perimeter}. When trained on two tasks, models develop more regular representational structures. While difficult to appreciate in static 2D projections, we encourage readers to explore our interactive 3D visualizations.
+
+We measure CKA between two-task trained models to quantify this alignment (Fig.~\ref{fig:result1-2}(c)). CKA is substantially higher than for single-task models. One might expect high CKA when models share a task, but even models trained on completely disjoint task pairs show substantially higher alignment. In Fig.~\ref{fig:result1-2}(d), we plot average CKA for models trained on 1, 2, and 3 tasks across layers 3-6, averaging only over models with completely disjoint task sets. Training on more tasks clearly leads to more aligned representations, with CKA saturating around 0.85 for 2 and 3 tasks in layers 4-6, while layer 3 continues improving. Notably, multi-task training also reduces per-seed variance of representations (App.~Fig.~\ref{fig:app_cka_additional}b).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/7taskmodel.png}
+    \caption{\textbf{7-task model.} (a) PCA projection of layer 5 representations naturally reveals world map structure. (b) Training curves showing successful learning of all 7 tasks, including \texttt{crossing} which failed in single-task training.}
+    \label{fig:7taskmodel}
+\end{figure}
+
+Overall, we find that \textit{multi-task learning leads to more aligned model internal representations}, providing partial evidence for the Multitask Scaling Hypothesis explanation of PRH.\footnote{A full test of PRH would require showing convergence across different architectures; we test only the task-diversity mechanism here.} Crucially, this alignment emerges even though single-task models achieve comparable task performance, all models reach high accuracy on their respective tasks. Since our networks are trained to representational convergence (as seen in Fig.~\ref{fig:fig1}), this demonstrates that the alignment is not simply a byproduct of optimization difficulty but rather that task diversity, not just data quantity or performance pressure, drives aligned representation learning.
+
+
+An auxiliary finding: the \texttt{crossing} task, which was unlearnable alone, trains successfully when paired with any other task. We speculate that companion tasks provide structured coordinate representations that \texttt{crossing} can leverage, an implicit curriculum where easier tasks scaffold the learning of harder ones through shared representations.
+
+To extend these findings, we trained a model on all 7 tasks simultaneously (Fig.~\ref{fig:7taskmodel}). This model successfully learns all tasks, and its PCA projection naturally reveals the world map structure, approaching the perceived quality of linearly probed (x,y) coordinates without requiring any explicit coordinate supervision. Why multi-task training drives more linearly \textit{surfaced} representations remains an open question worthy of future investigation. This 7-task model serves as the foundation for our fine-tuning experiments in the following section.
+
+
+\section{Divergent Tasks Harm Entity Integration via Fine-Tuning}\label{sec:fine_tuning}
+
+
+In the previous section we observed how multi-task pretraining yields shared representations for different tasks. In this section, we investigate generalization properties of fine-tuning on top of such representations. However, unlike most fine-tuning studies which focus on changing model behavior in a certain way and evaluate generalization across entities, we study the inverse: fine-tuning an entity into the model and evaluate generalization across tasks. To this end, we use the 7-task model trained in the previous section (Fig.~\ref{fig:7taskmodel}).
+
+As mentioned in Sec.~\ref{sec:setup}, we introduce 100 \texttt{Atlantis} cities to the world and fine-tune on data containing \texttt{Atlantis} to probe for generalization. We emphasize that the introduction of \texttt{Atlantis} cities keeps the original dataset fully consistent with the world. Moreover, task operations on \texttt{Atlantis} cities are well-defined in the same framework. If the model learned the true data generation process with properly factored representations, it should be able to integrate \texttt{Atlantis} seamlessly. If not, we suspect either the representations are fractured \citep{kumar2025questioningrepresentationaloptimismdeep} or gradient descent cannot trigger the right representational updates \citep{kumar2022finetuningdistortpretrainedfeatures}.
+
+
+\paragraph{Result 1: Pretraining Phase Representational Alignment Predicts Fine-Tuning Generalization \textit{Despite} Joint Pretraining}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/result2-1.png}
+    \caption{\textbf{Fine-tuning generalization and its correlation with representational similarity.} (a) Generalization matrix (averaged over 4 seeds; see App.~Fig.~\ref{fig:app_ft_vs_ni_4seed} for individual seeds): each row is a model that integrated \texttt{Atlantis} via one task; columns show normalized improvement on \texttt{Atlantis} queries for each task (see App.~\ref{app:eval} for metric details). (b) For each task pair (X, Y), we plot the single-task CKA between X and Y against the normalized improvement on task Y after fine-tuning on task X (see App.~Fig.~\ref{fig:app_cka_vs_ni_annotated} for annotated version).}
+    \label{fig:result2-1}
+    \vspace{-5pt}
+\end{figure}
+
+We first address a simple question: when fine-tuning on \texttt{Atlantis} cities for a single task (e.g., \texttt{distance}), should we expect the model to automatically generalize to using \texttt{Atlantis} for all other tasks?
+
+To answer this, we fine-tune on 100k examples of a single task that include \texttt{Atlantis} cities, mixed with original pretraining data to avoid catastrophic forgetting and a small multi-task elicitation set (see App.~\ref{app:finetuning} for details).
+
+
+The resulting generalization matrix is shown in Fig.~\ref{fig:result2-1}(a). This matrix reveals rich phenomenology: some tasks like \texttt{distance} show no cross-task generalization (\texttt{Atlantis} remains usable only for that task), while \texttt{angle} triggers significant generalization across all tasks. Intriguingly, we observe an apparent inverse relationship: tasks that efficiently trigger cross-task generalization of new entities are often those that don't easily benefit from other tasks' fine-tuning, though this relationship is noisy.
+
+Unexpectedly, we find that \textit{generalization performance correlates with the CKA values from single-task pretraining} (Result 2 of Sec.~\ref{sec:pretraining}). This is puzzling: the CKA values come from models trained from scratch on individual tasks, yet they partially predict fine-tuning behavior of a model pretrained on all tasks jointly (Fig.~\ref{fig:result2-1}b). If the multi-task model truly uses unified representations for cities, why would single-task representational properties matter?
+
+For clarity, we define two terms: \textbf{Divergent tasks} are tasks which have low CKA compared to others when trained in isolation (in our case the \texttt{distance} task). \textbf{Hidden spaces} are representation spaces not surfaced by PCA or probing but used by divergent tasks.
+
+We hypothesize:
+\begin{quote}
+\textit{``Even though models develop joint world representations which converge in multi-task pretraining, gradient descent on divergent tasks might fail to act on these shared representations during fine-tuning, instead utilizing hidden spaces that don't propagate updates across tasks.''}
+\end{quote}
+
+Our question is then two-part:
+\begin{enumerate}[noitemsep, topsep=0pt]
+\item To what extent do divergent tasks affect fine-tuning generalization?
+\item Will gradient descent on divergent tasks fail to merge fine-tuning introduced concepts to the original representation manifold?
+\end{enumerate}
+
+\paragraph{Result 2: Divergent Tasks Catastrophically Harm Generalization}
+
+To investigate how divergent tasks affect generalization, we move from single-task to multi-task fine-tuning settings. First, we introduce a simple heuristic model: fine-tuning on a concatenated dataset $\{D_1, D_2, ..., D_n\}$ (which do not provide conflicting supervision) should combine their individual effects. Specifically, when concatenating and shuffling all fine-tuning data to avoid sequential learning effects like catastrophic forgetting \citep{mccloskey1989catastrophic}, we expect the improvement $\text{Imp}_i$ on task $i$ after training on tasks $j$ and $k$ to follow a \textbf{best-teacher model}:
+\begin{equation}
+\text{Imp}_{i}(D_j \cup D_k) = \max(\text{Imp}_{i}(D_j), \text{Imp}_{i}(D_k))
+\end{equation}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/result2-2.png}
+    \caption{\textbf{Divergent tasks harm multi-task fine-tuning and disrupt representational integration.} (a) Deviation from best-teacher expectation for 21 two-task models (rows) across 7 evaluation tasks (columns), computed in normalized improvement space (see App.~\ref{app:eval}); ``red horizontal bands'' show \texttt{distance} task combinations degrade performance below single-task baselines. (b) Representation visualization and linear probe reconstruction of \texttt{Atlantis}. (c) Histogram of deviation values: models including \texttt{distance} vs. not. (d) Linear probe \texttt{Atlantis} coordinate reconstruction error for models with \texttt{distance}, without \texttt{distance}, and baseline on pretraining cities; green vertical line indicates performance when \texttt{Atlantis} is part of pretraining.}
+    \label{fig:result2-2}
+    \vspace{-10pt}
+\end{figure*}
+
+To test this hypothesis, we fine-tuned the 7-task model on all $\binom{7}{2} = 21$ possible two-task combinations. Fig.~\ref{fig:result2-2}(a,c) shows the \textit{deviation} from our best-teacher expectation (averaged over 4 seeds; see App.~Fig.~\ref{fig:app_ft2_all} for raw improvements and App.~Fig.~\ref{fig:app_ft2_diff_all} for individual seeds). Strikingly, we observe ``red horizontal bands'', models that not only fail to benefit from multi-task training but actually perform worse than their best single-task component. Notably, all these degraded performance bands involve the \texttt{distance} task. Fig.~\ref{fig:result2-2}(c) quantifies this: when we split the deviation values into models with and without \texttt{distance}, we consistently observe lower-than-expected performance when the divergent task is included. This confirms that \textit{divergent tasks (those with low single-task CKA) actively harm fine-tuning generalization rather than simply failing to contribute}. We next examine how this manifests in the learned representations.
+
+
+\paragraph{Result 3: Divergent Tasks Disrupt Representational Integration of New Entities}
+
+Having shown that divergent tasks harm generalization (Question 1), we now address Question 2: does gradient descent on divergent tasks fail to merge new entities into the representation manifold?
+
+We take two exemplars from the 21 fine-tuning runs: one without \texttt{distance} that generalized well (\texttt{angle} + \texttt{compass}), and one with \texttt{distance} that was harmed (\texttt{distance} + \texttt{perimeter}). We first train a linear probe on a subset of all cities including \texttt{Atlantis}; these reconstructions are shown in Fig.~\ref{fig:result2-2}(b) (top and bottom panels). In the well-integrated case, \texttt{Atlantis} cities lie within the world data manifold. In the ill-integrated case, \texttt{Atlantis} cities are off the manifold. While this difference appears subtle in 2D projections, the effect is dramatic in 3D, we strongly encourage readers to explore our interactive visualizations. Next, we train a linear probe on 4000 non-\texttt{Atlantis} cities and apply it to \texttt{Atlantis} representations (middle panels). In the well-integrated case, \texttt{Atlantis} cities (red-orange) are relatively well reconstructed compared to ground truth (black crosses); in the ill-integrated case, reconstruction fails completely.
+
+We quantify this effect in Fig.~\ref{fig:result2-2}(d), showing histograms of absolute coordinate reconstruction error. When \texttt{Atlantis} is integrated via fine-tuning partially on divergent task data (red), reconstruction errors are nearly an order of magnitude larger than when integrated via purely non-divergent tasks (blue). For reference, non-\texttt{Atlantis} cities (yellow, still held out from probe training) show low reconstruction error as expected. One might hypothesize that \texttt{Atlantis}'s location in the middle of the ocean creates inherently difficult geometry. To test this, we pretrained a model with \texttt{Atlantis} included from the start (green line). In this case, \texttt{Atlantis} cities are reconstructed as well as any other city, confirming that the integration failure stems from divergent task fine-tuning dynamics rather than geographic peculiarity.
+
+\textit{This suggests that divergent tasks cause optimization to encode new entities in hidden spaces rather than integrating them into the existing world manifold, explaining their failure to support cross-task generalization.}
+
+We emphasize that our findings are correlational: we do not claim that interventions to increase single-task CKA would necessarily improve fine-tuning generalization. Rather, we identify representational divergence as a diagnostic marker for tasks that will harm multi-task fine-tuning performance.
+
+Putting these results together: single-task representational divergence weakly predicts fine-tuning generalization even after joint pretraining, and the most divergent task (distance) actively harms integration of new entities. This raises a hypothesis: certain task-architecture pairings may have intrinsic properties that induce gradient dynamics bypassing shared representations, causing updates in hidden subspaces that harm generalization, even when the network uses unified representations for the forward pass.
+
+\section{Discussion}\label{sec:discussion}
+
+%% ORIGINAL PARAGRAPH 1:
+% \textbf{Continual learning and world models.} Our study is motivated by understanding fundamental properties of deep neural networks as building blocks toward general intelligence. Recent work has demonstrated that neural networks can represent more than surface statistics and possess genuine world models, yet we take a more nuanced position: these world models must not only represent the current state of the world but also adapt consistently when the world changes. Such adaptation is non-trivial, as a single change can require cascading updates across different computational tasks. We argue that robustly adaptable internal representations are a prerequisite for general intelligence, though only one aspect of continual learning, which also encompasses learning from experience, internalizing beliefs as tacit knowledge, and knowing when to rely on external tools. Recent language models can adapt to novel inference-time contexts via in-context learning \citep{brown2020language}, forming task-specific representations on the fly \citep{demircan2024sparseautoencodersrevealtemporal}. However, fine-tuning consistently underperforms in-context learning for knowledge integration \citep{lampinen2025generalizationlanguagemodelsincontext,park2025textitnewnewssystem2finetuning}. Recent approaches attempt to narrow this gap, either by augmenting transformers with learned adaptation mechanisms \citep{chen2024generativeadaptercontextualizinglanguage,charakorn2025texttolorainstanttransformeradaption,zweiger2025selfadaptinglanguagemodels} or by designing architectures that explicitly maintain updatable state \citep{hochreiter1997long,schlag2021lineartransformerssecretlyfast,behrouz2024titanslearningmemorizetest,yang2025gateddeltanetworksimproving}. Our study grounds these questions in a controlled setting, examining how transformer representations evolve under gradient descent and whether their structure supports consistent integration of new knowledge. Building similar setups to compare fundamental properties across different architectures may offer a promising direction for understanding what controls representation formation and adaptation.
+
+\textbf{Continual learning and world models.} For truly general intelligence, internal world models should not only represent current state but adapt consistently when the world changes. Such adaptation is non-trivial: a single change can require cascading updates across tasks. Recent language models sidestep persistent adaptation via in-context learning, forming task-specific representations on the fly \citep{brown2020language,park2024iclrincontextlearningrepresentations,li2025justintimedistributedtaskrepresentations}. However, fine-tuning consistently underperforms ICL for knowledge integration \citep{lampinen2025generalizationlanguagemodelsincontext,park2025textitnewnewssystem2finetuning}. Our study grounds these questions in a controlled setting where we can measure whether gradient descent achieves consistent integration of new entities into existing representations.
+
+%% ORIGINAL PARAGRAPH 2:
+% \textbf{Dynamics of representations.} Studying representations is a long-standing topic \citep{rosenblatt1958perceptron,rumelhart1986learning}. Within neural networks, however, most work has examined representations in fixed, trained networks or focused on their formation during pretraining. More recently, there is growing interest in how representations change at test time, or more generally, during adaptation. \citet{park2024iclrincontextlearningrepresentations} show that language models form task-specific representations that internalize aspects of the data generation process, while \citet{shai2025transformersrepresentbeliefstate} demonstrate that models can maintain belief states of external processes. How internal representations adapt at inference time is an active area of research \citep{bigelow2025beliefdynamicsrevealdual,lubana2025priorstimemissinginductive}. Another line of recent work examines how representations change during fine-tuning: some work draws analogies between fine-tuning and learning activation steering vectors \citep{wang2025simplemechanisticexplanationsoutofcontext}, while practical studies attempt to understand and leverage representational changes \citep{casademunt2025steeringoutofdistributiongeneralizationconcept,minder2025overcomingsparsityartifactscrosscoders}. To study representational adaptation rigorously, one must define an updatable world where new information implies a consistent set of expected changes. Our framework provides exactly this: introducing \texttt{Atlantis} cities defines how representations should update across all tasks, letting us measure whether fine-tuning achieves consistent integration or fragments new entities into task-specific subspaces.
+
+\textbf{Dynamics of representations.} Most recent work on neural representations examines pretrained networks or their formation during a single pretraining run. There is growing interest in how representations change during adaptation, both at inference \citep{park2024iclrincontextlearningrepresentations,li2025justintimedistributedtaskrepresentations,shai2025transformersrepresentbeliefstate,lubana2025priorstimemissinginductive,bigelow2025beliefdynamicsrevealdual} and during fine-tuning \citep{wang2025simplemechanisticexplanationsoutofcontext,minder2025overcomingsparsityartifactscrosscoders,casademunt2025steeringoutofdistributiongeneralizationconcept}. To study representational adaptation rigorously, one must define both an updatable world and how updates to it propagate into training data. Our framework provides exactly this: introducing \texttt{Atlantis} defines how representations should update across all tasks.
+
+\textbf{Forward and backward modularity.} Our results highlight a distinction that is often overlooked: \textit{modularity in the forward pass does not imply modularity in the backward pass.} Multi-task training produces clean, structured representations that can be easily decoded into world coordinates, yet these world models can be fractured and partial when it comes to adaptation. Gradient descent may not respect the forward-pass modularity when updating weights: fine-tuning on divergent tasks routes updates through pathways that bypass the shared world manifold, encoding new entities in task-specific subspaces.
+
+\textbf{Future work.} Understanding the mechanistic basis of task divergence is an important open question. If divergence is a property of task-architecture pairing rather than learned weights, it may be predictable from task structure and gradient geometry alone, enabling identification of harmful tasks before training.
+
+\textbf{Limitations.} We study world representation formation and adaptation in a controlled synthetic setting with small-scale models. While we find non-trivial phenomenology, including the emergence of world representations, task-dependent geometry, representational convergence under multi-task training, and off-target fine-tuning effects, it is difficult to guarantee these findings will generalize to large-scale models trained on natural data. Additionally, we identify divergence as a diagnostic marker but do not reveal underlying mechanisms. Furthermore, our claims regarding the Platonic Representation Hypothesis are partial: we demonstrate task-driven convergence within a single architecture and modality, but do not explore true multimodality or cross-architecture convergence.
+
+\section{Conclusion}
+
+%% ORIGINAL CONCLUSION:
+% We introduced a World–Data–Model framework that separates the underlying world from the data generation process, enabling controlled study of how representations form and adapt. Crucially, this separation allows defining consistent world updates (adding new entities that integrate seamlessly across all tasks), providing clear expectations for what proper world representations should support. Using this framework, we first showed that multi-task training drives representational convergence: models trained on disjoint task sets develop aligned representations, providing partial evidence for the Multitask Scaling Hypothesis. However, this convergence does not guarantee consistent adaptation: certain ``divergent'' tasks actively harm the integration of new entities during fine-tuning, encoding them in hidden spaces rather than the shared world manifold. This highlights a distinction between forward and backward modularity: clean, structured representations do not necessarily adapt cleanly to new information.
+
+We introduced a framework separating world from data generation to study how representations form and adapt. Increasing task diversity drives \textbf{convergent} world representations: models trained on multiple tasks develop increasingly aligned geometry, even when sharing no common tasks, supporting the Multitask Scaling Hypothesis of PRH. Yet convergence masks vulnerability: certain \textbf{divergent} tasks actively harm integration of new entities during fine-tuning, encoding them in hidden spaces rather than the shared manifold. Clean representations do not guarantee clean adaptation.
+
+
+\section*{Impact Statement}
+
+This paper presents work whose goal is to advance the field of Machine
+Learning. There are many potential societal consequences of our work, none
+which we feel must be specifically highlighted here.
+
+\bibliography{main}
+\bibliographystyle{icml2026}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\appendix
+
+\begin{center}
+\Large APPENDIX
+\end{center}
+
+\section{Experimental Details}\label{app:experimental_details}
+
+This section provides detailed information about the world, data generation process, model architecture and training procedures used in our experiments.
+
+\subsection{World}\label{app:world}
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/app_world.png}
+    \caption{\textbf{Geographic distribution of cities used in our experiments.} 5,075 real-world cities plus 100 synthetic \texttt{Atlantis} cities (5,175 total). Cities span all continents and provide a fixed, measurable world structure. Coordinates use an equirectangular projection: $x = 10 \times \text{longitude}$, $y = 10 \times \text{latitude}$ (in degrees). The \texttt{Atlantis} region (Atlantic Ocean) is used for out-of-distribution testing.}
+    \label{fig:cities_map}
+\end{figure*}
+
+Our experiments use a geographic world consisting of 5,075 cities extracted from the GeoNames database with population greater than 100,000. Cities are distributed across all continents. This choice provides natural variation in density (e.g., dense regions like India versus sparse Oceania) that creates interesting computational challenges.
+
+While we use real city coordinates, this work studies abstract geometric reasoning rather than actual geography, we project coordinates to Euclidean space using an equirectangular projection (as described above) and treat all tasks as pure geometry problems.
+
+Additionally, we introduce 100 synthetic \texttt{Atlantis} cities positioned in the Atlantic Ocean, centered at (longitude $-35°$, latitude $35°$) and following a Gaussian distribution with standard deviation of $3°$. These synthetic cities enable controlled out-of-distribution experiments, as models never observe \texttt{Atlantis} during pretraining but must generalize to it during evaluation. City IDs are randomly assigned from the range [0, 9999], creating a sparse identifier space that models must learn to map to coordinates.
+
+
+\subsection{Data Generation Process}\label{app:data}
+
+\paragraph{Tasks}
+We implement 7 geometric tasks that operate on city coordinates. All tasks use a consistent format: \texttt{task(arguments)=answer}, where city IDs are prefixed with \texttt{c\_}. Numerical outputs (distance, area, angle, perimeter) are rounded to integers. Table~\ref{tab:tasks} summarizes the tasks.
+
+\begin{table}[h!]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllll}
+\toprule
+\textbf{Task} & \textbf{Input} & \textbf{Output Type} & \textbf{Unit/Values} & \textbf{Example} \\
+\midrule
+\texttt{distance} & 2 cities & Numerical & Scaled coords & \texttt{dist(c\_865,c\_4879)=769} \\
+\texttt{triarea} & 3 cities & Numerical & Scaled coords$^2$ & \texttt{triarea(c\_1234,c\_5678,c\_9012)=45823} \\
+\texttt{angle} & 3 cities & Numerical & Degrees ($0$--$180$) & \texttt{angle(c\_2345,c\_6789,c\_123)=97} \\
+\texttt{compass} & 2 cities & Categorical & 8 directions & \texttt{compass(c\_1234,c\_5678)=NE} \\
+\texttt{inside} & 1 + $n$ cities & Categorical & TRUE/FALSE & \texttt{inside(c\_9012;c\_3456,...)=FALSE} \\
+\texttt{perimeter} & $n$ cities & Numerical & Scaled coords & \texttt{perimeter(c\_4567,c\_8901,...)=2856} \\
+\texttt{crossing} & 4 cities & Categorical & TRUE/FALSE & \texttt{cross(c\_2345,c\_6789;c\_123,c\_4567)=TRUE} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Summary of 7 geometric tasks. Numerical outputs are integers; ``scaled coords'' refers to the $\times 10$ coordinate system (Sec.~\ref{app:world}). Categorical tasks have discrete outputs: \texttt{compass} uses 8 cardinal directions (N, NE, E, SE, S, SW, W, NW), while \texttt{inside} and \texttt{crossing} are binary. The \texttt{inside} task tests if the first city lies within the convex hull of the remaining cities; \texttt{crossing} tests if line segment $(c_1, c_2)$ intersects segment $(c_3, c_4)$.}
+\label{tab:tasks}
+\end{table}
+
+\paragraph{Dataset Sizes}
+Each pretraining set consists of 1M rows of data per task. For fine-tuning, the dataset consists of: (1) 100k rows of the target task containing at least one \texttt{Atlantis} city, (2) 20k rows randomly sampled from the original pretraining data to prevent catastrophic forgetting, and (3) 256 rows per task (without \texttt{Atlantis}) to elicit multi-task performance.
+
+\subsection{Model and Training}\label{app:model_training}
+
+\paragraph{Tokenization}
+We use character-level tokenization with 98 ASCII tokens (excluding space, which serves as the delimiter), plus special tokens for beginning-of-sequence (BOS), end-of-sequence (EOS) and padding (PAD).
+
+\paragraph{Architecture}
+We use the Qwen2 decoder-only transformer architecture with hidden size 128, 4 attention heads and 6 layers.
+
+\paragraph{Pretraining}
+We train models autoregressively on the full sequence (no prompt masking). All pretraining runs see 42M rows regardless of dataset size (e.g., 42 epochs for 1M rows, 6 epochs for 7M rows). Table~\ref{tab:hyperparams} summarizes the hyperparameters.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Optimizer & AdamW \\
+Learning rate & $3 \times 10^{-4}$ \\
+Weight decay & 0.01 \\
+Scheduler & Linear with warmup \\
+Warmup steps & 50 \\
+Batch size & 128 \\
+Max sequence length & 256 \\
+Total training rows & 42M \\
+Initialization scale & 0.1 (std) \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Pretraining hyperparameters.}}
+\label{tab:hyperparams}
+\end{table}
+
+\paragraph{Fine-Tuning}\label{app:finetuning}
+Fine-tuning starts from the final pretrained checkpoint. We use a reduced learning rate of $1 \times 10^{-5}$ (30$\times$ smaller than pretraining) to avoid catastrophic forgetting. The fine-tuning dataset consists of 100k rows per task containing at least one \texttt{Atlantis} city. We train for 30 epochs with batch size 128.
+
+\section{Analysis Methods}
+
+\subsection{Evaluation}\label{app:eval}
+
+\paragraph{Generation Protocol}
+For evaluation, we use teacher forcing up to the ``='' sign (the prompt), then generate autoregressively at temperature zero until reaching the EOS token or a maximum of 128 tokens (sufficient for all tasks).
+
+\paragraph{Task-Specific Metrics}
+Categorical tasks (\texttt{compass}, \texttt{inside}, \texttt{crossing}) are evaluated using accuracy. Numerical tasks are evaluated using absolute error.
+
+\paragraph{Normalized Improvement}
+To compare generalization across tasks with different metrics and scales, we define a normalized improvement score that maps performance to $[0, 1]$, where 0 indicates no improvement over the \texttt{Atlantis} baseline (before fine-tuning) and 1 indicates matching the pretrained model's performance on standard cities.
+
+\subsection{Representation Extraction}\label{app:repr_extraction}
+
+We extract representations from the residual stream after transformer blocks, specifically at layers 3, 4, 5 and 6 of our 6-layer model. Unless otherwise specified, all representation analyses in this paper use layer 5 representations.
+
+\subsection{Linear Probing \& PCA}\label{app:linear_probing}
+
+We train linear probes to predict city coordinates $(x, y)$ from the 256-dimensional representations. We use a train/test split of 3250/1250 cities, training separate probes for $x$ and $y$ coordinates via ordinary least squares (OLS) without regularization.
+
+\subsection{Centered Kernel Alignment}\label{app:cka}
+
+We use Centered Kernel Alignment (CKA) to measure representational similarity between models. CKA yields a similarity score in $[0, 1]$ that is invariant to orthogonal transformations and isotropic scaling.
+
+\section{Additional Results}
+
+\subsection{Qualitative Representations}\label{app:reprs}
+
+Fig.~\ref{fig:app_reprs} shows PCA projections of city representations for single-task models across three random seeds.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_reprs.png}
+    \caption{\textbf{Representation visualizations for single-task models across multiple seeds.} Each column shows a different task; each row shows a different random seed. Cities are colored by geographic region.}
+    \label{fig:app_reprs}
+\end{figure*}
+
+\subsection{Training Dynamics}
+
+Fig.~\ref{fig:app_training} shows training dynamics for all seven single-task models.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_training_curves.png}
+    \caption{\textbf{Training dynamics for all single-task models.} (a) \texttt{distance}, (b) \texttt{trianglearea}, (c) \texttt{angle}, (d) \texttt{compass}, (e) \texttt{inside}, (f) \texttt{perimeter}, (g) \texttt{crossing}.}
+    \label{fig:app_training}
+\end{figure*}
+
+\paragraph{Representation Dynamics.}
+Fig.~\ref{fig:app_repr_dynamics} visualizes how internal representations evolve during training via PCA projections at six checkpoints.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_repr_dynamics.png}
+    \caption{\textbf{Representation dynamics during training.} Rows: \texttt{distance} (top), \texttt{angle} (middle), \texttt{compass} (bottom). Columns show PCA projections at gradient steps 8204, 24612, 49224, 123060, 188692, and 328146 (left to right).}
+    \label{fig:app_repr_dynamics}
+\end{figure*}
+
+\subsection{Additional CKA Results}
+
+\paragraph{Single-Task CKA Across Layers.}
+Fig.~\ref{fig:app_cka_pt1} shows CKA matrices for single-task models at layers 3, 4, 5 and 6.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/app_cka_pt1.png}
+    \caption{\textbf{CKA matrices for single-task models across layers.} Each cell shows mean $\pm$ SEM across 3 seeds. D=distance, T=triangle area, A=angle, Co=compass, I=inside, P=perimeter, Cr=crossing.}
+    \label{fig:app_cka_pt1}
+\end{figure*}
+
+\paragraph{Two-Task CKA.}
+Fig.~\ref{fig:app_cka_pt2} shows the CKA matrix for two-task models at layer 5.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.4\textwidth]{figures/app_cka_pt2.png}
+    \caption{\textbf{CKA matrix for two-task models at layer 5.} Mean $\pm$ SEM across 3 seeds. All pairs show high alignment ($>$0.84).}
+    \label{fig:app_cka_pt2}
+\end{figure*}
+
+\paragraph{CKA vs.\ Task Count (Per-Seed).}
+Fig.~\ref{fig:app_cka_3seed} shows the same CKA vs.\ task count analysis broken down by individual seeds.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/app_cka_3seed.png}
+    \caption{\textbf{CKA vs.\ task count for individual seeds.} Each panel shows a different seed.}
+    \label{fig:app_cka_3seed}
+\end{figure*}
+
+\paragraph{Aggregated CKA Trends.}
+Fig.~\ref{fig:app_cka_additional} shows CKA vs.\ task count using all two-task and three-task models.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/app_cka_additional.png}
+    \caption{\textbf{Aggregated CKA analysis.} (a) CKA vs.\ task count for single seed. (b) Within-task CKA increases with task count.}
+    \label{fig:app_cka_additional}
+\end{figure*}
+
+\paragraph{CKA vs.\ Generalization (Annotated).}
+Fig.~\ref{fig:app_cka_vs_ni_annotated} is an annotated version of Fig.~\ref{fig:result2-1}(b).
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.4\textwidth]{figures/app_cka_vs_ni_annotated.png}
+    \caption{\textbf{Annotated version of Fig.~\ref{fig:result2-1}(b).} Each point is labeled with its (train$\rightarrow$eval) task pair.}
+    \label{fig:app_cka_vs_ni_annotated}
+\end{figure*}
+
+\subsection{Additional Fine-Tuning Evaluation Results}
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/app_ft_vs_ni_4seed.png}
+    \caption{\textbf{Single-task fine-tuning results for individual seeds.} Per-seed version of Fig.~\ref{fig:result2-1}(a).}
+    \label{fig:app_ft_vs_ni_4seed}
+\end{figure*}
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_ft2_all.png}
+    \caption{\textbf{Two-task fine-tuning normalized improvement for all 21 task combinations.} Leftmost panel shows average across seeds; remaining panels show individual seeds.}
+    \label{fig:app_ft2_all}
+\end{figure*}
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_ft2_diff_all.png}
+    \caption{\textbf{Deviation from best-teacher expectation for all 21 two-task combinations.} All 4 seeds shown.}
+    \label{fig:app_ft2_diff_all}
+\end{figure*}
+
+\subsection{Pretraining Variations}
+
+\paragraph{Pretraining with \texttt{Atlantis}.}
+Fig.~\ref{fig:app_atlantis_in_pt} shows the resulting representations when \texttt{Atlantis} cities are included from the start of pretraining.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/app_atlantis_in_pt.png}
+    \caption{\textbf{Representations when \texttt{Atlantis} is included during pretraining.} (a) PCA projection showing \texttt{Atlantis} cities integrated with world cities. (b) Linear probe reconstruction confirming geographic accuracy.}
+    \label{fig:app_atlantis_in_pt}
+\end{figure*}
+
+\paragraph{Wider Model.}
+Fig.~\ref{fig:app_wide_stat} shows fine-tuning results for a wider model with 2$\times$ the hidden dimension.
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/app_wide_stat.png}
+    \caption{\textbf{Fine-tuning results for wider model (2$\times$ hidden dimension).} (a) Single-task fine-tuning normalized improvement. (b) Two-task fine-tuning normalized improvement. (c) Deviation from best-teacher expectation.}
+    \label{fig:app_wide_stat}
+\end{figure*}
+
+\section{Extended Related Work}\label{app:related}
+
+See Sec.~\ref{sec:related} for main related work.
+
+\textbf{Interpretability \& Internal Representations.}
+Understanding internal representations has roots in neuroscience, informing early neural network development. Beyond the world model discoveries cited in Sec.~\ref{sec:related}, similar representations emerge during in-context learning. Researchers have also uncovered that models represent meaningful properties of data, concepts, features and abstractions, in interpretable ways.
+
+\textbf{Fine-tuning.}
+Beyond the works cited in Sec.~\ref{sec:related}, fine-tuning has been studied extensively across diverse directions: parameter efficiency, zeroth-order optimization, weight composition and representation adaptation.
+
+\textbf{Dynamics of Representations.}
+Recent work has begun studying how representations evolve during in-context learning or fine-tuning. How internal representations adapt at inference time is an active area of research.
+
+\textbf{Loss Plateaus.}
+Our \texttt{crossing} task fails to learn in single-task training despite escaping an initial plateau. Such plateaus are notoriously difficult for transformers. Multi-task training has been shown to shorten loss plateaus, similar to why our \texttt{crossing} task trains successfully when joined with any other task.
+
+\end{document}
