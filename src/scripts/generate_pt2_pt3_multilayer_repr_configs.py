@@ -35,7 +35,7 @@ def create_repr_extraction_config(exp_type, variant_num, seed, layer):
     prompt_format = f'{task_name}_firstcity_last_and_trans'
 
     experiment_dir = f'data/experiments/revision/exp2/{exp_type}-{variant_num}_seed{seed}'
-    output_dir = f'/n/home12/cfpark00/WM_1/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}'
+    output_dir = f'/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}'
 
     config = {
         'cities_csv': 'data/datasets/cities/cities.csv',
@@ -57,7 +57,7 @@ def create_repr_extraction_config(exp_type, variant_num, seed, layer):
     return config
 
 def main():
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
 
     # Create directory structure
     pt2_config_dir = base_dir / 'configs/revision/exp2/pt2_seed/extract_representations_multilayer'

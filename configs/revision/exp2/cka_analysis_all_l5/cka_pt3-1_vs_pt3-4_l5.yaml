@@ -1,10 +1,10 @@
 exp1:
   name: pt3-1
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt3-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
+  repr_dir: /data/experiments/pt3-1/analysis_higher/distance_firstcity_last_and_trans_l5/representations
   task: distance
 exp2:
   name: pt3-4
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt3-4/analysis_higher/angle_firstcity_last_and_trans_l5/representations
+  repr_dir: /data/experiments/pt3-4/analysis_higher/angle_firstcity_last_and_trans_l5/representations
   task: angle
 layer: 5
 checkpoint_steps: null

@@ -5,7 +5,7 @@ do_sample: false
 eval_batch_size: 512
 experiment_dir: data/experiments/pt1_ft2-14
 max_generation_length: 256
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/pt1_ft2-14/evals/inside
+output_dir: /data/experiments/pt1_ft2-14/evals/inside
 plot_log_scale: false
 save_full_results: true
 seed: 42

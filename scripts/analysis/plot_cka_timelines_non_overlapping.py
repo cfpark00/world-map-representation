@@ -164,7 +164,7 @@ def plot_timeline_for_config(prefix, layer, checkpoint_df, output_dir):
 
 def main():
     # Load checkpoint data
-    data_dir = Path('/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean')
+    data_dir = Path('/scratch/cka_analysis_clean')
     checkpoint_df = pd.read_csv(data_dir / 'cka_checkpoints.csv')
 
     print(f"Loaded {len(checkpoint_df)} checkpoint measurements")
@@ -173,7 +173,7 @@ def main():
     print()
 
     # Create output directory
-    output_dir = Path('/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean/timelines_non_overlap')
+    output_dir = Path('/scratch/cka_analysis_clean/timelines_non_overlap')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Create grid plot for overview

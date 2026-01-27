@@ -18,7 +18,7 @@ Fixed critical bug in exp4 CKA analysis where checkpoint 98448 was being used in
 ### 2. Inside Task CKA Investigation
 - **Observation:** Inside task (pt1-5) showed low CKA (~0.25) with other tasks in current analysis
 - **Historical Data:** Old analysis showed pt1-5 vs pt1-2 at CKA=0.378 (final checkpoint)
-- **Discovery:** Old CKA results at `/n/home12/cfpark00/datadir/WM_1/data/experiments/cka_analysis/pt1-2_vs_pt1-5_l5/cka_results.json` showed:
+- **Discovery:** Old CKA results at `/data/experiments/cka_analysis/pt1-2_vs_pt1-5_l5/cka_results.json` showed:
   - Checkpoint 98448: CKA = 0.254
   - Checkpoint 328146: CKA = 0.713
 - **Root Cause:** exp4 configs used checkpoint 98448 instead of final checkpoint 328146

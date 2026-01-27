@@ -7,8 +7,8 @@ for revision/exp1 FTWB1 and FTWB2 models.
 from pathlib import Path
 
 # Base paths
-CONFIG_BASE = Path("/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs")
-SCRIPT_BASE = Path("/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/scripts/revision/exp1")
+CONFIG_BASE = Path("/configs")
+SCRIPT_BASE = Path("/scripts/revision/exp1")
 REPR_CONFIG_DIR = CONFIG_BASE / "revision" / "exp1" / "representation_extraction"
 PCA_CONFIG_DIR = CONFIG_BASE / "revision" / "exp1" / "pca_timeline"
 

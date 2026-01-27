@@ -11,7 +11,7 @@ Organization (3 seeds × 3 batches):
 from pathlib import Path
 
 # Base paths
-SCRIPTS_BASE = Path("/n/home12/cfpark00/datadir/WM_1/scripts/revision/exp1/eval")
+SCRIPTS_BASE = Path("/scripts/revision/exp1/eval")
 CONFIG_BASE = Path("configs/revision/exp1/eval")
 
 # All tasks to evaluate

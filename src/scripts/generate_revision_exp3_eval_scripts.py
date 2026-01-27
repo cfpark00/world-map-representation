@@ -12,7 +12,7 @@ Total: 14 scripts + 2 master scripts
 from pathlib import Path
 
 # Base paths
-SCRIPTS_BASE = Path("/n/home12/cfpark00/datadir/WM_1/scripts/revision/exp3/eval")
+SCRIPTS_BASE = Path("/scripts/revision/exp3/eval")
 CONFIG_BASE = Path("configs/revision/exp3/eval")
 
 # All tasks to evaluate

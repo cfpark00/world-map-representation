@@ -27,7 +27,7 @@ Enhanced and cleaned up evaluation heatmap visualization scripts in `/scratch/pl
 
 ### 4. Understanding Normalization Method
 - **Baseline source**: All scripts use PT1 (pre-training 1) experiment evaluations as baseline
-  - Location: `/n/home12/cfpark00/WM_1/data/experiments/pt1/evals/`
+  - Location: `/data/experiments/pt1/evals/`
   - Contains both standard and Atlantis task evaluations
 - **Normalization formula**:
   - For accuracy tasks (crossing, inside, compass): Linear interpolation

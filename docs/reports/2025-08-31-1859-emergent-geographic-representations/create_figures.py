@@ -17,9 +17,9 @@ plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
 
 # Paths
-experiment_dir = Path('/n/home12/cfpark00/WM_1/outputs/experiments/dist_100k_1M_20epochs')
+experiment_dir = Path('/outputs/experiments/dist_100k_1M_20epochs')
 analysis_dir = experiment_dir / 'analysis' / 'layers3_4_probe5000_train3000'
-output_dir = Path('/n/home12/cfpark00/WM_1/reports/emergent-geographic-representations')
+output_dir = Path('/reports/emergent-geographic-representations')
 output_dir.mkdir(exist_ok=True, parents=True)
 
 def copy_existing_figures():

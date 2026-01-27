@@ -7,7 +7,7 @@ exp2:
   task: inside
   repr_dir: data/experiments/revision/exp4/pt1-5_seed3/analysis_higher/inside_firstcity_last_and_trans_l6/representations
 layer: 6
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/pt1-5_vs_pt1-5_seed3/layer6
+output_dir: /data/experiments/revision/exp4/cka_analysis/pt1-5_vs_pt1-5_seed3/layer6
 kernel_type: linear
 center_kernels: true
 use_gpu: true

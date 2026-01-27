@@ -22,14 +22,14 @@ Fixed checkpoint-0 evaluation/plotting issue in training script and ran comprehe
   - Added json import (line 9)
 
 **Files Modified:**
-- `/n/home12/cfpark00/WM_1/src/training/train.py`
-- `/n/home12/cfpark00/WM_1/src/utils.py`
+- `/src/training/train.py`
+- `/src/utils.py`
 
 ### 2. Ran Comprehensive Representation Analyses
 
 Executed four different representation analyses on the mixed_dist20k_cross100k_finetune model to understand how the model represents Atlantis cities vs real geographic knowledge.
 
-**Model Analyzed:** `/n/home12/cfpark00/WM_1/outputs/experiments/mixed_dist20k_cross100k_finetune_/`
+**Model Analyzed:** `/outputs/experiments/mixed_dist20k_cross100k_finetune_/`
 
 **Analysis Configurations (all with 5000 probe cities, 3000 for training):**
 
@@ -86,7 +86,7 @@ Additional flags for different configurations:
 - `--remove-label-from-train` to exclude regions
 
 ## Files/Directories Created
-- Analysis outputs in `/n/home12/cfpark00/WM_1/outputs/experiments/mixed_dist20k_cross100k_finetune_/analysis/`:
+- Analysis outputs in `/outputs/experiments/mixed_dist20k_cross100k_finetune_/analysis/`:
   - `dist_layers3_4_probe5000_train3000/`
   - `dist_layers3_4_probe5000_train3000_plus100eval/`
   - `dist_layers3_4_probe5000_train3000_plus100concat/`

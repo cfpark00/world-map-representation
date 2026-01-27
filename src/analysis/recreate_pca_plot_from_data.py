@@ -20,7 +20,7 @@ import plotly.express as px
 import sys
 
 # Add parent directory to path for imports
-project_root = Path('/n/home12/cfpark00/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 

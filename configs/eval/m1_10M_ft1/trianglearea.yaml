@@ -1,12 +1,12 @@
 # Evaluation configuration for distance_1M experiment
 
-output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_ft1/evals/trianglearea"
+output_dir: "/data/experiments/m1_10M_ft1/evals/trianglearea"
 
 # Experiment to evaluate
-experiment_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_ft1"
+experiment_dir: "/data/experiments/m1_10M_ft1"
 
 # Dataset path - should match what was used for training
-dataset_path: "/n/home12/cfpark00/WM_1/data/datasets/trianglearea_1M_no_atlantis"
+dataset_path: "/data/datasets/trianglearea_1M_no_atlantis"
 
 # Evaluation settings
 eval_batch_size: 512

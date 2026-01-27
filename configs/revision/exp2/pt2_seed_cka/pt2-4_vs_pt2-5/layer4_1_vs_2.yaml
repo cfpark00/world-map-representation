@@ -1,10 +1,10 @@
 exp1:
   name: pt2-4_seed1
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt2-4_seed1/analysis_higher/crossing_firstcity_last_and_trans_l4/representations
+  repr_dir: /data/experiments/revision/exp2/pt2-4_seed1/analysis_higher/crossing_firstcity_last_and_trans_l4/representations
   task: crossing
 exp2:
   name: pt2-5_seed2
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt2-5_seed2/analysis_higher/trianglearea_firstcity_last_and_trans_l4/representations
+  repr_dir: /data/experiments/revision/exp2/pt2-5_seed2/analysis_higher/trianglearea_firstcity_last_and_trans_l4/representations
   task: trianglearea
 layer: 4
 checkpoint_steps: null
@@ -14,4 +14,4 @@ kernel_type: linear
 center_kernels: true
 use_gpu: true
 save_timeline_plot: false
-output_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/cka_analysis/pt2-4_seed1_vs_pt2-5_seed2/layer4
+output_dir: /data/experiments/revision/exp2/cka_analysis/pt2-4_seed1_vs_pt2-5_seed2/layer4

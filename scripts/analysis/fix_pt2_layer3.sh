@@ -3,7 +3,7 @@
 
 set -e
 
-BASE_DIR="/n/home12/cfpark00/WM_1"
+BASE_DIR=""
 cd $BASE_DIR
 
 echo "Creating representation extraction configs for pt2 layer 3..."

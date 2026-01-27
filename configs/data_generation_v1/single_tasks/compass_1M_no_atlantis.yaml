@@ -1,0 +1,23 @@
+# 1M compass direction queries NO atlantis WITH PADDING
+# Determines compass direction from one city to another
+# City IDs padded to 4 digits with leading zeros
+
+output_dir: data/data_generation_v1/single_datasets/compass_1M_no_atlantis
+cities_csv: data/data_generation_v1/cities/cities.csv
+tokenizer_path: data/data_generation_v1/tokenizers/default_tokenizer
+
+groups:
+  world:
+    city_names: "^(?!Atlantis_).*"  # Everything NOT starting with Atlantis_
+
+pair_generation:
+  strategy: within_groups
+  groups: [world]
+
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4

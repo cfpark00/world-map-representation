@@ -1,12 +1,12 @@
 # Evaluation configuration for distance_1M experiment
 
-output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10_ft5/evals/distance"
+output_dir: "/data/experiments/m1_10M_width=256_depth=10_ft5/evals/distance"
 
 # Experiment to evaluate
-experiment_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10_ft5"
+experiment_dir: "/data/experiments/m1_10M_width=256_depth=10_ft5"
 
 # Dataset path - should match what was used for training
-dataset_path: "/n/home12/cfpark00/WM_1/data/datasets/distance_1M_no_atlantis"
+dataset_path: "/data/datasets/distance_1M_no_atlantis"
 
 # Evaluation settings
 eval_batch_size: 512

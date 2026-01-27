@@ -1,0 +1,18 @@
+# 1M triangleareas with atlantis WITH PADDING
+# Random triples from all cities (world + atlantis), no restrictions
+# All city IDs padded to 4 digits with leading zeros
+
+output_dir: data/data_generation_v1/single_datasets/trianglearea_1M_with_atlantis
+cities_csv: data/data_generation_v1/cities/cities.csv
+tokenizer_path: data/data_generation_v1/tokenizers/default_tokenizer
+
+pair_generation:
+  strategy: all_pairs
+
+n_train: 1000000
+n_val: 128
+n_test: 10000
+seed: 42
+
+leading_zeros: true
+n_id_digits: 4

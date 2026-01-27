@@ -67,7 +67,7 @@ Each analysis created:
 
 ## Technical Details
 - Used UV virtual environment
-- All commands run from project root `/n/home12/cfpark00/WM_1`
+- All commands run from project root ``
 - Analysis script: `src/analysis/analyze_representations.py`
 - Total execution time: ~12 minutes per analysis (4 x ~3 minutes each)
 

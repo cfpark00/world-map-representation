@@ -71,7 +71,7 @@ Added 16 citations total with URLs
 - Ensured no condescending language
 
 ## Files Modified
-- `/n/home12/cfpark00/datadir/WM_1/rebuttal/REBUTTAL.txt` (taAU section complete)
+- `/rebuttal/REBUTTAL.txt` (taAU section complete)
 
 ## Current State
 - All 4 reviewer responses: Complete

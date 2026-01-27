@@ -99,7 +99,7 @@ def get_task_mapping(prefix):
     try:
         task_map = {}
         for i in range(1, 9):  # Check up to 8
-            config_path = Path(f'/n/home12/cfpark00/WM_1/configs/data_generation/ftset/combine_{prefix}-{i}.yaml')
+            config_path = Path(f'/configs/data_generation/ftset/combine_{prefix}-{i}.yaml')
             if not config_path.exists():
                 break
 
@@ -146,9 +146,9 @@ def plot_cka_matrix(prefix='pt1', output_dir=None, show_plot=True, layer=5):
     print(f"Tasks: {tasks}")
 
     # Base directory for CKA results
-    base_dir = Path(f'/n/home12/cfpark00/WM_1/data/experiments/cka_analysis_{prefix}')
+    base_dir = Path(f'/data/experiments/cka_analysis_{prefix}')
     if not base_dir.exists():
-        base_dir = Path('/n/home12/cfpark00/WM_1/data/experiments/cka_analysis')  # Fallback for pt1
+        base_dir = Path('/data/experiments/cka_analysis')  # Fallback for pt1
 
     # Initialize matrix
     cka_matrix = np.ones((n_models, n_models))  # Diagonal is 1 by definition
@@ -218,7 +218,7 @@ def plot_cka_matrix(prefix='pt1', output_dir=None, show_plot=True, layer=5):
 
     # Save the plot
     if output_dir is None:
-        output_dir = Path(f'/n/home12/cfpark00/WM_1/scratch/cka_analysis_{prefix}')
+        output_dir = Path(f'/scratch/cka_analysis_{prefix}')
     else:
         output_dir = Path(output_dir)
 

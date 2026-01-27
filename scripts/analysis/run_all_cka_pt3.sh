@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/home12/cfpark00/WM_1
+cd 
 echo "========================================="
 echo "Running all CKA computations for pt3"
 echo "Total: 28 unique model pairs"

@@ -7,7 +7,7 @@ Today's session focused on updating visualization scripts for PCA timeline analy
 ### Tasks Completed
 
 #### 1. PCA Timeline Visualization Enhancement
-- **Added random projection type** to `/n/home12/cfpark00/WM_1/src/analysis/visualize_pca_3d_timeline.py`
+- **Added random projection type** to `/src/analysis/visualize_pca_3d_timeline.py`
   - Implemented `type: random` axis mapping that uses 3 random orthonormal directions
   - Uses QR decomposition to generate orthonormal basis
   - Computes variance captured for display
@@ -19,13 +19,13 @@ Today's session focused on updating visualization scripts for PCA timeline analy
   - Fixed bug where `n_components` wasn't passed to compute_projection
 
 #### 2. Probe Implementation Updates
-- **Added 7 new probe variants** to `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations_higher.py`
+- **Added 7 new probe variants** to `/src/analysis/analyze_representations_higher.py`
   - Implemented `{task}_firstcity_last` variants for all 7 tasks
   - These extract only the last digit token without the transition token
   - Tasks: distance, trianglearea, crossing, angle, compass, inside, perimeter
 
 #### 3. Heatmap Visualization Scripts
-- **Created FTwb1 heatmap script** (`/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ftwb1_heatmap.py`)
+- **Created FTwb1 heatmap script** (`/scratch/plots/evaluation/plot_ftwb1_heatmap.py`)
   - Single-task fine-tuning with warmup+bias
   - 7x7 heatmap matching FT1 structure
   - Includes comparison with FT1 results
@@ -76,11 +76,11 @@ Investigated why distance task appears to harm other tasks in multi-task trainin
 - Consider whether 2-city vs 3-city structure is the key differentiator
 
 ### Files Modified
-1. `/n/home12/cfpark00/WM_1/src/analysis/visualize_pca_3d_timeline.py`
-2. `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations_higher.py`
-3. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ftwb1_heatmap.py` (created)
-4. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft2_heatmap.py`
-5. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
+1. `/src/analysis/visualize_pca_3d_timeline.py`
+2. `/src/analysis/analyze_representations_higher.py`
+3. `/scratch/plots/evaluation/plot_ftwb1_heatmap.py` (created)
+4. `/scratch/plots/evaluation/plot_ft2_heatmap.py`
+5. `/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
 
 ### Notes
 - Random projection implementation uses seed 42 for reproducibility

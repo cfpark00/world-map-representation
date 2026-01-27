@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/home12/cfpark00/WM_1
+cd 
 echo "Plotting CKA matrices..."
 uv run python src/analysis/plot_cka_matrix_all.py --prefix pt1
 uv run python src/analysis/plot_cka_matrix_all.py --prefix pt2

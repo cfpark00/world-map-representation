@@ -29,7 +29,7 @@ Implemented and debugged activation gradient analysis to extract gradients flowi
 - Truncated display at closing parenthesis (input only, no output tokens)
 
 ### 4. Made Script Fully YAML-Driven
-- Removed hardcoded path `/n/home12/cfpark00/WM_1`
+- Removed hardcoded path ``
 - Added `task_type` field (currently only 'distance' supported)
 - Made token detection dynamic (finds ')' automatically)
 - Generic digit replacement (any digit → 'X')

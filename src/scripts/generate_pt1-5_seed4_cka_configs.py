@@ -89,7 +89,7 @@ def create_cka_config(exp1_name, exp1_task, exp2_name, exp2_task, layer):
         },
         "kernel_type": "linear",
         "layer": layer,
-        "output_dir": f"/n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/{pair_name}/layer{layer}",
+        "output_dir": f"/data/experiments/revision/exp4/cka_analysis/{pair_name}/layer{layer}",
         "save_timeline_plot": False,
         "use_gpu": True
     }

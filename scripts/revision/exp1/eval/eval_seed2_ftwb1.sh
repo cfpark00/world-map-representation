@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 for exp in 1 2 3 4 5 6 7; do
   for task in distance trianglearea angle compass inside perimeter crossing; do
     uv run python src/eval/evaluate_checkpoints.py configs/revision/exp1/eval/seed2/ftwb1-${exp}/atlantis_${task}.yaml --overwrite

@@ -1,4 +1,4 @@
-source_csv: /n/home12/cfpark00/WM_1/data/geonames-all-cities-with-a-population-1000.csv
+source_csv: /data/geonames-all-cities-with-a-population-1000.csv
 output_dir: data/experiments/revision/exp6/datasets/cities_scattered_atlantis
 threshold: 100000
 seed: 42

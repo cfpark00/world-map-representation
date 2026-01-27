@@ -22,7 +22,7 @@ import re
 from tqdm import tqdm
 
 # Add parent directory to path for imports
-project_root = Path('/n/home12/cfpark00/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 from src.utils import init_directory, filter_dataframe_by_pattern

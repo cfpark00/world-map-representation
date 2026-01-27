@@ -27,8 +27,8 @@ import seaborn as sns
 import math
 
 # Base paths
-EXP_BASE = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp3")
-OUTPUT_DIR = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp3/plots")
+EXP_BASE = Path("/data/experiments/revision/exp3")
+OUTPUT_DIR = Path("/data/experiments/revision/exp3/plots")
 
 # All tasks in order
 TASKS = ["distance", "trianglearea", "angle", "compass", "inside", "perimeter", "crossing"]

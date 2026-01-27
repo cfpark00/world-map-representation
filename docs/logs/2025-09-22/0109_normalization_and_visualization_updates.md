@@ -71,16 +71,16 @@ def normalize_metric(value_atlantis, baseline_atlantis, baseline_standard, is_ac
 - crossing: 0.941 (near-complete transfer)
 
 All four heatmap visualizations successfully generated and saved to:
-- `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/scratch/plots/evaluation/ft1_performance_heatmap.png`
-- `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/scratch/plots/evaluation/ft2_performance_heatmap.png`
-- `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/scratch/plots/evaluation/ft3_performance_heatmap.png`
-- `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/scratch/plots/evaluation/ftwb2_performance_heatmap.png`
+- `/scratch/plots/evaluation/ft1_performance_heatmap.png`
+- `/scratch/plots/evaluation/ft2_performance_heatmap.png`
+- `/scratch/plots/evaluation/ft3_performance_heatmap.png`
+- `/scratch/plots/evaluation/ftwb2_performance_heatmap.png`
 
 ### Files Modified
-1. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft1_heatmap.py`
-2. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft2_heatmap.py`
-3. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft3_heatmap.py`
-4. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
+1. `/scratch/plots/evaluation/plot_ft1_heatmap.py`
+2. `/scratch/plots/evaluation/plot_ft2_heatmap.py`
+3. `/scratch/plots/evaluation/plot_ft3_heatmap.py`
+4. `/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
 
 ### Notes
 - The new normalization provides a much more interpretable scale for comparing performance across different tasks with vastly different error magnitudes

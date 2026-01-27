@@ -6,7 +6,7 @@ Created visualization scripts for PT1 experiment evaluation metrics, focusing on
 ## Tasks Completed
 
 ### 1. PT1 Experiment Directory Location
-- Found PT1 experiment directory at `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt1/`
+- Found PT1 experiment directory at `/data/experiments/pt1/`
 - Explored structure of evals/ directory containing evaluation results for all tasks
 - Identified data format: JSONL files with metrics for each checkpoint
 

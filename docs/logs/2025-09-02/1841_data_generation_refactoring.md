@@ -23,7 +23,7 @@ Major refactoring of the data generation pipeline to create a cleaner, more modu
 - **Generic `init_directory()` function**: Replaced complex backwards-compatible `init_experiment_directory()` with simple, safe directory initialization
 - **Single environment variable**: Uses `DATA_DIR_PREFIX` for all safety checks (removed confusing dual-prefix system)
 - **Overwrite protection**: Only allows `--overwrite` within designated prefix to prevent accidental deletion of system files
-- **Updated `.env`**: Added `DATA_DIR_PREFIX=/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/outputs`
+- **Updated `.env`**: Added `DATA_DIR_PREFIX=/outputs`
 
 ### 4. Dataset Structure Improvements
 - **Folder-based output**: Datasets now saved in folders with metadata

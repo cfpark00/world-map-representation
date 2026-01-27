@@ -30,7 +30,7 @@ base_config = {
 }
 
 # Output directory
-config_dir = Path('/n/home12/cfpark00/WM_1/configs/analysis_cka')
+config_dir = Path('/configs/analysis_cka')
 config_dir.mkdir(exist_ok=True)
 
 # Generate configs for all unique pairs (no self-comparisons)

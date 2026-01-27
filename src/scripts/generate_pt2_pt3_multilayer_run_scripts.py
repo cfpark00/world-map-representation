@@ -17,7 +17,7 @@ SEEDS = [1, 2]
 LAYERS = [3, 4, 5, 6]
 
 def main():
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
 
     # PT2 Scripts
     pt2_script_dir = base_dir / 'scripts/revision/exp2/pt2_seed/extract_representations_multilayer'
@@ -26,7 +26,7 @@ def main():
     # Create individual layer scripts for PT2
     for layer in LAYERS:
         lines = ["#!/bin/bash"]
-        lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+        lines.append("cd ")
 
         for variant_num in PT2_TASKS.keys():
             task_name = PT2_TASKS[variant_num]
@@ -44,7 +44,7 @@ def main():
 
     # PT2 master script
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
     for layer in LAYERS:
         lines.append(f'bash scripts/revision/exp2/pt2_seed/extract_representations_multilayer/extract_pt2_layer{layer}.sh')
 
@@ -60,7 +60,7 @@ def main():
     # Create individual layer scripts for PT3
     for layer in LAYERS:
         lines = ["#!/bin/bash"]
-        lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+        lines.append("cd ")
 
         for variant_num in PT3_TASKS.keys():
             task_name = PT3_TASKS[variant_num]
@@ -75,7 +75,7 @@ def main():
 
     # PT3 master script
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
     for layer in LAYERS:
         lines.append(f'bash scripts/revision/exp2/pt3_seed/extract_representations_multilayer/extract_pt3_layer{layer}.sh')
 
@@ -87,7 +87,7 @@ def main():
     # Combined master script
     combined_script_dir = base_dir / 'scripts/revision/exp2'
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
     lines.append("bash scripts/revision/exp2/pt2_seed/extract_representations_multilayer/extract_pt2_all_layers.sh")
     lines.append("bash scripts/revision/exp2/pt3_seed/extract_representations_multilayer/extract_pt3_all_layers.sh")
 

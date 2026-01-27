@@ -1,0 +1,19 @@
+# Configuration for combining multiple task datasets for fine-tuning
+# Combines distance, angle, and compass tasks with Atlantis cities
+
+output_dir: data/data_generation_v1/derived_datasets/pt3-3
+
+# Combination mode: 'sample' to take specific amounts from each dataset
+mode: concat
+
+# Random seed for reproducibility
+seed: 42
+
+# Whether to shuffle the final combined dataset
+shuffle: true
+
+# List of datasets to combine
+datasets:
+  - path: data/data_generation_v1/single_datasets/crossing_1M_no_atlantis
+  - path: data/data_generation_v1/single_datasets/distance_1M_no_atlantis
+  - path: data/data_generation_v1/single_datasets/trianglearea_1M_no_atlantis

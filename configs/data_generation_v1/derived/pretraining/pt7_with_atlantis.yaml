@@ -1,0 +1,15 @@
+
+
+output_dir: data/data_generation_v1/derived_datasets/pt7_with_atlantis #~7M
+mode: concat  # Full concatenation of all datasets
+shuffle: true  # Mix different task types together
+seed: 42
+
+datasets:
+  - path: data/data_generation_v1/single_datasets/distance_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/trianglearea_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/angle_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/compass_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/inside_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/perimeter_1M_with_atlantis
+  - path: data/data_generation_v1/single_datasets/crossing_1M_with_atlantis

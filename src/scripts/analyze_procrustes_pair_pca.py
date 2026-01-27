@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-project_root = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 import argparse

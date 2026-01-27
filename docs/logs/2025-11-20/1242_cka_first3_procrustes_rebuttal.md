@@ -160,7 +160,7 @@ exp2:
   task: trianglearea
 kernel_type: linear
 layer: 5
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis_first3/pt1-1_vs_pt1-2/layer5
+output_dir: /data/experiments/revision/exp4/cka_analysis_first3/pt1-1_vs_pt1-2/layer5
 n_pca_components: 3
 pca_train_filter: region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$
 ```

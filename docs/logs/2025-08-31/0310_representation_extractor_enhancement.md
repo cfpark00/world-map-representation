@@ -67,7 +67,7 @@ reps_dict = all_extractor.extract(input_ids, attention_mask, concatenate=False)
 4. **Sorted Indices**: Ensure consistent ordering regardless of input order
 
 ## Files Modified
-- `/n/home12/cfpark00/WM_1/notebooks/representation_study.ipynb`:
+- `/notebooks/representation_study.ipynb`:
   - Cell 8: Enhanced RepresentationExtractor class
   - Cell 9: Added test cell for multi-layer extraction
   - Cell 24: Fixed variable name collision

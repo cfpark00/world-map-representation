@@ -57,8 +57,8 @@ residual_repr = last_representations - projection
 - Evaluation scripts can now properly load tokenizers and evaluate model checkpoints
 
 ### Files Modified
-1. `/n/home12/cfpark00/WM_1/src/analysis/visualize_pca_3d_timeline.py` - Fixed projection bug
-2. `/n/home12/cfpark00/WM_1/configs/eval/ftset/pt1_ft1-1/*.yaml` (14 files) - Fixed experiment_dir paths
+1. `/src/analysis/visualize_pca_3d_timeline.py` - Fixed projection bug
+2. `/configs/eval/ftset/pt1_ft1-1/*.yaml` (14 files) - Fixed experiment_dir paths
 
 ### Technical Notes
 - The bug highlights the importance of careful linear algebra when projecting out multiple potentially non-orthogonal directions

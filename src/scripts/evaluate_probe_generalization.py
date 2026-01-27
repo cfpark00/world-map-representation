@@ -22,7 +22,7 @@ import yaml
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-project_root = Path('/n/home12/cfpark00/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 from src.utils import init_directory

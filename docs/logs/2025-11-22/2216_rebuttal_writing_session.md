@@ -65,7 +65,7 @@ Added references:
 5. Expressed genuine thanks for multi-seed suggestion (it really improved the paper)
 
 ## Files Modified
-- `/n/home12/cfpark00/datadir/WM_1/rebuttal/REBUTTAL.txt`
+- `/rebuttal/REBUTTAL.txt`
 
 ## Current State
 - PuHx: Ready to submit

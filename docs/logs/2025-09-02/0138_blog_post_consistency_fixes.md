@@ -33,10 +33,10 @@ Fixed styling inconsistencies across research blog posts and updated documentati
 - Added note about avoiding simplified versions that lack visual polish
 
 ## Files Modified
-1. `/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/reports/2025-09-01-atlantis-separate-representation-space/index.mdx`
+1. `/reports/2025-09-01-atlantis-separate-representation-space/index.mdx`
    - Fixed 3 dropdown summary elements to use consistent styling
 
-2. `/n/home12/cfpark00/WM_1/claude_notes/tips/research-blog-writing-lessons.md`
+2. `/claude_notes/tips/research-blog-writing-lessons.md`
    - Added "For Technical Dropdowns" template section
    - Included styling guidelines and best practices
 

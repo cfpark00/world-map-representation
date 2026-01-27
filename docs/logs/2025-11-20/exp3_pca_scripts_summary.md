@@ -108,7 +108,7 @@ bash scripts/revision/exp3/pca_timeline/pca_wide_ftwb_na.sh
 
 ## Output Locations
 
-All outputs go to: `/n/home12/cfpark00/WM_1/data/experiments/revision/exp3/`
+All outputs go to: `/data/experiments/revision/exp3/`
 
 Structure:
 ```

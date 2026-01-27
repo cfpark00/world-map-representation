@@ -29,8 +29,8 @@ import seaborn as sns
 import math
 
 # Base paths
-EXP_BASE = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1")
-OUTPUT_DIR = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/plots")
+EXP_BASE = Path("/data/experiments/revision/exp1")
+OUTPUT_DIR = Path("/data/experiments/revision/exp1/plots")
 
 # All tasks in order
 TASKS = ["distance", "trianglearea", "angle", "compass", "inside", "perimeter", "crossing"]
@@ -59,7 +59,7 @@ def load_baselines(seed):
     baselines_atlantis = {}
 
     if seed == 'original':
-        base_exp = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/pt1")
+        base_exp = Path("/data/experiments/pt1")
     else:
         base_exp = EXP_BASE / f"pt1_seed{seed}"
 
@@ -97,7 +97,7 @@ def load_ftwb1_performance(seed):
     for ftwb1_num in range(1, 8):
         if seed == 'original':
             exp_name = f"pt1_ftwb1-{ftwb1_num}"
-            exp_path = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments") / exp_name
+            exp_path = Path("/data/experiments") / exp_name
         else:
             exp_name = f"pt1_seed{seed}_ftwb1-{ftwb1_num}"
             exp_path = EXP_BASE / exp_name

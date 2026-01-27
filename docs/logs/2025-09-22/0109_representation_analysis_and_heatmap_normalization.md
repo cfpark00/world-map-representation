@@ -149,13 +149,13 @@ def normalize_metric(value_atlantis, baseline_atlantis, baseline_standard, is_ac
 ```
 
 ### Files Modified Today
-1. `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations_higher.py`
-2. `/n/home12/cfpark00/WM_1/src/analysis/visualize_pca_3d_timeline.py`
-3. `/n/home12/cfpark00/WM_1/configs/tasks.json`
-4. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft1_heatmap.py`
-5. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft2_heatmap.py`
-6. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ft3_heatmap.py`
-7. `/n/home12/cfpark00/WM_1/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
+1. `/src/analysis/analyze_representations_higher.py`
+2. `/src/analysis/visualize_pca_3d_timeline.py`
+3. `/configs/tasks.json`
+4. `/scratch/plots/evaluation/plot_ft1_heatmap.py`
+5. `/scratch/plots/evaluation/plot_ft2_heatmap.py`
+6. `/scratch/plots/evaluation/plot_ft3_heatmap.py`
+7. `/scratch/plots/evaluation/plot_ftwb2_heatmap.py`
 
 ### Key Insights
 - The log-ratio normalization naturally handles exponential error reduction during training

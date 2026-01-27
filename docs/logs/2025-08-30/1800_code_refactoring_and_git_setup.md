@@ -42,7 +42,7 @@ Replaced duplicate code patterns with utility imports:
 - Now uses: `LocationDataset = BaseDataset`
 
 ### 4. Project Documentation
-Created `/n/home12/cfpark00/WM_1/CLAUDE.md` with:
+Created `/CLAUDE.md` with:
 - Project description
 - Python environment setup (UV venv)
 - Directory structure overview
@@ -86,9 +86,9 @@ Successfully set up version control:
 ## Files Modified Summary
 
 ### New Files:
-1. `/n/home12/cfpark00/WM_1/src/utils.py` - Central utilities module
-2. `/n/home12/cfpark00/WM_1/CLAUDE.md` - Project documentation
-3. `/n/home12/cfpark00/WM_1/.gitignore` - Version control exclusions
+1. `/src/utils.py` - Central utilities module
+2. `/CLAUDE.md` - Project documentation
+3. `/.gitignore` - Version control exclusions
 
 ### Updated Files:
 1. `src/training/train_location.py` - Uses BaseDataset, imports utilities

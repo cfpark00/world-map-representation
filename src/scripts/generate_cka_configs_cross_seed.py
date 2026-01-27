@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-project_root = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 import yaml
@@ -110,7 +110,7 @@ def main(layers=[4, 5, 6], seeds=[1, 2], base_dir=None, output_base=None):
     Total: 21 × 21 = 441 pairs × 4 layers (upper triangle + diagonal)
     """
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
     else:
         base_dir = Path(base_dir)
 

@@ -35,7 +35,7 @@ Generated training infrastructure for pt1_wide with selected ftwb2 datasets:
 - Architecture: hidden=256, intermediate=1024, heads=8, layers=6
 
 ### 4. Plot Refinement - all_metrics_combined.png
-Location: `/n/home12/cfpark00/datadir/WM_1/scratch/pt1_eval_plot/plot_all_metrics_combined.py`
+Location: `/scratch/pt1_eval_plot/plot_all_metrics_combined.py`
 
 **Iterative improvements made:**
 1. Thickened plot lines (linewidth: 2.5 → 4 → 8)

@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 # Base paths
-CONFIG_BASE = Path("/n/home12/cfpark00/datadir/WM_1/configs/revision/exp1/training")
+CONFIG_BASE = Path("/configs/revision/exp1/training")
 EXPERIMENT_BASE = Path("data/experiments/revision/exp1")
 
 # Seeds

@@ -12,7 +12,7 @@ exp2:
   task: inside
 kernel_type: linear
 layer: 5
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis_first3/pt1-3_seed1_vs_pt1-5_seed4/layer5
+output_dir: /data/experiments/revision/exp4/cka_analysis_first3/pt1-3_seed1_vs_pt1-5_seed4/layer5
 save_timeline_plot: false
 use_gpu: true
 n_pca_components: 3

@@ -65,7 +65,7 @@ def create_cka_config(exp1, exp2, layer, output_path):
 
     # Determine output directory
     pair_name = f'{exp1}_vs_{exp2}'
-    output_dir = f'/n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/{pair_name}/layer{layer}'
+    output_dir = f'/data/experiments/revision/exp4/cka_analysis/{pair_name}/layer{layer}'
 
     config = {
         'exp1': {

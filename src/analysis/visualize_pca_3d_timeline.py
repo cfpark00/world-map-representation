@@ -26,7 +26,7 @@ from collections import defaultdict
 import re
 
 # Add parent directory to path for imports
-project_root = Path('/n/home12/cfpark00/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 from src.utils import init_directory
@@ -467,7 +467,7 @@ def create_pca_timeline_plot(checkpoints, token_index, layer_index, n_components
     import numpy as np
     import pandas as pd
     import sys
-    project_root = Path('/n/home12/cfpark00/WM_1')
+    project_root = Path('')
     sys.path.insert(0, str(project_root))
     from src.utils import filter_dataframe_by_pattern
 

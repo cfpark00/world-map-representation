@@ -11,7 +11,7 @@ Organization (similar to eval scripts):
 from pathlib import Path
 
 # Base paths
-SCRIPTS_BASE = Path("/n/home12/cfpark00/datadir/WM_1/scripts/revision/exp1/representation_extraction")
+SCRIPTS_BASE = Path("/scripts/revision/exp1/representation_extraction")
 CONFIG_BASE = Path("configs/revision/exp1/representation_extraction")
 
 # Seeds
@@ -55,7 +55,7 @@ def generate_batch_script(seed: int, batch: int, exp_range: list, include_base: 
 
     lines = [
         "#!/bin/bash",
-        "cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1"
+        "cd "
     ]
 
     # Add base model extraction if this is batch 1

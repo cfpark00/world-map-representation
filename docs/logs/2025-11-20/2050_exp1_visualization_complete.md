@@ -27,7 +27,7 @@ Created comprehensive visualization suite for revision/exp1 experiments, adding 
 **Changes:**
 ```python
 if seed == 'original':
-    base_exp = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/pt1")
+    base_exp = Path("/data/experiments/pt1")
     exp_name = f"pt1_ftwb2-{exp_num}"
 else:
     base_exp = EXP_BASE / f"pt1_seed{seed}"
@@ -150,7 +150,7 @@ else:
 
 ### Total Plots Generated: 12
 
-**Location:** `/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/plots/`
+**Location:** `/data/experiments/revision/exp1/plots/`
 
 **FTWB1 Generalization (7×7):**
 1. `original_ftwb1_evaluation_heatmap.png` (109K)

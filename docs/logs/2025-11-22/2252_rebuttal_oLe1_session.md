@@ -55,7 +55,7 @@ Added references:
   - Needs verification/correction
 
 ## Files Modified
-- `/n/home12/cfpark00/datadir/WM_1/rebuttal/REBUTTAL.txt`
+- `/rebuttal/REBUTTAL.txt`
 
 ## Current State
 - PuHx: Ready

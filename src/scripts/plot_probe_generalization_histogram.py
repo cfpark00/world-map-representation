@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Base paths
-EXP_BASE = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1")
-OUTPUT_DIR = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/plots")
+EXP_BASE = Path("/data/experiments/revision/exp1")
+OUTPUT_DIR = Path("/data/experiments/revision/exp1/plots")
 
 # Training data for FTWB2 experiments (2 tasks each)
 TRAINING_DATA_2TASK = {
@@ -48,7 +48,7 @@ def has_distance_task(ftwb2_id):
 def load_all_predictions(ftwb2_id, seed='seed1'):
     """Load all individual predictions for a specific ftwb2 model and seed."""
     if seed == 'original':
-        base_path = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments") / f"pt1_ftwb2-{ftwb2_id}" / "probe_generalization" / "atlantis"
+        base_path = Path("/data/experiments") / f"pt1_ftwb2-{ftwb2_id}" / "probe_generalization" / "atlantis"
     else:
         base_path = EXP_BASE / f"pt1_{seed}_ftwb2-{ftwb2_id}" / "probe_generalization" / "atlantis"
 

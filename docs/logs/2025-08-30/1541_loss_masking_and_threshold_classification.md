@@ -82,4 +82,4 @@ Extended the WM_1 project with selective loss masking for answer-only training a
 ## Dataset Locations
 - Distance datasets: `outputs/datasets/dist_*`
 - Threshold datasets: `outputs/datasets/distthres*`
-- Test dataset with 1M samples: `/n/home12/cfpark00/WM_1/outputs/datasets/distthres2000_100kplus_1M_42`
+- Test dataset with 1M samples: `/outputs/datasets/distthres2000_100kplus_1M_42`

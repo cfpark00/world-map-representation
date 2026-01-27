@@ -2,7 +2,7 @@
 # Exp2 Seed CKA Analysis - Chunk 1 of 4
 # Total: 63 CKA calculations
 
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 echo "========================================="
 echo "Exp2 Seed CKA - Chunk 1/4"

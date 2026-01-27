@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-project_root = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 import argparse
@@ -88,7 +88,7 @@ def main(experiment_type='pt1', layers=[3, 4, 5, 6], base_dir=None, output_base=
         output_base: Base output directory for configs
     """
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
     else:
         base_dir = Path(base_dir)
 

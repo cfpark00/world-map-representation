@@ -33,7 +33,7 @@ for task_id, task_name in TASK_MAPPING.items():
         "layer_index": -1,
         "marker_size": 3,
         "n_components": 3,
-        "output_dir": f"/n/home12/cfpark00/WM_1/data/experiments/pt1-{task_id}/analysis_higher/{task_name}_firstcity_last_and_trans_l5/pca_timeline_raw",
+        "output_dir": f"/data/experiments/pt1-{task_id}/analysis_higher/{task_name}_firstcity_last_and_trans_l5/pca_timeline_raw",
         "probe_test": "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$",
         "probe_train": "region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$",
         "representations_base_path": f"data/experiments/pt1-{task_id}/analysis_higher/{task_name}_firstcity_last_and_trans_l5/representations",

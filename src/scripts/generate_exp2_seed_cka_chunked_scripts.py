@@ -7,7 +7,7 @@ Divides the 252 total calculations into 4 roughly equal chunks.
 from pathlib import Path
 
 def main():
-    base_path = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_path = Path('')
     script_dir = base_path / 'scripts' / 'revision' / 'exp2' / 'cka_analysis'
     config_base = base_path / 'configs' / 'revision' / 'exp2'
 
@@ -80,7 +80,7 @@ def main():
 # Exp2 Seed CKA Analysis - Chunk {chunk_idx} of 4
 # Total: {len(chunk_configs)} CKA calculations
 
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 echo "========================================="
 echo "Exp2 Seed CKA - Chunk {chunk_idx}/4"

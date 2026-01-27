@@ -30,7 +30,7 @@ Brief continuation of previous session (1728) to ensure closing tasks were prope
 - Training can now be initiated with: `python src/training/train_location.py configs/location_training.yaml`
 
 ## Technical Fix Details
-- **File Modified**: `/n/home12/cfpark00/WM_1/src/training/train_location.py`
+- **File Modified**: `/src/training/train_location.py`
 - **Line 326**: Added `num_key_value_heads` parameter to Qwen2Config
 - **Reason**: Qwen2 uses Grouped Query Attention (GQA) and requires explicit specification of key-value heads
 - **Setting**: Set to match `num_attention_heads` for standard Multi-Head Attention (MHA)

@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 # Add project root to path
-sys.path.append('/n/home12/cfpark00/WM_1')
+sys.path.append('')
 from src.utils import load_cities_csv, extract_coordinates
 
 # Set style
@@ -20,13 +20,13 @@ plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
 
 # Output directory
-output_dir = Path('/n/home12/cfpark00/WM_1/reports/world-models-from-city-coordinates')
+output_dir = Path('/reports/world-models-from-city-coordinates')
 output_dir.mkdir(exist_ok=True, parents=True)
 
 def create_city_density_map():
     """Create world map showing city density distribution."""
     # Load cities
-    df = load_cities_csv(None, '/n/home12/cfpark00/WM_1/outputs/datasets/cities_100k_plus_seed42.csv')
+    df = load_cities_csv(None, '/outputs/datasets/cities_100k_plus_seed42.csv')
     
     # Extract coordinates directly since the column might be named differently
     if 'coordinates' in df.columns:

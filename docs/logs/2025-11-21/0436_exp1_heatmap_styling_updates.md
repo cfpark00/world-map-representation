@@ -137,7 +137,7 @@ All heatmaps now share:
    - Fixed statistics calculation for transposed matrices
 
 ## Output Location
-All plots saved to: `/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/plots/`
+All plots saved to: `/data/experiments/revision/exp1/plots/`
 
 ## Notes
 - All changes maintain backward compatibility with existing data loading

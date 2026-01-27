@@ -8,8 +8,8 @@ Completed comprehensive CKA (Centered Kernel Alignment) analysis for all experim
 ## Major Tasks Completed
 
 ### 1. CKA Data Organization and Collection
-- Created `/n/home12/cfpark00/WM_1/scripts/analysis/collect_all_cka_data.py` to aggregate all CKA results
-- Generated three output files in `/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean/`:
+- Created `/scripts/analysis/collect_all_cka_data.py` to aggregate all CKA results
+- Generated three output files in `/scratch/cka_analysis_clean/`:
   - `cka_summary.csv`: 308 pair-layer combinations with summary statistics
   - `cka_checkpoints.csv`: 12,628 checkpoint measurements (847KB)
   - `cka_organized.json`: Hierarchical organization with special statistics

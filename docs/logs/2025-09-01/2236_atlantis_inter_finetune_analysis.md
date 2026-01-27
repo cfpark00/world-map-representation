@@ -9,7 +9,7 @@ Analyzed the atlantis_inter_finetune experiment which demonstrates catastrophic 
 ## Tasks Completed
 
 ### 1. Initial Experiment Exploration
-- Examined `/n/home12/cfpark00/WM_1/outputs/experiments/atlantis_inter_finetune/`
+- Examined `/outputs/experiments/atlantis_inter_finetune/`
 - Reviewed configuration: 500 epochs of fine-tuning on the atlantis_inter_4k_42 dataset
 - Model was initialized from a checkpoint pre-trained on real world cities (dist_100k_1M_20epochs)
 - Training results: final loss 0.831, eval valid ratio 98.4%
@@ -25,7 +25,7 @@ Analyzed the atlantis_inter_finetune experiment which demonstrates catastrophic 
   - **Catastrophic forgetting confirmed:** ~43% loss in longitude accuracy, ~38% loss in latitude accuracy
 
 ### 3. Analysis Outputs Generated
-Created analysis directory: `/n/home12/cfpark00/WM_1/outputs/experiments/atlantis_inter_finetune/analysis/`
+Created analysis directory: `/outputs/experiments/atlantis_inter_finetune/analysis/`
 - `dist_layers3_4_probe50_train30/` - Analysis with Atlantis cities
 - `dist_layers3_4_probe5000_train3000/` - Analysis with real world cities showing forgetting
 - Generated visualizations: dynamics plots, world maps, and evolution GIFs

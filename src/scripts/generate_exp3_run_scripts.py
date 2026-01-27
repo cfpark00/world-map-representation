@@ -16,13 +16,13 @@ TASKS = {
 
 def create_repr_extraction_scripts():
     """Create representation extraction scripts."""
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
     script_dir = base_dir / 'scripts/revision/exp3/representation_extraction'
     script_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Extract base models (pt1_wide, pt1_narrow)
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
 
     for model_type in ['pt1_wide', 'pt1_narrow']:
         config_path = f'configs/revision/exp3/representation_extraction/{model_type}/distance_firstcity_last_and_trans_l5.yaml'
@@ -35,7 +35,7 @@ def create_repr_extraction_scripts():
 
     # 2. Extract wide ftwb models
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
 
     for task_num in range(1, 8):
         task_name = TASKS[task_num]
@@ -49,7 +49,7 @@ def create_repr_extraction_scripts():
 
     # 3. Extract narrow ftwb models
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
 
     for task_num in range(1, 8):
         task_name = TASKS[task_num]
@@ -63,7 +63,7 @@ def create_repr_extraction_scripts():
 
     # 4. Extract all
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
     lines.append("bash scripts/revision/exp3/representation_extraction/extract_base_models.sh")
     lines.append("bash scripts/revision/exp3/representation_extraction/extract_wide_ftwb.sh")
     lines.append("bash scripts/revision/exp3/representation_extraction/extract_narrow_ftwb.sh")
@@ -75,7 +75,7 @@ def create_repr_extraction_scripts():
 
 def create_pca_timeline_scripts():
     """Create PCA timeline scripts."""
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
     script_dir = base_dir / 'scripts/revision/exp3/pca_timeline'
     script_dir.mkdir(parents=True, exist_ok=True)
 

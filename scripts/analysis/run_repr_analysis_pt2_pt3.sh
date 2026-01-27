@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/home12/cfpark00/WM_1
+cd 
 for exp in pt2-1 pt2-2 pt2-3 pt2-4 pt2-5 pt2-6 pt2-7 pt2-8; do
     task=$(grep prompt_format configs/analysis_representation_higher/ftset/${exp}/*.yaml | sed 's/.*: //' | sed 's/_firstcity.*//')
     echo "Processing $exp with task: $task"

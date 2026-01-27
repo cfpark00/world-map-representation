@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 
-EXP_BASE = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments")
+EXP_BASE = Path("/data/experiments")
 REVISION_BASE = EXP_BASE / "revision/exp1"
 OUTPUT_DIR = REVISION_BASE / "tables"
 

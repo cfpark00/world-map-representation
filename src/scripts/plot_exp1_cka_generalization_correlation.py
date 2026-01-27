@@ -71,7 +71,7 @@ def load_baselines(seed):
     baselines_atlantis = {}
 
     if seed == 'original':
-        base_exp = Path("/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/pt1")
+        base_exp = Path("/data/experiments/pt1")
     else:
         base_exp = EXP1_BASE / f"pt1_seed{seed}"
 
@@ -101,7 +101,7 @@ def load_ftwb1_performance(seed):
     for ftwb1_num in range(1, 7):  # 1-6 only
         if seed == 'original':
             exp_name = f"pt1_ftwb1-{ftwb1_num}"
-            exp_path = Path("/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments") / exp_name
+            exp_path = Path("/data/experiments") / exp_name
         else:
             exp_name = f"pt1_seed{seed}_ftwb1-{ftwb1_num}"
             exp_path = EXP1_BASE / exp_name

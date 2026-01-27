@@ -61,7 +61,7 @@ Major cleanup of the evaluation metrics system, removing legacy code, implementi
 
 #### 5. File Cleanup
 **Removed Unused Files**:
-- `/n/home12/cfpark00/WM_1/src/representation_extractor.py` (unused class)
+- `/src/representation_extractor.py` (unused class)
 - Removed unused `extract_model_representations()` function from utils.py
 
 #### 6. Visual Improvements

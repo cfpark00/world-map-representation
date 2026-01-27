@@ -13,7 +13,7 @@ Conducted extensive data analysis, created new dataset generation scripts, estab
 - Found that cities have mean 18.72 neighbors within 200km (median: 11)
 - Identified clustering patterns: 33.5% have ≥20 neighbors, only 0.1% have ≥100
 - Most connected city: Kōfu, Japan (105 neighbors)
-- Created visualization script with histogram output in `/n/home12/cfpark00/WM_1/analysis/`
+- Created visualization script with histogram output in `/analysis/`
 
 ### 2. Random Walk Dataset Generator
 - Created `create_randomwalk_dataset_hf.py` for sequential city traversal
@@ -68,7 +68,7 @@ Conducted extensive data analysis, created new dataset generation scripts, estab
 
 ### 7. Training Configuration
 - Created `location_training.yaml` config:
-  - Dataset: `/n/home12/cfpark00/WM_1/outputs/datasets/loc_100kplus_all_42`
+  - Dataset: `/outputs/datasets/loc_100kplus_all_42`
   - Model: Qwen2.5-like (64 hidden, 4 layers, 4 heads)
   - Training: 5 epochs, batch size 512
   - Uses 44-token custom tokenizer
@@ -77,18 +77,18 @@ Conducted extensive data analysis, created new dataset generation scripts, estab
 ## Key Files Created/Modified
 
 ### New Files
-- `/n/home12/cfpark00/WM_1/src/data_processing/create_randomwalk_dataset_hf.py`
-- `/n/home12/cfpark00/WM_1/src/tokenizer/tokenizer_config.py`
-- `/n/home12/cfpark00/WM_1/src/tokenizer/create_hf_tokenizer.py`
-- `/n/home12/cfpark00/WM_1/src/training/train_location.py`
-- `/n/home12/cfpark00/WM_1/configs/location_training.yaml`
-- `/n/home12/cfpark00/WM_1/analysis/spatial_analysis_csv.py`
+- `/src/data_processing/create_randomwalk_dataset_hf.py`
+- `/src/tokenizer/tokenizer_config.py`
+- `/src/tokenizer/create_hf_tokenizer.py`
+- `/src/training/train_location.py`
+- `/configs/location_training.yaml`
+- `/analysis/spatial_analysis_csv.py`
 
 ### Modified Files
-- `/n/home12/cfpark00/WM_1/README.md` - Complete restructuring documentation
-- `/n/home12/cfpark00/WM_1/src/data_processing/create_location_dataset_hf.py` - Added validation support
-- `/n/home12/cfpark00/WM_1/src/data_processing/create_distance_dataset_hf.py` - Removed zero-padding
-- `/n/home12/cfpark00/WM_1/notebooks/load_dataset.ipynb` - Added tokenizer testing cells
+- `/README.md` - Complete restructuring documentation
+- `/src/data_processing/create_location_dataset_hf.py` - Added validation support
+- `/src/data_processing/create_distance_dataset_hf.py` - Removed zero-padding
+- `/notebooks/load_dataset.ipynb` - Added tokenizer testing cells
 
 ## Technical Decisions
 1. Used character-level tokenization for precise control over vocabulary

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-project_root = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 import argparse
@@ -27,7 +27,7 @@ def generate_extraction_script(config_path, script_path, overwrite=True):
     """Generate a single extraction bash script."""
     overwrite_flag = " --overwrite" if overwrite else ""
     script_content = f"""#!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 uv run python src/scripts/extract_and_save_representations.py {config_path}{overwrite_flag}
 """
 
@@ -43,7 +43,7 @@ def main(layers=[3, 4, 5, 6], include_original=True, include_seed1=True, base_di
     Generate all representation extraction bash scripts.
     """
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
     else:
         base_dir = Path(base_dir)
 
@@ -104,7 +104,7 @@ def main(layers=[3, 4, 5, 6], include_original=True, include_seed1=True, base_di
     with open(master_script_path, 'w') as f:
         f.write('#!/bin/bash\n')
         f.write('# Run all representation extractions\n')
-        f.write('cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1\n\n')
+        f.write('cd \n\n')
 
         if include_original:
             f.write('echo "Extracting representations for original PT1 experiments..."\n')

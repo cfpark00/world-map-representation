@@ -25,7 +25,7 @@ def create_repr_extraction_config(variant_num, seed):
     prompt_format = f'{task_name}_firstcity_last_and_trans'
 
     experiment_dir = f'data/experiments/revision/exp2/pt3-{variant_num}_seed{seed}'
-    output_dir = f'/n/home12/cfpark00/WM_1/{experiment_dir}/analysis_higher/{prompt_format}_l{LAYER}'
+    output_dir = f'/{experiment_dir}/analysis_higher/{prompt_format}_l{LAYER}'
 
     config = {
         'cities_csv': 'data/datasets/cities/cities.csv',
@@ -70,7 +70,7 @@ def create_pca_timeline_config(variant_num, seed, pca_type='mixed'):
         probe_test_filter = 'region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$'
         axis_type = 'mixed'
 
-    output_dir = f'/n/home12/cfpark00/WM_1/{experiment_dir}/analysis_higher/{prompt_format}_l{LAYER}/{output_suffix}'
+    output_dir = f'/{experiment_dir}/analysis_higher/{prompt_format}_l{LAYER}/{output_suffix}'
 
     config = {
         'axis_mapping': {
@@ -94,7 +94,7 @@ def create_pca_timeline_config(variant_num, seed, pca_type='mixed'):
     return config
 
 def main():
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
 
     # Create directory structure
     repr_config_dir = base_dir / 'configs/revision/exp2/pt3_seed/extract_representations'

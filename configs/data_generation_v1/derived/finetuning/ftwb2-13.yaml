@@ -1,0 +1,39 @@
+# Configuration for combining multiple task datasets for fine-tuning
+# Combines distance, angle, and compass tasks with Atlantis cities
+
+output_dir: data/data_generation_v1/derived_datasets/ftwb2-13
+
+# Combination mode: 'sample' to take specific amounts from each dataset
+mode: sample
+
+# Random seed for reproducibility
+seed: 42
+
+# Whether to shuffle the final combined dataset
+shuffle: true
+
+# List of datasets to combine
+datasets:
+  - path: data/data_generation_v1/single_datasets/perimeter_1M_no_atlantis
+    n_samples: 20000
+  - path: data/data_generation_v1/single_datasets/distance_1M_no_atlantis
+    n_samples: 20000
+  - path: data/data_generation_v1/single_datasets/perimeter_100k_atlantis_required
+    n_samples: 100000
+  - path: data/data_generation_v1/single_datasets/distance_100k_atlantis_required
+    n_samples: 100000
+  #
+  - path: data/data_generation_v1/single_datasets/distance_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/trianglearea_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/angle_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/compass_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/inside_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/perimeter_100k_atlantis_required
+    n_samples: 256
+  - path: data/data_generation_v1/single_datasets/crossing_100k_atlantis_required
+    n_samples: 256

@@ -147,7 +147,7 @@ def generate_cka_config(prefix, var1, var2, seed1, seed2, layer, task_dict, repr
 
 
 def main():
-    base_path = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_path = Path('')
     config_dir = base_path / 'configs' / 'revision' / 'exp2'
 
     layers = [3, 4, 5, 6]

@@ -21,7 +21,7 @@ from tqdm import tqdm
 import sys
 
 # Add parent directory to path
-project_root = Path('/n/home12/cfpark00/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 # Model loading will be done directly in the extract_representations function
@@ -31,7 +31,7 @@ def get_task_mapping(prefix):
     """Get task mapping for each experiment."""
     task_map = {}
     for i in range(1, 9):
-        config_path = Path(f'/n/home12/cfpark00/WM_1/configs/data_generation/ftset/combine_{prefix}-{i}.yaml')
+        config_path = Path(f'/configs/data_generation/ftset/combine_{prefix}-{i}.yaml')
         if not config_path.exists():
             break
         with open(config_path, 'r') as f:
@@ -48,7 +48,7 @@ def get_prompt_format(task_name):
 
 
 def extract_representations(model_path, prompt_format, layer_index=4,
-                           cities_csv_path='/n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv',
+                           cities_csv_path='/data/datasets/cities/cities.csv',
                            city_filter='region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$'):
     """
     Extract representations from a model checkpoint.
@@ -247,7 +247,7 @@ def main():
 
         # Find checkpoint path
         if args.checkpoint == 'final':
-            checkpoint_dir = Path(f'/n/home12/cfpark00/WM_1/data/experiments/{model_name}/checkpoints')
+            checkpoint_dir = Path(f'/data/experiments/{model_name}/checkpoints')
             # Find the highest numbered checkpoint
             checkpoints = sorted(checkpoint_dir.glob('checkpoint-*'),
                                key=lambda x: int(x.name.split('-')[1]))
@@ -256,7 +256,7 @@ def main():
                 continue
             model_path = checkpoints[-1]
         else:
-            model_path = Path(f'/n/home12/cfpark00/WM_1/data/experiments/{model_name}/checkpoints/checkpoint-{args.checkpoint}')
+            model_path = Path(f'/data/experiments/{model_name}/checkpoints/checkpoint-{args.checkpoint}')
 
         if not model_path.exists():
             print(f"Checkpoint not found: {model_path}")
@@ -335,7 +335,7 @@ def main():
     if args.output_dir:
         output_dir = Path(args.output_dir)
     else:
-        output_dir = Path(f'/n/home12/cfpark00/WM_1/scratch/cka_analysis_{args.prefix}_l{args.layer}')
+        output_dir = Path(f'/scratch/cka_analysis_{args.prefix}_l{args.layer}')
 
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f'cka_matrix_{args.prefix}_l{args.layer}.png'

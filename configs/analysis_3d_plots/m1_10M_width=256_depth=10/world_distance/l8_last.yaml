@@ -2,11 +2,11 @@
 # Probe 2: Train on ALL (including Atlantis), test on all, highlight Atlantis
 # Modified for analyze_representations_higher.py (no visualization parameters)
 
-output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838/plot_3d/pca_regions"
+output_dir: "/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838/plot_3d/pca_regions"
 
 
 # Source representation path
-representation_path: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838"
+representation_path: "/data/experiments/m1_10M_width=256_depth=10/analysis_higher/world_distance_l8/representations/checkpoint-236838"
 
 # Token and layer selection
 # Representations were saved with layers [4,5,6]

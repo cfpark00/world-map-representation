@@ -68,15 +68,15 @@ Created `create_location_dataset_hf_spatial_ids.py` for sanity checking:
 ## Files Modified/Created
 
 ### Created:
-- `/n/home12/cfpark00/WM_1/src/training/train_location_hf.py` - New HF Trainer-based training script
-- `/n/home12/cfpark00/WM_1/src/training/train_location_hf_backup.py` - Backup of HF script
-- `/n/home12/cfpark00/WM_1/src/data_processing/create_location_dataset_hf_spatial_ids.py` - Spatial ID dataset creator
-- `/n/home12/cfpark00/WM_1/outputs/datasets/locspatial_500kplus_all_42/` - Spatial ID dataset
+- `/src/training/train_location_hf.py` - New HF Trainer-based training script
+- `/src/training/train_location_hf_backup.py` - Backup of HF script
+- `/src/data_processing/create_location_dataset_hf_spatial_ids.py` - Spatial ID dataset creator
+- `/outputs/datasets/locspatial_500kplus_all_42/` - Spatial ID dataset
 
 ### Modified:
-- `/n/home12/cfpark00/WM_1/src/data_processing/create_filtered_dataset.py` - Added shuffling with seed
-- `/n/home12/cfpark00/WM_1/configs/location_500k_100epochs.yaml` - Updated scheduler and loss_mask_type
-- `/n/home12/cfpark00/WM_1/configs/location_500k_10epochs.yaml` - Updated scheduler
+- `/src/data_processing/create_filtered_dataset.py` - Added shuffling with seed
+- `/configs/location_500k_100epochs.yaml` - Updated scheduler and loss_mask_type
+- `/configs/location_500k_10epochs.yaml` - Updated scheduler
 
 ## Next Steps
 - Run experiments with spatial ID datasets to verify model can learn with hints

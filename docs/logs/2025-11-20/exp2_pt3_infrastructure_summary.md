@@ -92,7 +92,7 @@ bash scripts/revision/exp2/pt3_seed/pca_timeline/pca_pt3_na.sh
 
 ## Output Locations
 
-All outputs go to: `/n/home12/cfpark00/WM_1/data/experiments/revision/exp2/`
+All outputs go to: `/data/experiments/revision/exp2/`
 
 Structure:
 ```

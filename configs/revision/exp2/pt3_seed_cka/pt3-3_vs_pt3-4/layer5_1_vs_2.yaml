@@ -1,10 +1,10 @@
 exp1:
   name: pt3-3_seed1
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt3-3_seed1/analysis_higher/crossing_firstcity_last_and_trans_l5/representations
+  repr_dir: /data/experiments/revision/exp2/pt3-3_seed1/analysis_higher/crossing_firstcity_last_and_trans_l5/representations
   task: crossing
 exp2:
   name: pt3-4_seed2
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt3-4_seed2/analysis_higher/angle_firstcity_last_and_trans_l5/representations
+  repr_dir: /data/experiments/revision/exp2/pt3-4_seed2/analysis_higher/angle_firstcity_last_and_trans_l5/representations
   task: angle
 layer: 5
 checkpoint_steps: null
@@ -14,4 +14,4 @@ kernel_type: linear
 center_kernels: true
 use_gpu: true
 save_timeline_plot: false
-output_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/cka_analysis/pt3-3_seed1_vs_pt3-4_seed2/layer5
+output_dir: /data/experiments/revision/exp2/cka_analysis/pt3-3_seed1_vs_pt3-4_seed2/layer5

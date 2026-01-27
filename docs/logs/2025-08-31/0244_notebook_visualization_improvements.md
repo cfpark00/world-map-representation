@@ -44,7 +44,7 @@ User requested multiple color adjustments for better visual distinction:
 ## Technical Details
 
 ### Files Modified
-- `/n/home12/cfpark00/WM_1/notebooks/representation_study.ipynb`
+- `/notebooks/representation_study.ipynb`
   - Cell 34: Country-to-continent mapping (with EH and RE additions)
   - Cell 35: Test cities counting with unknown city identification
   - Cell 36: Original continent visualization (restored)

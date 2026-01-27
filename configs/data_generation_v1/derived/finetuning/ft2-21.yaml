@@ -1,0 +1,30 @@
+# Configuration for combining multiple task datasets for fine-tuning
+# Combines distance, angle, and compass tasks with Atlantis cities
+
+output_dir: data/data_generation_v1/derived_datasets/ft2-21
+
+# Combination mode: 'sample' to take specific amounts from each dataset
+mode: sample
+
+# Random seed for reproducibility
+seed: 42
+
+# Whether to shuffle the final combined dataset
+shuffle: true
+
+# List of datasets to combine
+datasets:
+  # Distance task - small amount of no-Atlantis
+  - path: data/data_generation_v1/single_datasets/crossing_1M_no_atlantis
+    n_samples: 20000  # Sample 20k from the 1M no-Atlantis dataset
+
+  - path: data/data_generation_v1/single_datasets/angle_1M_no_atlantis
+    n_samples: 20000
+  # Distance task - Atlantis-required
+  - path: data/data_generation_v1/single_datasets/crossing_100k_atlantis_required
+    n_samples: 100000  # Sample all 100k from Atlantis-required dataset
+  # Compass task - Atlantis-required
+  - path: data/data_generation_v1/single_datasets/angle_100k_atlantis_required
+    n_samples: 100000  # Sample all 100k
+
+# Total training samples: 320,000 (20k + 100k + 100k + 100k)

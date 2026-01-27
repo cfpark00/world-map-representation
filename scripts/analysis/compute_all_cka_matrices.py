@@ -16,7 +16,7 @@ import json
 from tqdm import tqdm
 
 # Add to path
-sys.path.insert(0, '/n/home12/cfpark00/WM_1')
+sys.path.insert(0, '')
 from src.utils import filter_dataframe_by_pattern
 
 
@@ -32,7 +32,7 @@ def create_repr_config(prefix, exp_num, layer, task):
         'method': {'name': 'linear'},
         'n_test_cities': 1250,
         'n_train_cities': 3250,
-        'output_dir': f'/n/home12/cfpark00/WM_1/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}',  # Output dir includes layer number
+        'output_dir': f'/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}',  # Output dir includes layer number
         'perform_pca': True,  # Need to set to True for the script to work
         'probe_test': 'region:.* && city_id:^[1-9][0-9]{3,}$',
         'probe_train': 'region:.* && city_id:^[1-9][0-9]{3,}$',
@@ -51,7 +51,7 @@ def get_task_mapping(prefix):
     task_map = {}
 
     # Look for existing l5 configs and use them to determine task names
-    config_dir = Path(f'/n/home12/cfpark00/WM_1/configs/analysis_representation_higher/ftset')
+    config_dir = Path(f'/configs/analysis_representation_higher/ftset')
 
     for i in range(1, 9):
         exp_dir = config_dir / f'{prefix}-{i}'
@@ -86,7 +86,7 @@ def extract_representations_if_needed(prefix, layer):
 
     for exp_num, task in task_mapping.items():
         # Check if model checkpoint exists first
-        checkpoint_dir = Path(f'/n/home12/cfpark00/WM_1/data/experiments/{prefix}-{exp_num}/checkpoints')
+        checkpoint_dir = Path(f'/data/experiments/{prefix}-{exp_num}/checkpoints')
         if not checkpoint_dir.exists():
             print(f"  {prefix}-{exp_num}: No model checkpoint directory found, skipping...")
             continue
@@ -98,7 +98,7 @@ def extract_representations_if_needed(prefix, layer):
             continue
 
         # Check if representations already exist
-        repr_dir = Path(f'/n/home12/cfpark00/WM_1/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}/representations')
+        repr_dir = Path(f'/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}/representations')
 
         if repr_dir.exists() and len(list(repr_dir.glob('checkpoint-*'))) > 0:
             print(f"  {prefix}-{exp_num} layer {layer} ({task}): representations already exist")
@@ -121,7 +121,7 @@ def extract_representations_if_needed(prefix, layer):
             ]
 
             print(f"    Running: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd='/n/home12/cfpark00/WM_1')
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd='')
 
             if result.returncode != 0:
                 print(f"    ERROR: Failed to extract representations")
@@ -209,7 +209,7 @@ def compute_cka_matrix(prefix, layer):
     # Load all representations
     representations = {}
     for exp_num, task in task_mapping.items():
-        repr_path = Path(f'/n/home12/cfpark00/WM_1/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}/representations')
+        repr_path = Path(f'/data/experiments/{prefix}-{exp_num}/analysis_higher/{task}_firstcity_last_and_trans_l{layer}/representations')
 
         repr, cities = load_representations(repr_path)
         if repr is not None:
@@ -220,7 +220,7 @@ def compute_cka_matrix(prefix, layer):
     cka_matrix = np.ones((n_models, n_models))
 
     # Create directory for saving individual CKA results
-    cka_results_dir = Path(f'/n/home12/cfpark00/WM_1/data/experiments/cka_analysis')
+    cka_results_dir = Path(f'/data/experiments/cka_analysis')
     cka_results_dir.mkdir(parents=True, exist_ok=True)
 
     for i in range(1, n_models + 1):
@@ -280,7 +280,7 @@ def compute_cka_matrix(prefix, layer):
     plt.tight_layout()
 
     # Save
-    output_dir = Path(f'/n/home12/cfpark00/WM_1/scratch/cka_analysis_{prefix}_l{layer}')
+    output_dir = Path(f'/scratch/cka_analysis_{prefix}_l{layer}')
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f'cka_matrix_{prefix}_l{layer}.png'
     plt.savefig(output_path, dpi=200, bbox_inches='tight')

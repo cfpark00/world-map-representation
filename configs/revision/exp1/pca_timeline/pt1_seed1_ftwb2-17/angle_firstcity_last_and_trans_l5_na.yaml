@@ -2,10 +2,10 @@ cities_csv: data/datasets/cities/cities.csv
 layer_index: -1
 marker_size: 3
 n_components: 3
-output_dir: /n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/pt1_seed1_ftwb2-17/analysis_higher/angle_firstcity_last_and_trans_l5/pca_timeline_na
+output_dir: /data/experiments/revision/exp1/pt1_seed1_ftwb2-17/analysis_higher/angle_firstcity_last_and_trans_l5/pca_timeline_na
 probe_test: region:.* && city_id:^[1-9][0-9]{3,}$
 probe_train: region:^(?!Atlantis$).* && city_id:^[1-9][0-9]{3,}$
-representations_base_path: /n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/pt1_seed1_ftwb2-17/analysis_higher/angle_firstcity_last_and_trans_l5/representations
+representations_base_path: /data/experiments/revision/exp1/pt1_seed1_ftwb2-17/analysis_higher/angle_firstcity_last_and_trans_l5/representations
 token_index: -1
 train_frac: 0.6
 axis_mapping:

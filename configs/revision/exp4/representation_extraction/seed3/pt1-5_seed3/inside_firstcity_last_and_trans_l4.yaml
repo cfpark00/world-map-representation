@@ -7,7 +7,7 @@ method:
   name: linear
 n_test_cities: 1250
 n_train_cities: 3250
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/pt1-5_seed3/analysis_higher/inside_firstcity_last_and_trans_l4
+output_dir: /data/experiments/revision/exp4/pt1-5_seed3/analysis_higher/inside_firstcity_last_and_trans_l4
 perform_pca: true
 probe_test: region:.* && city_id:^[1-9][0-9]{3,}$
 probe_train: region:.* && city_id:^[1-9][0-9]{3,}$

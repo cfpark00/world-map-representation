@@ -7,7 +7,7 @@ exp2:
   task: crossing
   repr_dir: data/experiments/revision/exp4/pt1-7_seed1/analysis_higher/crossing_firstcity_last_and_trans_l3/representations
 layer: 3
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/pt1-2_seed1_vs_pt1-7_seed1/layer3
+output_dir: /data/experiments/revision/exp4/cka_analysis/pt1-2_seed1_vs_pt1-7_seed1/layer3
 kernel_type: linear
 center_kernels: true
 use_gpu: true

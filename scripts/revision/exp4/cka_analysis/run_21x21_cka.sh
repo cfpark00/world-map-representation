@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 # Run layer 4 CKA analysis (21x21: original, seed1, seed2 only - exclude seed3)
 for config in configs/revision/exp4/cka_cross_seed/*/layer4.yaml; do

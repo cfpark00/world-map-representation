@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 
 # Base paths
-CONFIG_BASE = Path("/n/home12/cfpark00/datadir/WM_1/configs/revision/exp6/eval")
+CONFIG_BASE = Path("/configs/revision/exp6/eval")
 EXPERIMENT_BASE = Path("data/experiments/revision/exp6")
 DATASET_BASE = Path("data/experiments/revision/exp6/datasets")
 

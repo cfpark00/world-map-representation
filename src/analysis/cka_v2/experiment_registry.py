@@ -20,7 +20,7 @@ TASK_NAMES = {
 def get_pt1_experiments(base_dir: Path = None) -> Dict[str, dict]:
     """Get PT1 (single-task) experiment registry."""
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
 
     experiments = {}
 
@@ -44,7 +44,7 @@ def get_pt1_experiments(base_dir: Path = None) -> Dict[str, dict]:
 def get_pt2_experiments(base_dir: Path = None) -> Dict[str, dict]:
     """Get PT2 (two-task) experiment registry."""
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
 
     # PT2 task combinations (from research context)
     pt2_tasks = {
@@ -80,7 +80,7 @@ def get_pt2_experiments(base_dir: Path = None) -> Dict[str, dict]:
 def get_pt3_experiments(base_dir: Path = None) -> Dict[str, dict]:
     """Get PT3 (multi-task) experiment registry."""
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
 
     experiments = {}
 
@@ -126,7 +126,7 @@ def get_repr_path(exp_name: str, task: str, layer: int, prompt_type: str = 'firs
         Path to representations directory
     """
     if base_dir is None:
-        base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+        base_dir = Path('')
 
     exp_dir = base_dir / 'data' / 'experiments' / exp_name
     repr_dir = exp_dir / 'analysis_higher' / f'{task}_{prompt_type}_l{layer}' / 'representations'

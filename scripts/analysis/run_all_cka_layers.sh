@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/home12/cfpark00/WM_1
+cd 
 
 echo "================================================================"
 echo "Running CKA analysis for all layers (3,4,5,6) and all experiments"

@@ -7,7 +7,7 @@ Creates scripts to train 21 models (3 seeds × 7 tasks).
 from pathlib import Path
 
 # Base paths
-SCRIPTS_BASE = Path("/n/home12/cfpark00/datadir/WM_1/scripts/revision/exp1/training")
+SCRIPTS_BASE = Path("/scripts/revision/exp1/training")
 CONFIG_BASE = Path("configs/revision/exp1/training")
 
 # Seeds

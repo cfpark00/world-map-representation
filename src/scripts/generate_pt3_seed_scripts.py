@@ -15,7 +15,7 @@ def generate_pt3_scripts():
 
         for seed in [1, 2]:
             script_content = f"""#!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 uv run python src/training/train.py configs/revision/exp5/pt3_seed/pt3-{pt3_num}/pt3-{pt3_num}_seed{seed}.yaml --overwrite
 """
             script_path = pt3_dir / f"pt3-{pt3_num}_seed{seed}.sh"

@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 # Run CKA analysis only for seed3 comparisons
 # This includes: seed3 vs seed3, seed3 vs seed2, seed3 vs seed1, seed3 vs original

@@ -9,7 +9,7 @@ import matplotlib as mpl
 from pathlib import Path
 
 # Output directory
-OUTPUT_DIR = Path("/n/home12/cfpark00/datadir/WM_1/data/experiments/revision/exp1/plots")
+OUTPUT_DIR = Path("/data/experiments/revision/exp1/plots")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Create figure with horizontal colorbar

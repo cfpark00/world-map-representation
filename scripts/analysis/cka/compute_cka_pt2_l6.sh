@@ -4,7 +4,7 @@
 set -e
 
 # Base directory
-BASE_DIR="/n/home12/cfpark00/WM_1"
+BASE_DIR=""
 CONFIG_DIR="${BASE_DIR}/configs/analysis_cka_l6/pt2"
 
 # Run CKA computation for all pairs

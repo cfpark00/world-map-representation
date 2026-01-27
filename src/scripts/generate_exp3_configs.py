@@ -39,7 +39,7 @@ def create_repr_extraction_config(model_type, task_num=None, layer=5):
         prompt_format = f'{task_name}_firstcity_last_and_trans'
         experiment_dir = f'data/experiments/revision/exp3/{model_type}'
 
-    output_dir = f'/n/home12/cfpark00/WM_1/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}'
+    output_dir = f'/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}'
 
     config = {
         'cities_csv': 'data/datasets/cities/cities.csv',
@@ -100,7 +100,7 @@ def create_pca_timeline_config(model_type, task_num=None, layer=5, pca_type='mix
         probe_test_filter = 'region:^(?!Atlantis).* && city_id:^[1-9][0-9]{3,}$'
         axis_type = 'mixed'
 
-    output_dir = f'/n/home12/cfpark00/WM_1/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}/{output_suffix}'
+    output_dir = f'/{experiment_dir}/analysis_higher/{prompt_format}_l{layer}/{output_suffix}'
 
     config = {
         'axis_mapping': {
@@ -124,7 +124,7 @@ def create_pca_timeline_config(model_type, task_num=None, layer=5, pca_type='mix
     return config
 
 def main():
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
 
     # Create directory structure
     repr_config_dir = base_dir / 'configs/revision/exp3/representation_extraction'

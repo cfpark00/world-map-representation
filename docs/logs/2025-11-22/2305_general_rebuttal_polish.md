@@ -47,9 +47,9 @@ Rewrote the entire General section with proper structure:
 - Recompiled paper and regenerated paper.zip
 
 ## Files Modified
-- `/n/home12/cfpark00/datadir/WM_1/rebuttal/REBUTTAL.txt` (General section)
-- `/n/home12/cfpark00/datadir/WM_1/paper/iclr2026_conference.tex` (contribution #2)
-- `/n/home12/cfpark00/datadir/WM_1/paper.zip` (regenerated)
+- `/rebuttal/REBUTTAL.txt` (General section)
+- `/paper/iclr2026_conference.tex` (contribution #2)
+- `/paper.zip` (regenerated)
 
 ## Current State
 - General section: Complete and polished

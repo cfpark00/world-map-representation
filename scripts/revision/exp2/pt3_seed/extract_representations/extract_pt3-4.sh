@@ -1,4 +1,4 @@
 #!/bin/bash
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 uv run python src/analysis/analyze_representations_higher.py configs/revision/exp2/pt3_seed/extract_representations/pt3-4_seed1_angle_firstcity_last_and_trans_l5.yaml --overwrite
 uv run python src/analysis/analyze_representations_higher.py configs/revision/exp2/pt3_seed/extract_representations/pt3-4_seed2_angle_firstcity_last_and_trans_l5.yaml --overwrite

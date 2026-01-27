@@ -72,7 +72,7 @@ def generate_layer6_configs():
                 },
                 "kernel_type": "linear",
                 "layer": layer,
-                "output_dir": f"/n/home12/cfpark00/WM_1/data/experiments/revision/exp4/cka_analysis/{model1_name}_vs_{model2_name}/layer{layer}",
+                "output_dir": f"/data/experiments/revision/exp4/cka_analysis/{model1_name}_vs_{model2_name}/layer{layer}",
                 "save_timeline_plot": False,
                 "use_gpu": True
             }

@@ -1,15 +1,15 @@
 # Evaluation configuration for m1_10M experiment
 
-output_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M/evals/multi_task"
+output_dir: "/data/experiments/m1_10M/evals/multi_task"
 
 # Experiment to evaluate
-experiment_dir: "/n/home12/cfpark00/WM_1/data/experiments/m1_10M"
+experiment_dir: "/data/experiments/m1_10M"
 
 # Dataset path - should match what was used for training
-dataset_path: "/n/home12/cfpark00/WM_1/data/datasets/multitask_m1"
+dataset_path: "/data/datasets/multitask_m1"
 
 # Cities CSV for tasks that need coordinate validation (randomwalk, randring, center)
-cities_csv: "/n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv"
+cities_csv: "/data/datasets/cities/cities.csv"
 
 # Evaluation settings
 eval_batch_size: 512

@@ -1,6 +1,30 @@
 # Research Context: Understanding Representation Formation in Geographic Space
 
-**Last Updated**: 2025-11-27 22:07
+**Last Updated**: 2026-01-27 04:50
+
+## Codebase Reorganization (2026-01-23)
+
+Major reorganization from flat structure to track-based organization. See `docs/REORGANIZATION.md` for full details.
+
+### Completed Tracks
+- **data_generation_v1**: Data generation + tokenizer creation (COMPLETE)
+  - 7 core tasks: distance, trianglearea, angle, compass, inside, perimeter, crossing
+  - Structure: `src/data_generation_v1/`, `configs/data_generation_v1/`, `scripts/data_generation_v1/`
+  - Output: `data/data_generation_v1/` (cities/, tokenizers/, single_datasets/, derived_datasets/)
+  - Config counts: cities(1), tokenizers(1), single_tasks(21), pretraining(18), finetuning(70)
+  - Tested: City generation (5,175 cities), tokenizer generation (98 tokens)
+
+### Planned Tracks (TODO)
+- **pretraining_v1**: All pretraining (PT1, PT1-X, PT2, PT3, all seeds)
+- **finetuning_v1**: All fine-tuning (FT, FTWB, all combos/seeds)
+- **cka_v1**: CKA analysis infrastructure
+
+### Naming Convention
+- Pretraining: pt7 (all 7 tasks), pt2-{1..21}, pt3-{1..35}
+- Fine-tuning: ft1-{1..7}, ft2-{1..21}, ft3-{1..35}
+- Fine-tuning with warmup+baseline: ftwb1-{1..7}, ftwb2-{1..21}, ftwb3-{1..35}
+
+---
 
 ## Research Goal
 
@@ -821,3 +845,49 @@ Final polish pass before submission, focusing on citation style, terminology con
 - Paper compiles at 30 pages
 - Created fresh `paper.zip` with all changes
 - Ready for anonymous submission
+
+---
+
+## ICML 2026 Pivot (2026-01-27)
+
+**ICLR 2026 rejected.** Pivoting to ICML 2026 submission (deadline: Jan 28 AoE).
+
+### Senior Researcher Advice
+- The divergent task observation is the most interesting finding
+- Keep it simple - situate in 30-year grounding debate (Harnad 1990, Bender & Koller 2020, LeCun 2022)
+- Core message: "Relational data leads to emergent world models, but not all relations are equally informative. Some can weaken world model formation."
+- Missing: theory for why distance hurts - if explained, could be best paper material
+
+### Key Changes Made
+
+#### Title Revision
+- **Old**: "Origins and Roles of World Representations in Neural Networks"
+- **New**: "Convergent World Representations and Divergent Tasks"
+- Rationale: Captures core tension between convergence (multi-task) and divergence (distance task)
+
+#### Abstract Rewrite
+- Restructured to lead with convergence/divergence findings
+- New punchline: "training on multiple relational tasks reliably produces convergent world representations, but some lurking divergent tasks can catastrophically harm new entity integration via fine-tuning"
+
+#### Style
+- Removed all Oxford commas throughout paper (preference)
+
+### Editorial Ick Points Added
+Comments marked with `%##ICKPOINT##` for future revision:
+1. "This work" paragraph doesn't mention divergent tasks
+2. Contribution bullet 2 buries divergence story
+3. Discussion is dense - needs tightening
+4. Conclusion doesn't land the punchline
+
+### Key Speculation: Why Is Distance Divergent?
+Added `%## KEY SPECULATION ##` comment block in Discussion:
+- **Hypothesis**: Divergence is property of task-architecture pairing (gradient geometry), not learned weights
+- The gradient signal from certain tasks inherently routes updates through pathways that bypass shared representations
+- This explains why single-task CKA predicts fine-tuning failure even after joint multi-task pretraining
+- Left mechanistic understanding to future work
+
+### ICML 2026 Submission Info
+- Abstract deadline: January 23, 2026 AoE (passed)
+- Full paper deadline: January 28, 2026 AoE
+- 8 pages main body (strict limit)
+- Paper location: `paper_icml/`

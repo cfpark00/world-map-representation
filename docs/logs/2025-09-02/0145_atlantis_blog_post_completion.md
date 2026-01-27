@@ -63,8 +63,8 @@ Completed the full blog post about the Atlantis experiment, following the report
 
 ## Files Created/Modified
 ### New Files:
-- `/n/home12/cfpark00/WM_1/reports/2025-09-01-atlantis-separate-representation-space/index.mdx` - Complete blog post
-- `/n/home12/cfpark00/WM_1/reports/2025-09-01-atlantis-separate-representation-space/metadata.json` - Blog metadata
+- `/reports/2025-09-01-atlantis-separate-representation-space/index.mdx` - Complete blog post
+- `/reports/2025-09-01-atlantis-separate-representation-space/metadata.json` - Blog metadata
 - Multiple figure files copied from experimental analysis directories
 
 ### Key Insights for Future Work

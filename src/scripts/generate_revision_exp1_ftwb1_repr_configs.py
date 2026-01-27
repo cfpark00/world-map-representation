@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 
 # Base paths
-CONFIG_BASE = Path("/n/home12/cfpark00/datadir/WM_1/configs/revision/exp1/representation_extraction")
+CONFIG_BASE = Path("/configs/revision/exp1/representation_extraction")
 EXPERIMENT_BASE = Path("data/experiments/revision/exp1")
 
 # Seeds
@@ -28,7 +28,7 @@ TASK_MAPPING = {
 def create_repr_config(experiment_name: str, task: str, seed: int) -> dict:
     """Create representation extraction config for a specific experiment and task."""
 
-    output_dir = f"/n/home12/cfpark00/WM_1/data/experiments/revision/exp1/{experiment_name}/analysis_higher/{task}_firstcity_last_and_trans_l5"
+    output_dir = f"/data/experiments/revision/exp1/{experiment_name}/analysis_higher/{task}_firstcity_last_and_trans_l5"
 
     config = {
         "cities_csv": "data/datasets/cities/cities.csv",

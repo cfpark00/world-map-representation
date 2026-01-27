@@ -66,7 +66,7 @@ output_dir/
 
 Added `cities_csv` path to evaluation configs for tasks that need coordinate validation:
 ```yaml
-cities_csv: "/n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv"
+cities_csv: "/data/datasets/cities/cities.csv"
 ```
 
 ### Key Insights

@@ -19,7 +19,7 @@ LAYER = 5
 
 def create_repr_extraction_scripts():
     """Create representation extraction scripts."""
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
     script_dir = base_dir / 'scripts/revision/exp2/pt3_seed/extract_representations'
     script_dir.mkdir(parents=True, exist_ok=True)
 
@@ -27,7 +27,7 @@ def create_repr_extraction_scripts():
     for variant_num in PT3_TASKS.keys():
         task_name = PT3_TASKS[variant_num]
         lines = ["#!/bin/bash"]
-        lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+        lines.append("cd ")
 
         for seed in SEEDS:
             config_path = f'configs/revision/exp2/pt3_seed/extract_representations/pt3-{variant_num}_seed{seed}_{task_name}_firstcity_last_and_trans_l{LAYER}.yaml'
@@ -40,7 +40,7 @@ def create_repr_extraction_scripts():
 
     # Create master script
     lines = ["#!/bin/bash"]
-    lines.append("cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1")
+    lines.append("cd ")
     for variant_num in PT3_TASKS.keys():
         lines.append(f'bash scripts/revision/exp2/pt3_seed/extract_representations/extract_pt3-{variant_num}.sh')
 
@@ -51,7 +51,7 @@ def create_repr_extraction_scripts():
 
 def create_pca_timeline_scripts():
     """Create PCA timeline scripts."""
-    base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_dir = Path('')
     script_dir = base_dir / 'scripts/revision/exp2/pt3_seed/pca_timeline'
     script_dir.mkdir(parents=True, exist_ok=True)
 

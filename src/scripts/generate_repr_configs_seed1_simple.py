@@ -5,7 +5,7 @@ Uses the same format as existing configs in analysis_representation_higher/ftset
 import sys
 from pathlib import Path
 
-project_root = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+project_root = Path('')
 sys.path.insert(0, str(project_root))
 
 import yaml
@@ -21,7 +21,7 @@ TASK_NAMES = {
     7: 'crossing',
 }
 
-base_dir = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+base_dir = Path('')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--seeds', type=str, default='1,2', help='Comma-separated seed numbers (e.g., 1,2)')
@@ -44,7 +44,7 @@ for seed in seeds:
                 'method': {'name': 'linear'},
                 'n_test_cities': 1250,
                 'n_train_cities': 3250,
-                'output_dir': f'/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp4/{exp_name}/analysis_higher/{task_name}_firstcity_last_and_trans_l{layer}',
+                'output_dir': f'/data/experiments/revision/exp4/{exp_name}/analysis_higher/{task_name}_firstcity_last_and_trans_l{layer}',
                 'perform_pca': True,
                 'probe_test': 'region:.* && city_id:^[1-9][0-9]{3,}$',
                 'probe_train': 'region:.* && city_id:^[1-9][0-9]{3,}$',

@@ -12,7 +12,7 @@ def demo_activation_access():
     """
 
     # Load a small model for testing
-    model_path = "/n/home12/cfpark00/WM_1/data/experiments/m1_10M/checkpoints/checkpoint-100"
+    model_path = "/data/experiments/m1_10M/checkpoints/checkpoint-100"
 
     print("Loading model...")
     model = Qwen2ForCausalLM.from_pretrained(model_path)

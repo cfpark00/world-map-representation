@@ -3,7 +3,7 @@
 
 set -e
 
-BASE_DIR="/n/home12/cfpark00/WM_1"
+BASE_DIR=""
 cd $BASE_DIR
 
 # Task mappings for pt2
@@ -83,7 +83,7 @@ method:
   name: linear
 n_test_cities: 1250
 n_train_cities: 3250
-output_dir: /n/home12/cfpark00/WM_1/data/experiments/pt3-${i}/analysis_higher/${TASK}_firstcity_last_and_trans_l${layer}
+output_dir: /data/experiments/pt3-${i}/analysis_higher/${TASK}_firstcity_last_and_trans_l${layer}
 perform_pca: true
 probe_test: region:.* && city_id:^[1-9][0-9]{3,}$
 probe_train: region:.* && city_id:^[1-9][0-9]{3,}$

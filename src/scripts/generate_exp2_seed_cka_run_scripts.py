@@ -39,7 +39,7 @@ def generate_layer_script(prefix, layer, pairs, seeds, config_base, script_dir):
 # Non-overlapping pairs only, unique seed comparisons
 # Total: {total} CKA calculations ({len(pairs)} pairs × {n_seed_combos} seed combinations)
 
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 echo "========================================="
 echo "{prefix.upper()} Layer {layer} Seed CKA Analysis"
@@ -79,7 +79,7 @@ echo "========================================="
 
 
 def main():
-    base_path = Path('/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1')
+    base_path = Path('')
     config_base = base_path / 'configs' / 'revision' / 'exp2'
     script_dir = base_path / 'scripts' / 'revision' / 'exp2' / 'cka_analysis'
     script_dir.mkdir(parents=True, exist_ok=True)

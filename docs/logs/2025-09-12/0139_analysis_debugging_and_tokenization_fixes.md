@@ -50,23 +50,23 @@ Major debugging session focused on fixing the representation analysis pipeline. 
 ### Files Modified
 
 #### Created:
-- `/n/home12/cfpark00/WM_1/src/representation_extractor.py` - Hook-based representation extraction class
-- `/n/home12/cfpark00/WM_1/old_commits/` - Directory for reference commits (gitignored)
+- `/src/representation_extractor.py` - Hook-based representation extraction class
+- `/old_commits/` - Directory for reference commits (gitignored)
 
 #### Modified:
-- `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations.py`
+- `/src/analysis/analyze_representations.py`
   - Complete overhaul: x/y coordinates, removed haversine, fixed tokenization
   - Integrated RepresentationExtractor class
   - Fixed device handling
   - Removed `create_space_delimited_prompt` usage
   
-- `/n/home12/cfpark00/WM_1/src/utils.py`
+- `/src/utils.py`
   - Deleted evil `create_space_delimited_prompt` function
   
-- `/n/home12/cfpark00/WM_1/.gitignore`
+- `/.gitignore`
   - Added `old_commits/` directory
   
-- `/n/home12/cfpark00/WM_1/configs/analysis/dist_pretrain/dist_1M_no_atlantis_probe1.yaml`
+- `/configs/analysis/dist_pretrain/dist_1M_no_atlantis_probe1.yaml`
   - Added `region_mapping_path` parameter
 
 ### Key Discoveries
@@ -95,5 +95,5 @@ Major debugging session focused on fixing the representation analysis pipeline. 
 
 ### Pulled Old Commit for Reference
 - Commit: `292d758fb7fc8daff92e67cc45cb3d3108e022c8`
-- Location: `/n/home12/cfpark00/WM_1/old_commits/`
+- Location: `/old_commits/`
 - Purpose: Reference for better methodology, especially the notebook

@@ -48,13 +48,13 @@ Fixed a critical bug in the representation analysis script that was causing GIF 
 - Atlantis (fictional) cities never achieve positive R² values, suggesting model can't generalize to arbitrary coordinate systems
 
 ## Files Modified
-- `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations.py`: Removed restrictive frame filtering
+- `/src/analysis/analyze_representations.py`: Removed restrictive frame filtering
 
 ## Output Locations
 Analysis results saved to:
-- `/n/home12/cfpark00/WM_1/outputs/experiments/atlantis_inter_finetune/analysis/`
-- `/n/home12/cfpark00/WM_1/outputs/experiments/atlantis_cross_finetune_bs64/analysis/`
-- `/n/home12/cfpark00/WM_1/outputs/experiments/dist_100k_1M_200epochs_bs128/analysis/`
+- `/outputs/experiments/atlantis_inter_finetune/analysis/`
+- `/outputs/experiments/atlantis_cross_finetune_bs64/analysis/`
+- `/outputs/experiments/dist_100k_1M_200epochs_bs128/analysis/`
 
 Each contains:
 - `representation_dynamics.csv`: Full metrics for all checkpoints

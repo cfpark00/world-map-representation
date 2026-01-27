@@ -25,7 +25,7 @@ Completed comprehensive updates to Atlantis blog reports including renaming, val
 - **Created zip files** for all 4 reports with matching names
 
 ### 2. Analysis Documentation (02:31-02:33)
-- Created `/n/home12/cfpark00/WM_1/claude_notes/docs/atlantis_typical_analysis.md`
+- Created `/claude_notes/docs/atlantis_typical_analysis.md`
 - Documented 4 standard analyses:
   1. Basic (no Atlantis)
   2. Atlantis evaluation only
@@ -70,14 +70,14 @@ Completed comprehensive updates to Atlantis blog reports including renaming, val
 - Created final zip archive with all updates
 
 ## Files Modified
-- `/n/home12/cfpark00/WM_1/src/analysis/analyze_representations.py` - Added star markers for Atlantis
-- `/n/home12/cfpark00/WM_1/reports/2025-09-02-0145-finetuning-atlantis/index.mdx` - Updated with new figures and numbering
-- `/n/home12/cfpark00/WM_1/reports/2025-09-02-0145-finetuning-atlantis/metadata.json` - Fixed title
+- `/src/analysis/analyze_representations.py` - Added star markers for Atlantis
+- `/reports/2025-09-02-0145-finetuning-atlantis/index.mdx` - Updated with new figures and numbering
+- `/reports/2025-09-02-0145-finetuning-atlantis/metadata.json` - Fixed title
 - 4 report directories renamed with timestamps
 - Created documentation in `claude_notes/docs/`
 
 ## Files Created
-- `/n/home12/cfpark00/WM_1/claude_notes/docs/atlantis_typical_analysis.md`
+- `/claude_notes/docs/atlantis_typical_analysis.md`
 - 4 zip files for reports
 - 11 new/updated figures in Atlantis report
 - 32 analysis outputs (8 analyses × 4 files each)

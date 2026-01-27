@@ -1,10 +1,10 @@
 exp1:
   name: pt2-2_seed1
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt2-2_seed1/analysis_higher/angle_firstcity_last_and_trans_l4/representations
+  repr_dir: /data/experiments/revision/exp2/pt2-2_seed1/analysis_higher/angle_firstcity_last_and_trans_l4/representations
   task: angle
 exp2:
   name: pt2-7_seed2
-  repr_dir: /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/data/experiments/revision/exp2/pt2-7_seed2/analysis_higher/perimeter_firstcity_last_and_trans_l4/representations
+  repr_dir: /data/experiments/revision/exp2/pt2-7_seed2/analysis_higher/perimeter_firstcity_last_and_trans_l4/representations
   task: perimeter
 layer: 4
 checkpoint_steps: null

@@ -64,10 +64,10 @@ def find_cka_results(prefix, exp1_num, exp2_num, layer):
 
     # Possible directory locations
     possible_dirs = [
-        f'/n/home12/cfpark00/WM_1/data/experiments/cka_analysis/{prefix}-{exp1_num}_vs_{prefix}-{exp2_num}_l{layer}',
-        f'/n/home12/cfpark00/WM_1/data/experiments/cka_analysis_{prefix}/{prefix}-{exp1_num}_vs_{prefix}-{exp2_num}_l{layer}',
+        f'/data/experiments/cka_analysis/{prefix}-{exp1_num}_vs_{prefix}-{exp2_num}_l{layer}',
+        f'/data/experiments/cka_analysis_{prefix}/{prefix}-{exp1_num}_vs_{prefix}-{exp2_num}_l{layer}',
         # Handle old naming format for pt1
-        f'/n/home12/cfpark00/WM_1/data/experiments/cka_analysis/{prefix}-{exp1_num}_{TASK_MAPPINGS[prefix][exp1_num]}_vs_{prefix}-{exp2_num}_{TASK_MAPPINGS[prefix][exp2_num]}_l{layer}'
+        f'/data/experiments/cka_analysis/{prefix}-{exp1_num}_{TASK_MAPPINGS[prefix][exp1_num]}_vs_{prefix}-{exp2_num}_{TASK_MAPPINGS[prefix][exp2_num]}_l{layer}'
     ]
 
     for dir_path in possible_dirs:
@@ -78,7 +78,7 @@ def find_cka_results(prefix, exp1_num, exp2_num, layer):
     return None
 
 def main():
-    output_dir = Path('/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean')
+    output_dir = Path('/scratch/cka_analysis_clean')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Collect all data

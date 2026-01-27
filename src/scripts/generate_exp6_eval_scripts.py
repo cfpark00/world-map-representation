@@ -15,7 +15,7 @@ Total: 5 scripts + 1 master = 6 scripts
 
 from pathlib import Path
 
-SCRIPTS_BASE = Path("/n/home12/cfpark00/datadir/WM_1/scripts/revision/exp6/eval")
+SCRIPTS_BASE = Path("/scripts/revision/exp6/eval")
 CONFIG_BASE = Path("configs/revision/exp6/eval")
 
 TASKS = ["distance", "trianglearea", "angle", "compass", "inside", "perimeter", "crossing"]

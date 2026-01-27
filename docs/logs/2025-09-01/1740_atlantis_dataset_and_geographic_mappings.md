@@ -34,12 +34,12 @@ Created infrastructure for generating virtual "Atlantis" city datasets for fine-
   - Improved auto-prompt format selection based on task type
 
 ### 4. Analysis Runs
-- Analyzed `/n/home12/cfpark00/WM_1/outputs/experiments/dist_100k_1M_10epochs_from_pt1`:
+- Analyzed `/outputs/experiments/dist_100k_1M_10epochs_from_pt1`:
   - Final Longitude R²: 0.919
   - Final Latitude R²: 0.768
   - Distance Error reduced from 6,745 km to 1,697 km
 
-- Analyzed `/n/home12/cfpark00/WM_1/outputs/experiments/rw200_100k_1m_20epochs` with both prompt formats:
+- Analyzed `/outputs/experiments/rw200_100k_1m_20epochs` with both prompt formats:
   - With 'dist' format: No learning (R² negative) - model doesn't understand distance prompts
   - With 'rw200' format: Weak learning (Lon R²: 0.192, Lat R²: 0.088)
 

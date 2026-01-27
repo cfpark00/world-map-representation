@@ -1,7 +1,7 @@
 # Development Log - 2025-09-24 17:57 - CKA Matrix Visualizations and Data Fixes
 
 ## Session Summary
-Analyzed CKA data from `/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean/` and created comprehensive visualizations for CKA similarity between models. Fixed critical data definition errors that were causing incorrect overlap calculations.
+Analyzed CKA data from `/scratch/cka_analysis_clean/` and created comprehensive visualizations for CKA similarity between models. Fixed critical data definition errors that were causing incorrect overlap calculations.
 
 ## Major Tasks Completed
 
@@ -86,7 +86,7 @@ Analyzed CKA data from `/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean/` and
 
 ## Technical Notes
 - Always use `uv run` for Python execution in this environment
-- Data source: `/n/home12/cfpark00/WM_1/scratch/cka_analysis_clean/`
+- Data source: `/scratch/cka_analysis_clean/`
 - The pt*-8 models are not duplicates but have different task combinations
 - CKA matrices now correctly identify partial vs full overlaps
 

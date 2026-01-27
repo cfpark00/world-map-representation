@@ -15,12 +15,12 @@ from pathlib import Path
 import yaml
 
 # Base paths
-CONFIG_BASE = Path("/n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1/configs")
+CONFIG_BASE = Path("/configs")
 REPR_CONFIG_DIR = CONFIG_BASE / "revision" / "exp1" / "representation_extraction"
 PCA_CONFIG_DIR = CONFIG_BASE / "revision" / "exp1" / "pca_timeline"
 
 # Experiment base path (for where the trained models are)
-EXP_BASE = "/n/home12/cfpark00/datadir/WM_1/data/experiments"
+EXP_BASE = "/data/experiments"
 
 # FTWB1 task mapping
 FTWB1_TASKS = {

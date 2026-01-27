@@ -14,7 +14,7 @@ Fixed critical issues with random walk evaluation, cleaned up old format referen
 - Example: Being off by 1 city in a 10-city walk now scores ~0.90 instead of 0.0
 
 ### 2. Created Standalone RW Checkpoint Evaluation Script
-- **Script**: `/n/home12/cfpark00/WM_1/scratch/eval_rw_checkpoints.py`
+- **Script**: `/scratch/eval_rw_checkpoints.py`
 - **Features**:
   - Auto-detects all checkpoints in an experiment directory
   - Evaluates random walk performance using the same `evaluate_with_generation()` function as training

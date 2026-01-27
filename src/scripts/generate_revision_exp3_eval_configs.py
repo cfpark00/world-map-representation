@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 # Base paths
-CONFIG_BASE = Path("/n/home12/cfpark00/datadir/WM_1/configs/revision/exp3/eval")
+CONFIG_BASE = Path("/configs/revision/exp3/eval")
 EXPERIMENT_BASE = Path("data/experiments/revision/exp3")
 DATASET_BASE = Path("data/datasets")
 
@@ -61,8 +61,8 @@ def create_multitask_eval_config(experiment_name: str) -> dict:
 
     config = {
         "checkpoints": "last",
-        "cities_csv": "/n/home12/cfpark00/WM_1/data/datasets/cities/cities.csv",
-        "dataset_path": "/n/home12/cfpark00/WM_1/data/datasets/multitask_pt1",
+        "cities_csv": "/data/datasets/cities/cities.csv",
+        "dataset_path": "/data/datasets/multitask_pt1",
         "device": "cuda",
         "do_sample": False,
         "eval_batch_size": 512,

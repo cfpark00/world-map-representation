@@ -3,7 +3,7 @@
 # Non-overlapping pairs only, unique seed comparisons
 # Total: 42 CKA calculations (14 pairs × 3 seed combinations)
 
-cd /n/holylfs06/LABS/finkbeiner_lab/Users/cfpark00/datadir/WM_1
+cd 
 
 echo "========================================="
 echo "PT2 Layer 4 Seed CKA Analysis"
