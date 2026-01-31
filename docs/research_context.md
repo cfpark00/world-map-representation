@@ -703,7 +703,7 @@ See `docs/research_proposal.md` for the complete research agenda.
 
 ---
 
-**Note**: This document reflects the current state as of 2025-11-22. Major updates should be documented with date stamps.
+**Note**: This document reflects the current state as of 2026-01-31. Major updates should be documented with date stamps.
 
 ---
 
@@ -908,6 +908,25 @@ Added `%## KEY SPECULATION ##` comment block in Discussion:
 - Added li2025justintimedistributedtaskrepresentations citation
 
 **Status:** Compiles at 21 pages, pushed to main
+
+## arXiv Preprint Preparation (2026-01-31)
+
+**ICLR 2026 rejected, ICML 2026 submitted.** Now preparing arXiv preprint in ICLR format with ICML text changes.
+
+### What Was Done
+- Ported all text/content changes from `paper_icml/main.tex` to `paper/iclr2026_conference.tex` (ICLR styling preserved)
+- De-anonymized: uncommented `\iclrfinalcopy`, added author block (Core Francisco Park, 3 affiliations)
+- Header changed to "Preprint" in `iclr2026_conference.sty`
+- arXiv readiness fixes: removed anonymization artifacts, "peer review" language, "Supp. Mat." references, ICLR comments
+- Added Research Process link (`https://cfpark00.github.io/world-rep-research-flow/`) between abstract and intro + in appendix
+- All changes pushed to Overleaf via `paper/` git repo
+
+### Paper Location
+- `paper/` - ICLR-formatted preprint (Overleaf-synced, its own git repo)
+- `paper_icml/` - ICML submission (reference only)
+
+### Status
+- Ready for arXiv submission (must submit full TeX source, not just PDF)
 
 ### Appendix Restoration Session (2026-01-27 11:10)
 **Problem discovered:** ICML appendix was missing significant content from ICLR version.

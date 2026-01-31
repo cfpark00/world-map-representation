@@ -472,6 +472,15 @@ Some paths may be outdated.
 
 ## Key Changes
 
+### 2026-01-31
+- arXiv preprint preparation in `paper/` (ICLR-formatted, Overleaf-synced)
+  - Ported ICML text changes while preserving ICLR styling
+  - De-anonymized with author info (3 affiliations)
+  - Header changed to "Preprint"
+  - arXiv readiness fixes (anonymization artifacts, peer review language, Supp. Mat. refs)
+  - Added Research Process link between abstract and intro
+- New log: `docs/logs/2026-01-31/0559_arxiv_preprint_prep.md`
+
 ### 2026-01-27
 - ICML 2026 submission work in `paper_icml/` (now part of main repo, .git removed)
 - Updated title: "Convergent World Representations and Divergent Tasks"

@@ -1,6 +1,9 @@
 
-./paper_icml/
+ai4science_kr/
+paper/
+paper_icml/
 paper_icml.zip
+resources/
 
 # Python
 __pycache__/
