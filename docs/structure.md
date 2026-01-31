@@ -473,9 +473,14 @@ Some paths may be outdated.
 ## Key Changes
 
 ### 2026-01-27
-- ICML 2026 submission work in `paper_icml/` (separate git repo synced to Overleaf)
+- ICML 2026 submission work in `paper_icml/` (now part of main repo, .git removed)
 - Updated title: "Convergent World Representations and Divergent Tasks"
 - Rewrote abstract to emphasize convergence/divergence findings
+- Paper polish: tightened Discussion, added Future Work, rewrote Conclusion
+- Added `resources/icml_2026_style/` - downloaded ICML style files for reference
+- Restored missing appendix content from ICLR (NI equations, section explanations, figure captions)
+- Merged duplicate Extended Related Work sections into single 7-topic section
+- Paper compiles at 41 pages (8 main + appendix)
 
 ### 2026-01-23
 - Major reorganization from flat structure to track-based organization

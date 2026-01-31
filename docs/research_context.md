@@ -891,3 +891,48 @@ Added `%## KEY SPECULATION ##` comment block in Discussion:
 - Full paper deadline: January 28, 2026 AoE
 - 8 pages main body (strict limit)
 - Paper location: `paper_icml/`
+
+### Paper Polish Session (2026-01-27 07:46)
+**Discussion section tightening:**
+- Paragraph 1 (Continual learning): ~180 → ~90 words
+- Paragraph 2 (Dynamics): ~150 → ~80 words, cut literature descriptions
+- Paragraph 3 (Forward/backward): Added italic key insight
+- NEW Paragraph 4 (Future work): Gradient geometry hypothesis (~40 words)
+
+**Other changes:**
+- Simplified Limitations (diagnostic marker, no mechanism)
+- Added Sec 5 closing hypothesis (task-architecture pairing)
+- Rewrote Conclusion (~70 words, echoes title's convergent/divergent)
+- PRH abbreviation after first main text appearance
+- Removed all ick point comments
+- Added li2025justintimedistributedtaskrepresentations citation
+
+**Status:** Compiles at 21 pages, pushed to main
+
+### Appendix Restoration Session (2026-01-27 11:10)
+**Problem discovered:** ICML appendix was missing significant content from ICLR version.
+
+**Content restored from ICLR:**
+- Normalized Improvement equations (error-based and accuracy-based formulas)
+- Representation Extraction details (colorbox token example, leading zeros paragraph)
+- Linear Probing & PCA paragraphs (probing, PCA, reconstruction error)
+- CKA formula and computation details
+- All section explanations (Training Dynamics, Representation Dynamics, CKA results, Pretraining Variations)
+
+**Extended Related Work merge:**
+- Had duplicate sections at lines 374 and 683
+- Merged into single 7-topic section: Internal Representations, Fine-tuning, Multi-task Learning, Synthetic Data, Dynamics of Representations, Geometric Deep Learning, Loss Plateaus
+- All citations verified from ICLR bib file (not hallucinated)
+
+**Status:** Compiles at 41 pages, pushed to Overleaf
+
+### Single-Column Appendix Conversion (2026-01-28 04:06)
+**Change:** Converted appendix from two-column to single-column format per ICML guidelines.
+
+**Modifications:**
+- Added `\onecolumn` after `\appendix`
+- Removed 4 `\clearpage` commands
+- Changed figure placements from `[!h]`/`[H]` to `[htbp]`
+- Fixed `\textdegree` in math mode (now uses `\degree`)
+
+**Status:** Compiles at 24 pages (8 main + 16 appendix), pushed to Overleaf
