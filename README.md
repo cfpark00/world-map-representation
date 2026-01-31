@@ -1,151 +1,103 @@
-# WM_1: World Model Experiments
+# Convergent World Representations and Divergent Tasks
 
-Learning geographic representations through synthetic location prediction tasks.
+**Paper:** [Preprint (forthcoming on arXiv)](paper/) | **Research Process:** [cfpark00.github.io/world-rep-research-flow](https://cfpark00.github.io/world-rep-research-flow/) | **3D Visualizations:** [Open Science Framework](https://osf.io/jb8an/?view_only=da001f31c0534dc0b6476141f30db90d)
 
-## Overview
+**Contact:** [Core Francisco Park](https://corefranciscopark.com)
 
-This project investigates how neural networks form representations of geographic space by training small transformer models on synthetic location prediction tasks. Using controllable datasets of world cities, we study when representations form in modular vs. fractured ways, providing insights into fundamental questions about representation formation in neural networks.
+## Abstract
 
-## Research Focus
+While neural representations are central to modern deep learning, the conditions governing their geometry and their roles in downstream adaptability remain poorly understood. We develop a framework clearly separating the underlying world, the data generation process and the resulting model representations to study these questions in a controlled setup. 5,075 city coordinates define the world and 7 geometric tasks generate the training data for autoregressive training. We find that different tasks give rise to qualitatively and quantitatively distinct world representation geometries. However, multi-task training drives convergence of world representations: models trained on non-overlapping tasks develop aligned geometric representations, providing controlled evidence for the Multitask Scaling Hypothesis of the Platonic Representation Hypothesis. To study adaptation, we pretrain models on all tasks, then test whether new entities (cities) can be consistently integrated into the representation space via fine-tuning. Surprisingly, we find that despite multi-task pretraining, some tasks, which we call *divergent*, actively harm the representational integration of new entities and harm generalization. Our results show that training on multiple relational tasks reliably produces convergent world representations, but lurking divergent tasks can catastrophically harm new entity integration via fine-tuning.
 
-The project addresses a fundamental question in AI interpretability: **What conditions determine how representations form during training?** By using geographic data as a controlled testbed, we can systematically study:
+![Figure 1](paper/figures/fig1.png)
 
-- When representations organize themselves in modular, interpretable ways
-- When they become fractured and entangled
-- How scaling dynamics affect representation formation
-- The impact of different data distributions on learned structures
+## Key Findings
 
-See [docs/research_proposal.md](docs/research_proposal.md) for the full research agenda.
+1. **Task-Dependent Geometry and Multi-Task Convergence.** Different geometric tasks operating on the same world produce qualitatively distinct representational geometries (thread-like, 2D manifolds, fragmented clusters). Despite this, multi-task training drives convergence: models trained on completely disjoint task sets develop highly aligned representations (CKA saturating around 0.85 for 2-3 tasks), providing controlled evidence for the Multitask Scaling Hypothesis of the Platonic Representation Hypothesis.
+
+2. **Divergent Tasks Harm Fine-Tuning Generalization.** When fine-tuning a multi-task pretrained model to integrate new entities (100 synthetic "Atlantis" cities), certain tasks, specifically the distance task, actively degrade cross-task generalization rather than simply failing to contribute. Single-task representational similarity (CKA) partially predicts this fine-tuning behavior, even though those CKA values come from models trained from scratch independently.
+
+3. **Divergent Tasks Disrupt Representational Integration.** Linear probe analysis reveals that divergent tasks cause new entities to be encoded in hidden subspaces rather than integrated into the shared world manifold. Reconstruction error for Atlantis cities is nearly an order of magnitude worse when fine-tuned with divergent task data, yet the same cities integrate seamlessly when included during pretraining, confirming the failure stems from optimization dynamics rather than geometric difficulty.
 
 ## Project Structure
 
 ```
-WM_1/
-├── configs/               # Configuration files (YAML)
-│   ├── data/             # Dataset generation configs
-│   ├── training/         # Model training configs
-│   ├── analysis/         # Analysis and evaluation configs
-│   └── experiments/      # Historical experiment configs
-├── src/                  # Source code
-│   ├── data_processing/  # Dataset creation scripts
-│   ├── training/         # Model training scripts
-│   ├── analysis/         # Analysis and visualization
-│   ├── tokenizer/        # Custom tokenizer setup
-│   └── utils.py          # Shared utilities
-├── scripts/              # Execution scripts
-│   ├── data_generation/  # Dataset creation scripts
-│   ├── training/         # Training execution scripts
-│   ├── analysis/         # Analysis scripts
-│   └── utils/            # Utility scripts
-├── data/                 # Output directory (gitignored)
-├── docs/                 # Documentation
-│   ├── logs/             # Development logs
-│   └── reports/          # Research reports
-└── scratch/              # Temporary workspace (gitignored)
+.
+├── src/                        # All Python source code
+│   ├── data_generation_v1/     # Data generation (7 tasks, city datasets, tokenizer)
+│   ├── training/               # Model training (train.py)
+│   ├── eval/                   # Checkpoint evaluation
+│   ├── analysis/               # CKA, PCA, representation analysis
+│   ├── visualization/          # City and result visualization
+│   ├── scripts/                # Orchestration scripts (entry points)
+│   ├── metrics.py              # Centralized task metric calculations
+│   ├── evaluation.py           # Unified evaluation module
+│   └── utils.py                # Shared utilities
+├── configs/                    # YAML configuration files
+│   ├── data_generation_v1/     # Dataset and tokenizer configs
+│   ├── training/               # Model training configs
+│   ├── revision/               # Revision experiment configs (exp1-exp6)
+│   └── ...                     # Analysis, evaluation, etc.
+├── scripts/                    # Bash execution scripts
+│   ├── data_generation_v1/     # Data generation scripts
+│   ├── training/               # Training scripts
+│   ├── revision/               # Revision experiment scripts
+│   └── ...                     # Analysis, evaluation, etc.
+├── data/                       # Experiment outputs (gitignored)
+├── paper/                      # ICLR-formatted preprint (Overleaf-synced)
+├── docs/                       # Documentation and development logs
+├── scratch/                    # Temporary workspace (gitignored)
+└── rebuttal/                   # ICLR 2026 rebuttal materials
 ```
 
-## Setup
+## Setup and Installation
 
-### Environment
-
-This project uses `uv` for Python package management:
+This project uses [uv](https://github.com/astral-sh/uv) for Python package management.
 
 ```bash
 # Clone the repository
 git clone https://github.com/cfpark00/world-map-representation.git
-cd WM_1
+cd world-map-representation
 
 # Install dependencies
 uv sync
 
 # Configure environment
 cp .env.example .env
-# Edit .env to set DATA_DIR path
+# Edit .env as needed
 ```
 
-### Running Experiments
+Key dependencies include PyTorch, Transformers (HuggingFace), scikit-learn, plotly, and standard scientific Python libraries. See `pyproject.toml` for the full list.
 
-All experiments are run through scripts in the `scripts/` directory:
+## Running Experiments
+
+All experiments follow a three-part pattern: **configs** define parameters, **scripts** execute them, **data/** stores outputs.
 
 ```bash
 # Generate datasets
-bash scripts/data_generation/create_dataset.sh
+bash scripts/data_generation_v1/cities/create_city_dataset.sh
 
-# Train models
+# Train a model
 bash scripts/training/train_base.sh
 
-# Run analysis
-bash scripts/analysis/run_analysis.sh
-```
-
-Or directly with Python:
-
-```bash
-# Using uv run
+# Or run directly with a config
 uv run python src/training/train.py configs/training/train_dist_1M_no_atlantis_5epochs.yaml
-
-# Or with activated environment
-source .venv/bin/activate
-python src/training/train.py configs/training/train_dist_1M_no_atlantis_5epochs.yaml
 ```
 
-## Key Components
+Every config file specifies an `output_dir` field that determines where results are written. Outputs typically include `figures/`, `results/`, and `logs/` subdirectories.
 
-### Custom Tokenizer
-
-The project uses a character-level tokenizer optimized for geographic tasks:
-- 45 tokens total: special tokens, grammar symbols, lowercase letters, digits
-- Efficient encoding of city IDs and coordinates
-- See `src/tokenizer/` for implementation
-
-### Task Types
-
-1. **Distance Prediction**: Predict geodesic distance between city pairs
-   - Format: `dist(c_123,c_456)=789`
-   
-2. **Location Prediction**: Predict city coordinates from ID
-   - Format: `c_123:(45.5,-122.6)`
-   
-3. **Random Walk**: Generate sequential paths through nearby cities
-   - Format: `WALK:c_123->c_456->c_789`
-
-### Model Architecture
-
-- Small transformer models (configurable size)
-- Trained with task-specific loss masking
-- Multi-task support with automatic collator selection
-- Checkpointing and evaluation during training
-
-## Development Workflow
-
-1. **Create/modify configs** in `configs/` subdirectories
-2. **Run experiments** via scripts in `scripts/`
-3. **Results appear** in paths specified by config `output_dir`
-4. **Analysis notebooks** in `notebooks/` for exploration
-
-## Contributing
-
-This project follows the research template conventions:
-- Implementation (HOW) in `src/` modules
-- Orchestration (WHAT/WHEN) in scripts
-- All configs must specify `output_dir`
-- Fail fast with explicit errors (no silent fallbacks)
-
-See [CLAUDE.md](CLAUDE.md) and [docs/repo_usage.md](docs/repo_usage.md) for detailed development guidelines.
+The project includes extensive revision experiments (exp1 through exp6) covering seed robustness, model width ablations, scattered Atlantis controls, and cross-seed CKA analyses. These are organized under `configs/revision/` and `scripts/revision/`.
 
 ## Citation
 
-If you use this code for research, please cite:
-
 ```bibtex
-@software{wm1_2024,
-  title = {WM1: World Model Experiments},
-  author = {Park, Chan},
-  year = {2024},
-  url = {https://github.com/cfpark00/world-map-representation}
+@article{park2025convergent,
+  title={Convergent World Representations and Divergent Tasks},
+  author={Park, Core Francisco},
+  year={2025},
+  note={Preprint}
 }
 ```
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License. See LICENSE file for details.
