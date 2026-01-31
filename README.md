@@ -8,7 +8,7 @@
 
 While neural representations are central to modern deep learning, the conditions governing their geometry and their roles in downstream adaptability remain poorly understood. We develop a framework clearly separating the underlying world, the data generation process and the resulting model representations to study these questions in a controlled setup. 5,075 city coordinates define the world and 7 geometric tasks generate the training data for autoregressive training. We find that different tasks give rise to qualitatively and quantitatively distinct world representation geometries. However, multi-task training drives convergence of world representations: models trained on non-overlapping tasks develop aligned geometric representations, providing controlled evidence for the Multitask Scaling Hypothesis of the Platonic Representation Hypothesis. To study adaptation, we pretrain models on all tasks, then test whether new entities (cities) can be consistently integrated into the representation space via fine-tuning. Surprisingly, we find that despite multi-task pretraining, some tasks, which we call *divergent*, actively harm the representational integration of new entities and harm generalization. Our results show that training on multiple relational tasks reliably produces convergent world representations, but lurking divergent tasks can catastrophically harm new entity integration via fine-tuning.
 
-![Figure 1](paper/figures/fig1.png)
+![Figure 1](resources/figures/fig1.png)
 
 ## Key Findings
 
