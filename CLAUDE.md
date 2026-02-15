@@ -2,10 +2,6 @@
 
 This document outlines the project structure and development conventions.
 
-## IMPORTANT
-- **NEVER** run **ANY** git operations unless explicitly told to do so.
-
-
 ## Project Structure
 
 ### `/scripts/` - Execution Scripts
@@ -64,7 +60,7 @@ Freeform directory for temporary tests, one-off scripts, and experimental code.
 ### `/docs/` - Documentation
 Contains notes and logs from and for developers.
 - `/docs/logs/YYYY-MM-DD/` - Daily development logs
-- `/docs/structure.txt` - Project structure overview
+- `/docs/structure.md` - Project structure overview
 - Technical notes and analysis
 
 ## Development Workflow

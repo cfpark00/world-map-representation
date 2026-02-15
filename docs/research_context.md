@@ -955,3 +955,49 @@ Added `%## KEY SPECULATION ##` comment block in Discussion:
 - Fixed `\textdegree` in math mode (now uses `\degree`)
 
 **Status:** Compiles at 24 pages (8 main + 16 appendix), pushed to Overleaf
+
+## SciForDL Workshop Papers (2026-02-04)
+
+**ICLR 2026 SciForDL workshop** (Science of Deep Learning, 2nd edition). Deadline: Feb 4, 2026 AoE. 4-page main text limit, unlimited appendix, double-blind.
+
+### Decision: Split into Two Papers
+The arXiv paper naturally splits into pretraining findings and finetuning findings.
+
+### Paper 1: Pretraining Convergence
+- **Title**: "Multi-Task Pretraining Drives Representational Convergence"
+- **Location**: `paper/workshops/scidl_1/scidl_pretraining.tex`
+- **Main text figures**: Fig 1 (overview, no Atlantis), Fig 2 (task-dependent geometry), Fig 3 (multi-task convergence), Fig 4 (7-task model as wrapfig)
+- **Sections**: Introduction, Results, Conclusion
+- **Status** (2026-02-05 07:21): Extensively polished:
+  - Abstract: Added PRH/MSH framing, magnitude insight for 7-task model
+  - Introduction: Condensed from 4 to 2 paragraphs
+  - Result 1: Reframed as "World Representations Form Early and Freeze" (15% saturation)
+  - 7-task model: Emphasized magnitude amplification (linear repr exists in all models, multi-task amplifies until it dominates PCs)
+  - Conclusion: Condensed to 1 sentence
+  - Removed all em-dashes, speculative citations
+  - TODO: Anonymize author block for double-blind
+
+### Paper 2: Finetuning Divergence
+- **Title**: "Divergent Tasks Harm Integration of New Entities via Fine-Tuning"
+- **Location**: `paper/workshops/scidl_2/scidl_finetuning.tex`
+- **Main text figures**: Fig 1 (overview), Fig 2 (7-task model), Fig 3 (FT generalization + CKA), Fig 4 (divergent tasks harm)
+- **Sections**: Introduction, Results (no separate Experimental Framework section)
+- **Status** (2026-02-05 06:34): Extensively polished for page limits:
+  - Introduction condensed to 2 sentences
+  - Figures converted to wrapfigures
+  - Conclusion removed (Results section wraps up)
+  - Abstract refined with "lurking" language, hedged claims
+  - Fixed wrapfigure placement issues
+  - TODO: Anonymize author block for double-blind
+
+### Shared Structure
+- Both papers have full appendix from the original paper
+- Related Work moved to top of appendix (removed from main text)
+- Discussion section removed from main text
+- Papers live in `paper/workshops/` to share Overleaf git
+
+### Status (2026-02-05 07:21)
+- **Paper 1 (Pretraining)**: Extensively polished, complete
+- **Paper 2 (Finetuning)**: Extensively polished, fits page limits, no Conclusion section (Results wraps up)
+- Both papers need author block anonymized for double-blind review
+- Pushed to Overleaf

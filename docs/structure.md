@@ -472,6 +472,31 @@ Some paths may be outdated.
 
 ## Key Changes
 
+### 2026-02-05
+- SciForDL workshop papers progress
+  - **Finetuning paper (scidl_2)**: Extensively polished for page limits
+    - Introduction condensed to 2 sentences
+    - Figures 2-4 converted to wrapfigures
+    - Conclusion removed (Results section wraps up with summary + Limitations)
+    - Abstract refined: "lurking" divergent tasks, hedged claims
+    - Fixed wrapfigure placement (must come before text, not after)
+  - **Pretraining paper (scidl_1)**: Extensively polished (07:21 session)
+    - Abstract: Added PRH/MSH framing, magnitude insight
+    - Introduction: Condensed from 4 to 2 paragraphs
+    - Result 1: "World Representations Form Early and Freeze" (15% saturation emphasis)
+    - 7-task model: Key insight is magnitude amplification, not just convergence
+    - Conclusion: Condensed to 1 sentence
+    - Removed em-dashes, speculative citations
+  - Both papers: Related Work moved to appendix
+  - TODO: Anonymize author blocks for double-blind review
+
+### 2026-02-04
+- SciForDL workshop papers in `paper/workshops/`
+  - `paper/workshops/scidl_1/` - Pretraining convergence paper (scidl_pretraining.tex)
+  - `paper/workshops/scidl_2/` - Finetuning divergence paper (scidl_finetuning.tex)
+  - `paper/workshops/scidl_template/` - Unmodified workshop style template
+- Downloaded arxiv paper to `resources/park_2026/paper/` (markdown with AI figure descriptions)
+
 ### 2026-01-31
 - arXiv preprint preparation in `paper/` (ICLR-formatted, Overleaf-synced)
   - Ported ICML text changes while preserving ICLR styling
