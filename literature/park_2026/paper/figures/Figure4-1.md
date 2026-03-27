@@ -1,0 +1,1 @@
+Figure 4: 7-task model. (a) PCA projection of layer 5 representations naturally reveals world map structure. (b) Training curves showing successful learning of all 7 tasks, including crossing which failed in singletask training.

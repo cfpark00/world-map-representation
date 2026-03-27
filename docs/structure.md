@@ -491,14 +491,14 @@ Some paths may be outdated.
   - TODO: Anonymize author blocks for double-blind review
 
 ### 2026-02-04
-- SciForDL workshop papers in `paper/workshops/`
-  - `paper/workshops/scidl_1/` - Pretraining convergence paper (scidl_pretraining.tex)
-  - `paper/workshops/scidl_2/` - Finetuning divergence paper (scidl_finetuning.tex)
-  - `paper/workshops/scidl_template/` - Unmodified workshop style template
+- SciForDL workshop papers in `papers/iclr/workshops/`
+  - `papers/iclr/workshops/scidl_1/` - Pretraining convergence paper (scidl_pretraining.tex)
+  - `papers/iclr/workshops/scidl_2/` - Finetuning divergence paper (scidl_finetuning.tex)
+  - `papers/iclr/workshops/scidl_template/` - Unmodified workshop style template
 - Downloaded arxiv paper to `resources/park_2026/paper/` (markdown with AI figure descriptions)
 
 ### 2026-01-31
-- arXiv preprint preparation in `paper/` (ICLR-formatted, Overleaf-synced)
+- arXiv preprint preparation in `papers/iclr/` (ICLR-formatted, Overleaf-synced)
   - Ported ICML text changes while preserving ICLR styling
   - De-anonymized with author info (3 affiliations)
   - Header changed to "Preprint"
@@ -507,7 +507,7 @@ Some paths may be outdated.
 - New log: `docs/logs/2026-01-31/0559_arxiv_preprint_prep.md`
 
 ### 2026-01-27
-- ICML 2026 submission work in `paper_icml/` (now part of main repo, .git removed)
+- ICML 2026 submission work in `papers/icml/` (now part of main repo, .git removed)
 - Updated title: "Convergent World Representations and Divergent Tasks"
 - Rewrote abstract to emphasize convergence/divergence findings
 - Paper polish: tightened Discussion, added Future Work, rewrote Conclusion

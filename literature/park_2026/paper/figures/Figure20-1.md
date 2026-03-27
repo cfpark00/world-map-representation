@@ -1,0 +1,1 @@
+Figure 20: Fine-tuning results for wider model (2× hidden dimension). For all panels: rows = fine-tuning task(s), columns = evaluation task. (a) Single-task fine-tuning normalized improvement. (b) Two-task fine-tuning normalized improvement. (c) Deviation from best-teacher expectation; distance-containing combinations (red labels) still show degraded generalization.

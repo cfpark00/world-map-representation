@@ -14,7 +14,7 @@
 ### 2. Implementation vs Orchestration
 - **Implementation (HOW)**: Lives in `src/<track>/` modules - reusable functions and core logic
 - **Orchestration (WHAT/WHEN)**: Lives in `src/<track>/scripts/` - experiment flow and coordination at Python level
-- **Bash scripts in `/scripts/<track>/`**: Minimal wrappers that just call Python scripts, e.g., `uv run python src/behavioral/scripts/run_benchmark.py configs/behavioral/benchmark.yaml`
+- **Bash scripts in `/scripts/<track>/`**: Minimal wrappers that just call Python scripts, e.g., `uv run python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml`
 
 ### 3. Abstraction Guidelines
 - **Just the right amount**: Do not over-abstract, aim for clarity over cleverness
@@ -57,53 +57,55 @@ docs/tracks/<track_name>/   # Track-specific documentation
 ```
 src/
 ├── utils.py                # Cross-track utilities (stable API)
-├── behavioral/             # Behavioral analysis track
+├── approach_a/             # First research direction
 │   ├── utils.py            # Track-specific utilities
-│   ├── dat_scorer.py
+│   ├── model.py
 │   └── scripts/
-│       └── run_benchmark.py
-└── mechanistic/            # Mechanistic analysis track
+│       └── run_experiment.py
+└── approach_b/             # Second research direction
     ├── utils.py            # Track-specific utilities
-    ├── circuit_analysis.py
+    ├── pipeline.py
     └── scripts/
-        └── run_intervention.py
+        └── run_analysis.py
 
 configs/
-├── behavioral/
-│   └── benchmark_gemini.yaml
-└── mechanistic/
-    └── ablation_study.yaml
+├── approach_a/
+│   └── experiment_v1.yaml
+└── approach_b/
+    └── analysis_config.yaml
 
 scripts/
-├── behavioral/
-│   └── run_benchmark.sh
-└── mechanistic/
-    └── run_ablation.sh
+├── approach_a/
+│   └── run_experiment.sh
+└── approach_b/
+    └── run_analysis.sh
 
 data/
-├── behavioral/
-│   └── gemini_benchmark_001/
-└── mechanistic/
-    └── ablation_run_001/
+├── approach_a/
+│   └── experiment_001/
+└── approach_b/
+    └── analysis_001/
 
 docs/
 ├── repo_usage.md           # Cross-track documentation
 ├── research_context.md     # Overall research context
 └── tracks/
-    ├── behavioral/         # Track-specific docs
+    ├── approach_a/         # Track-specific docs
+    │   ├── progress.md     # History and progress of the track (REQUIRED)
     │   ├── notes.md        # Tacit knowledge, decisions, insights
     │   └── results.md      # Key findings summary
-    └── mechanistic/
+    └── approach_b/
+        ├── progress.md
         └── notes.md
 ```
 
 ### Track Documentation
 
-Each track should have a `docs/tracks/<track_name>/` folder for:
-- **Tacit knowledge**: Design decisions, why certain approaches were chosen/abandoned
-- **Notes**: Observations, insights, things you'd forget in a month
+Each track **must** have a `docs/tracks/<track_name>/` folder with at minimum a `progress.md` file:
+
+- **`progress.md` (REQUIRED)**: The maintained history and progress of the track. This is the single most important file for a track — it tells you where the track has been, where it is now, and where it's going. Without it, returning to a track after time away means starting from scratch. Keep it updated as work progresses.
+- **Notes**: Tacit knowledge, design decisions, why certain approaches were chosen/abandoned, observations, gotchas
 - **Results summaries**: Key findings without digging through data/
-- **Gotchas**: Known issues, edge cases, things that surprised you
 
 This documentation is invaluable when:
 - Returning to a track after working on another
@@ -148,22 +150,22 @@ python src/scripts/<script_name>.py configs/<config_file>.yaml --overwrite --deb
 
 ### Bash Scripts
 - All .sh scripts must be in `scripts/<track>/`
-- Each track has its own scripts folder: `scripts/behavioral/`, `scripts/mechanistic/`, etc.
+- Each track has its own scripts folder: `scripts/approach_a/`, `scripts/approach_b/`, etc.
 - All .sh scripts should be as minimal as possible, mostly they simply keep track of what .py scripts should be ran to recreate the experiment
 - **IMPORTANT: Always pass through arguments using `"$@"`** to allow flags like `--overwrite` and `--debug` to be passed from bash to Python
 - Example:
   ```bash
   #!/bin/bash
-  uv run python src/behavioral/scripts/run_benchmark.py configs/behavioral/benchmark.yaml "$@"
+  uv run python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml "$@"
   ```
-  This allows you to run: `bash scripts/behavioral/run_benchmark.sh --overwrite --debug`
+  This allows you to run: `bash scripts/approach_a/run_experiment.sh --overwrite --debug`
 
 ### Config Files
 - All configs must be in `configs/<track>/`
-- Each track has its own configs folder: `configs/behavioral/`, `configs/mechanistic/`, etc.
+- Each track has its own configs folder: `configs/approach_a/`, `configs/approach_b/`, etc.
 - Within a track, you can further organize by experiment type if needed:
-  - `configs/behavioral/benchmarks/`
-  - `configs/behavioral/ablations/`
+  - `configs/approach_a/sweeps/`
+  - `configs/approach_a/baselines/`
 - This organization makes it easy to find and manage configs per track
 
 ### Python Scripts
@@ -251,26 +253,92 @@ output_dir = init_directory(config['output_dir'], overwrite=args.overwrite)
 - Trust framework features (e.g., use HuggingFace's TrainingArguments instead of custom schedulers)
 
 ### Resources Directory Usage
-The `resources/` folder is for reference materials that inform your research:
+The `resources/` folder is for external reference materials — code, docs, and implementations you want to look at locally:
 
 - **Git repositories**: Clone external repos you're studying or referencing
-- **Papers**: Store PDFs of papers relevant to the research
-- **Documentation**: Keep external docs, specifications, or references
-- **Examples**: Reference implementations or code samples
+- **Documentation**: External docs, API specifications, or references
+- **Implementations**: Reference implementations or code samples
+
+For papers, use `literature/` instead (see below).
+
+### Literature Directory (`literature/`)
+Research papers converted to markdown for easy reference. Each paper lives in its own folder named `lastname_year_fewwordtitle`:
+
+```
+literature/
+├── hendel_2023_functionvectors/
+│   ├── paper.pdf
+│   └── paper/
+│       ├── paper.md
+│       └── figures/
+└── todd_2023_linearreps/
+    ├── paper.pdf
+    └── paper/
+        ├── paper.md
+        └── figures/
+```
+
+**Adding papers:** Use the `/add-paper` skill with an arXiv URL and folder name:
+```
+/add-paper https://arxiv.org/abs/2310.15916 hendel_2023_functionvectors
+```
+
+This downloads the PDF, converts it to markdown, and extracts figures with AI-generated descriptions.
+
+**Sharing:** The directory uses DVC-style gitignore rules — `.dvc` manifests are committed to git while actual files are tracked via DVC. Use `dvc add literature/<paper_name>` to share papers with collaborators, then `dvc push`.
 
 ```bash
 # Example structure
 resources/
 ├── repos/
 │   └── some-reference-repo/
-├── papers/
-│   ├── attention-is-all-you-need.pdf
-│   └── scaling-laws.pdf
 └── docs/
     └── api-spec.md
 ```
 
 This folder is gitignored - it's for local reference only, not committed to the repo.
+
+### Memos (`docs/memos/`)
+Project-specific tips, accumulated knowledge, and informal notes. Memos capture tacit knowledge that builds up over the course of a project — the kind of thing you'd tell a new collaborator over coffee.
+
+- **Tacit knowledge**: Quirks of the codebase, non-obvious gotchas, "we tried X and it doesn't work because Y"
+- **Project-specific tips**: Workflow shortcuts, environment setup tricks, debugging recipes
+- **Todo lists**: Informal tracking of ideas, things to try, or deferred tasks
+- **Decision rationale**: Why we chose approach A over B, even if it's just a few sentences
+
+Memos are git-tracked and meant to persist. They don't need to be polished — a quick note is better than no note.
+
+### Reports (`docs/reports/`)
+Compilations of results written up as mini-narratives. A report is polished enough to share with a collaborator as an interesting, established piece of result — more than raw notes, less than a paper draft.
+
+**IMPORTANT: Never place files directly in `docs/reports/`.** Each report lives in its own subfolder named `<date>_<reportname>`:
+
+```
+docs/reports/
+├── 2026-02-15_scaling_analysis/
+│   ├── report.md
+│   └── figures/
+└── 2026-02-18_baseline_comparison/
+    ├── report.md
+    └── figures/
+```
+
+- Summarize key findings with context and interpretation
+- Include relevant figures and tables
+- Should stand on their own — a collaborator can read one without digging through code or data
+
+**Research output hierarchy:** experiments produce raw results in `data/` → interesting results become findings in track notes → established findings get compiled into reports → reports mature into paper sections.
+
+### Papers (`papers/`)
+Each subdirectory is an Overleaf-synced git repo for a paper draft:
+
+```
+papers/
+├── my-icml-paper/       # git clone from Overleaf
+└── my-workshop-paper/   # another Overleaf repo
+```
+
+The entire `papers/` directory is gitignored (except `.gitkeep`) to avoid dirty submodule issues — each paper has its own git history via Overleaf. Clone them locally as needed. See `docs/paper_writing.md` for writing conventions.
 
 ### Data Sharing with DVC
 
@@ -352,17 +420,17 @@ touch scratch/temp_script.py  # DO NOT put files directly in scratch/
 Always execute from project root:
 ```bash
 # Via bash script (recommended)
-bash scripts/behavioral/run_benchmark.sh
-bash scripts/behavioral/run_benchmark.sh --overwrite --debug
+bash scripts/approach_a/run_experiment.sh
+bash scripts/approach_a/run_experiment.sh --overwrite --debug
 
 # Direct Python execution
-uv run python src/behavioral/scripts/run_benchmark.py configs/behavioral/benchmark.yaml
+uv run python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml
 
 # With flags
-uv run python src/behavioral/scripts/run_benchmark.py configs/behavioral/benchmark.yaml --overwrite
+uv run python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml --overwrite
 
 # From activated environment
-python src/mechanistic/scripts/run_ablation.py configs/mechanistic/ablation.yaml
+python src/approach_b/scripts/run_analysis.py configs/approach_b/analysis_config.yaml
 ```
 
 ## Quick Decision Guide
@@ -440,8 +508,8 @@ uv run python src/<track>/scripts/run_experiment.py configs/<track>/experiment.y
 
 Downstream scripts operate on the output of a previous run. This includes:
 - **Analysis**: plotting, statistics, summarization
-- **Mech interp**: probing, activation analysis, circuit discovery
-- **Fine-tuning**: further training on a checkpoint
+- **Further processing**: transforming or refining outputs
+- **Evaluation**: scoring, comparison, validation
 - **Data processing**: extracting subsets, reformatting, distribution analysis
 
 The key idea: run something expensive once, then do multiple cheaper downstream operations on it.
@@ -450,7 +518,7 @@ The key idea: run something expensive once, then do multiple cheaper downstream 
 
 ```yaml
 upstream_dir: "data/my_experiment/run_001"  # Points to existing run
-output_dir: "data/my_experiment/run_001/downstream/mech_interp"  # Subdirectory within upstream
+output_dir: "data/my_experiment/run_001/downstream/evaluation"  # Subdirectory within upstream
 ```
 
 ### Key Principles
@@ -502,13 +570,13 @@ data/my_experiment/run_001/
 ├── results/                 # Original results (untouched)
 ├── logs/                    # Original logs (untouched)
 └── downstream/
-    ├── mech_interp/         # First downstream
+    ├── evaluation/          # First downstream
     │   ├── config.yaml
     │   ├── results/
     │   └── downstream/      # Downstream of downstream!
-    │       └── attention_heads/
+    │       └── detailed_scores/
     │           └── ...
-    ├── fine_tuning/         # Another downstream of run_001
+    ├── visualization/       # Another downstream of run_001
     │   └── ...
     └── data_distribution/   # Yet another
         └── ...
@@ -522,6 +590,100 @@ data/my_experiment/run_001/
 - **Re-runnable**: `--overwrite` lets you iterate on downstream without re-running expensive upstream
 - **Clear lineage**: directory structure shows what depends on what
 
+## Package Management
+
+We use `uv` for Python package management.
+
+**Always use the uv virtual environment:**
+```bash
+# Option 1: Activate the environment
+source .venv/bin/activate
+python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml
+
+# Option 2: Use uv run (no activation needed)
+uv run python src/approach_a/scripts/run_experiment.py configs/approach_a/experiment.yaml
+```
+
+**Always add packages with uv:**
+```bash
+uv add numpy pandas matplotlib
+uv add scipy  # Never use pip install
+```
+
+## Code Conventions
+
+### Imports
+```python
+# Good - using src module structure
+from src.utils import init_directory
+from src.approach_a.model import MyModel
+
+# Bad - relative imports or files outside src/
+from model import MyModel       # Wrong
+from ../utils import helper     # Wrong
+```
+
+## Environment Setup
+
+1. Clone repository
+2. Copy `.env.example` to `.env` and configure settings
+3. Install dependencies: `uv sync`
+4. Run experiments: `bash scripts/<track>/run_experiment.sh`
+
+## Git Conventions
+
+- `/data/` is gitignored - never commit experiment outputs
+- `.env` is gitignored - use `.env.example` as template
+- `uv.lock` is committed for reproducibility
+- Commit messages should be descriptive
+
+## Testing
+
+Before committing:
+1. Ensure all scripts run without errors
+2. Check that output appears in correct directories
+3. Verify configs have required `output_dir` field
+4. Run `uv sync` to ensure dependencies are locked
+
+## Common Commands
+
+```bash
+# Run experiment
+bash scripts/<track>/run_experiment.sh
+
+# Add new package
+uv add package_name
+
+# Sync dependencies
+uv sync
+
+# Activate virtual environment
+source .venv/bin/activate
+```
+
+## Troubleshooting
+
+- **ModuleNotFoundError**: Ensure you're using `uv run` or activated `.venv`
+- **Import errors**: Check that imports use `from src.module import ...`
+- **Missing output**: Verify config has `output_dir` field
+- **Permission denied**: Make scripts executable with `chmod +x`
+
+## Project Information
+
+### Research Focus
+[Add your research questions and goals here]
+
+### Key Components
+[Add descriptions of your main modules and components here]
+
+### Key Metrics
+[Add the metrics you're tracking here]
+
+### Expected Outcomes
+[Add your expected results here]
+
+---
+
 ## Key Takeaways
 - **Implementation is HOW. Orchestration is WHAT/WHEN/WHETHER.**
 - **Research integrity demands explicit behavior** - no hidden magic
@@ -530,6 +692,6 @@ data/my_experiment/run_001/
 
 ## IMPORTANT
 - NEVER create file variations like _v2, _new, _final, _updated. Use git for versioning.
-- Always follow the existing project structure as defined in CLAUDE.md
+- Always follow the existing project structure as defined in this document
 - Config files must specify `output_dir` - this is non-negotiable
 - All data outputs go to the path specified in `output_dir` in the config

@@ -1,6 +1,6 @@
 # Convergent World Representations and Divergent Tasks
 
-**Paper:** [Preprint (forthcoming on arXiv)](paper/) | **Research Process:** [cfpark00.github.io/world-rep-research-flow](https://cfpark00.github.io/world-rep-research-flow/) | **3D Visualizations:** [Open Science Framework](https://osf.io/jb8an/?view_only=da001f31c0534dc0b6476141f30db90d)
+**Paper:** [Preprint (forthcoming on arXiv)](papers/iclr/) | **Research Process:** [cfpark00.github.io/world-rep-research-flow](https://cfpark00.github.io/world-rep-research-flow/) | **3D Visualizations:** [Open Science Framework](https://osf.io/jb8an/?view_only=da001f31c0534dc0b6476141f30db90d)
 
 **Contact:** [Core Francisco Park](https://corefranciscopark.com)
 
@@ -43,7 +43,7 @@ While neural representations are central to modern deep learning, the conditions
 │   ├── revision/               # Revision experiment scripts
 │   └── ...                     # Analysis, evaluation, etc.
 ├── data/                       # Experiment outputs (gitignored)
-├── paper/                      # ICLR-formatted preprint (Overleaf-synced)
+├── papers/                     # Paper repos (ICLR, ICML, workshops)
 ├── docs/                       # Documentation and development logs
 ├── scratch/                    # Temporary workspace (gitignored)
 └── rebuttal/                   # ICLR 2026 rebuttal materials

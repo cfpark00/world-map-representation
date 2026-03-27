@@ -54,8 +54,19 @@ Update `docs/research_context.md` with **high-level** progress:
 
 This is the bird's-eye view document - not detailed implementation notes.
 
-## 4. Update Structure Doc
+## 4. Update README.md
+
+Keep `README.md` up to date but **extremely simple** — just the project name, a short paragraph describing the project, setup instructions, and a few main scripts to run. Nothing more.
+
+## 5. Update Structure Doc
 
 If file/folder structure changed, update `docs/structure.md`.
 
 Even if no changes, do a quick consistency check.
+
+## 6. Git Add, Commit, and Push
+
+- Check `git status` and `git diff` to review what changed
+- Verify no large data files or secrets (`.env`, credentials, model weights) are staged — these should be gitignored
+- Add and commit everything that should be tracked
+- Push to remote

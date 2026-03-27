@@ -45,8 +45,8 @@ Added `%## KEY SPECULATION: WHY IS DISTANCE DIVERGENT? ##` comment block in Disc
 
 ## Files Modified
 
-- `paper_icml/main.tex` - Title, abstract, ick points, speculation comments
-- `paper_icml/AUTHOR_INSTRUCTIONS.md` - Added peer review ethics section
+- `papers/icml/main.tex` - Title, abstract, ick points, speculation comments
+- `papers/icml/AUTHOR_INSTRUCTIONS.md` - Added peer review ethics section
 
 ## Key Decisions
 

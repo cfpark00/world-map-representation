@@ -5,12 +5,12 @@
 
 ## Summary
 
-Ported all text/content changes from the ICML paper (`paper_icml/main.tex`) to the ICLR-formatted paper (`paper/iclr2026_conference.tex`), de-anonymized the paper, and prepared it for arXiv preprint submission.
+Ported all text/content changes from the ICML paper (`papers/icml/main.tex`) to the ICLR-formatted paper (`papers/iclr/iclr2026_conference.tex`), de-anonymized the paper, and prepared it for arXiv preprint submission.
 
 ## Tasks Completed
 
 ### Text Porting (ICML -> ICLR format)
-- Ported all prose/text changes from `paper_icml/main.tex` to `paper/iclr2026_conference.tex` using 8 parallel subagents (one per section: title+abstract, intro, related work, sec 2+3, sec 4, discussion+conclusion, appendix, bib file)
+- Ported all prose/text changes from `papers/icml/main.tex` to `papers/iclr/iclr2026_conference.tex` using 8 parallel subagents (one per section: title+abstract, intro, related work, sec 2+3, sec 4, discussion+conclusion, appendix, bib file)
 - Kept all ICLR styling intact (document class, figure placements, single-column layout, bibliography style)
 - Key text changes: new title ("Convergent World Representations and Divergent Tasks"), rewritten abstract, condensed related work/discussion, PRH abbreviation, Oxford comma removal, new citations, future work paragraph, task-architecture hypothesis paragraph
 
@@ -32,16 +32,16 @@ Ported all text/content changes from the ICML paper (`paper_icml/main.tex`) to t
 - Also added as first appendix section
 
 ## Files Modified
-- `paper/iclr2026_conference.tex` - All text edits, de-anonymization, arxiv fixes, research process link
-- `paper/iclr2026_conference.sty` - Header changed to "Preprint" on both branches (line 88, 95)
-- `paper/iclr2026_conference.bib` - Added `li2025justintimedistributedtaskrepresentations` entry
+- `papers/iclr/iclr2026_conference.tex` - All text edits, de-anonymization, arxiv fixes, research process link
+- `papers/iclr/iclr2026_conference.sty` - Header changed to "Preprint" on both branches (line 88, 95)
+- `papers/iclr/iclr2026_conference.bib` - Added `li2025justintimedistributedtaskrepresentations` entry
 
 ## Key Decisions
 - arXiv requires full TeX source submission (not just PDF) for LaTeX-generated papers
 - PDF links in LaTeX cannot control "open in new tab" behavior (PDF limitation)
 - Research process link placed between abstract and intro in centered bold format, matching convention of Code/Project Page links in ML papers
 
-## Commits (paper/ repo, Overleaf-synced)
+## Commits (papers/iclr/ repo, Overleaf-synced)
 - Port ICML text changes to ICLR paper (8 parallel agents)
 - Change header to Preprint
 - De-anonymize and add author affiliations

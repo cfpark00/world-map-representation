@@ -43,8 +43,8 @@ Restored missing appendix content from ICLR version to ICML paper, merged duplic
 - All citations already existed in bib file
 
 ## Files Modified
-- `paper_icml/main.tex` - All appendix content additions and merges
-- `paper_icml/main.bib` - Removed duplicate entries
+- `papers/icml/main.tex` - All appendix content additions and merges
+- `papers/icml/main.bib` - Removed duplicate entries
 
 ## Key Decisions
 1. All citations from ICLR Extended Related Work were verified to exist in main.bib before adding

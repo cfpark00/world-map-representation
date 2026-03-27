@@ -1,0 +1,1 @@
+Figure 10: Representation visualizations for single-task models across multiple seeds. Each column shows a different task; each row shows a different random seed. Cities are colored by geographic region. Despite seed variability, task-specific geometric patterns are visible.

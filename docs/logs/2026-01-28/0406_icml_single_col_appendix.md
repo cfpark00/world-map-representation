@@ -16,7 +16,7 @@ Converted ICML paper appendix from two-column to single-column format per ICML g
 
 ## Files Modified
 
-- `paper_icml/main.tex` - appendix formatting changes
+- `papers/icml/main.tex` - appendix formatting changes
 
 ## Key Changes
 

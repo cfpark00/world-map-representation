@@ -4,7 +4,7 @@
 
 ## Summary
 
-Polished the SciForDL workshop finetuning paper (`paper/workshops/scidl_2/scidl_finetuning.tex`) to fit page limits and improve flow.
+Polished the SciForDL workshop finetuning paper (`papers/iclr/workshops/scidl_2/scidl_finetuning.tex`) to fit page limits and improve flow.
 
 ## Tasks Completed
 
@@ -49,7 +49,7 @@ Polished the SciForDL workshop finetuning paper (`paper/workshops/scidl_2/scidl_
 
 ## Files Modified
 
-- `paper/workshops/scidl_2/scidl_finetuning.tex` - all edits above
+- `papers/iclr/workshops/scidl_2/scidl_finetuning.tex` - all edits above
 
 ## Key Decisions
 

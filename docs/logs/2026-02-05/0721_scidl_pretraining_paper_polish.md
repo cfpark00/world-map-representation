@@ -4,7 +4,7 @@
 
 ## Summary
 
-Polished the SciForDL pretraining workshop paper (`paper/workshops/scidl_1/`), focusing on tightening the narrative, emphasizing key findings, and fixing structural issues.
+Polished the SciForDL pretraining workshop paper (`papers/iclr/workshops/scidl_1/`), focusing on tightening the narrative, emphasizing key findings, and fixing structural issues.
 
 ## Tasks Completed
 
@@ -19,7 +19,7 @@ Polished the SciForDL pretraining workshop paper (`paper/workshops/scidl_1/`), f
 
 ## Files Modified
 
-- `paper/workshops/scidl_1/scidl_pretraining.tex`
+- `papers/iclr/workshops/scidl_1/scidl_pretraining.tex`
 
 ## Key Decisions/Insights
 

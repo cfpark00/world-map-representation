@@ -81,8 +81,8 @@ Completed both SciForDL workshop papers by writing conclusions, removing Experim
 
 ## Files Modified
 
-- `paper/workshops/scidl_1/scidl_pretraining.tex` - Major cleanup
-- `paper/workshops/scidl_2/scidl_finetuning.tex` - Structure + conclusion
+- `papers/iclr/workshops/scidl_1/scidl_pretraining.tex` - Major cleanup
+- `papers/iclr/workshops/scidl_2/scidl_finetuning.tex` - Structure + conclusion
 
 ## Git Commits (to Overleaf)
 

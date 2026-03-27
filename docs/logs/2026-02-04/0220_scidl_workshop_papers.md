@@ -4,7 +4,7 @@
 
 ## Summary
 
-Split the arXiv paper (arxiv:2602.00533) into two 4-page workshop papers for the ICLR 2026 SciForDL workshop (submission deadline: Feb 4 AoE). Assembled both papers with figures, captions, abstracts, titles, and full shared appendix. Moved final papers into `paper/workshops/` to share the Overleaf git repo.
+Split the arXiv paper (arxiv:2602.00533) into two 4-page workshop papers for the ICLR 2026 SciForDL workshop (submission deadline: Feb 4 AoE). Assembled both papers with figures, captions, abstracts, titles, and full shared appendix. Moved final papers into `papers/iclr/workshops/` to share the Overleaf git repo.
 
 ## Tasks Completed
 
@@ -27,10 +27,10 @@ Split the arXiv paper (arxiv:2602.00533) into two 4-page workshop papers for the
 - Wrote abstracts for both papers
 - Added author info (Core Francisco Park) to both; verified auto-anonymization works
 - Compiled both papers with pdflatex + bibtex (21 pages each, all references resolved)
-- Moved papers to `paper/workshops/` to use paper/'s Overleaf git:
-  - `paper/workshops/scidl_1/scidl_pretraining.tex`
-  - `paper/workshops/scidl_2/scidl_finetuning.tex`
-  - `paper/workshops/scidl_template/`
+- Moved papers to `papers/iclr/workshops/` to use papers/iclr/'s Overleaf git:
+  - `papers/iclr/workshops/scidl_1/scidl_pretraining.tex`
+  - `papers/iclr/workshops/scidl_2/scidl_finetuning.tex`
+  - `papers/iclr/workshops/scidl_template/`
 - Renamed tex files from `iclr2026_conference.tex` to avoid Overleaf conflicts with root paper
 - Committed and pushed to Overleaf
 - Cleaned up: removed `workshop_papers/` directory, removed macOS junk and build artifacts
@@ -38,9 +38,9 @@ Split the arXiv paper (arxiv:2602.00533) into two 4-page workshop papers for the
 ## Files Created/Modified
 
 ### New files
-- `paper/workshops/scidl_1/` - Pretraining workshop paper (tex, bib, figures, style files)
-- `paper/workshops/scidl_2/` - Finetuning workshop paper (tex, bib, figures, style files)
-- `paper/workshops/scidl_template/` - Original unmodified workshop template
+- `papers/iclr/workshops/scidl_1/` - Pretraining workshop paper (tex, bib, figures, style files)
+- `papers/iclr/workshops/scidl_2/` - Finetuning workshop paper (tex, bib, figures, style files)
+- `papers/iclr/workshops/scidl_template/` - Original unmodified workshop template
 - `resources/park_2026/paper/paper.md` - Converted arxiv paper with AI figure descriptions
 - `workshop_papers/iclr2026_scidl/README.md` - Workshop call for papers (later removed with directory)
 
@@ -52,7 +52,7 @@ Split the arXiv paper (arxiv:2602.00533) into two 4-page workshop papers for the
 - Split into 2 papers rather than 1: pretraining convergence story vs finetuning divergence story
 - Fig 4 (7-task model) appears in both papers: as climax in Paper 1, as setup in Paper 2
 - No appendix figures selected for main text; full shared appendix in both
-- Papers live in `paper/workshops/` to share the Overleaf git repo (paper/ is a separate nested git)
+- Papers live in `papers/iclr/workshops/` to share the Overleaf git repo (papers/iclr/ is a separate nested git)
 - Tex files renamed to `scidl_pretraining.tex` / `scidl_finetuning.tex` to avoid Overleaf filename conflicts
 
 ## Open Questions / Next Steps

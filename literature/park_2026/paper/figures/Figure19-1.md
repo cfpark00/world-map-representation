@@ -1,0 +1,1 @@
+Figure 19: Representations when Atlantis is included during pretraining. (a) PCA projection showing Atlantis cities (small cluster in Atlantic region) integrated with world cities. (b) Linear probe reconstruction confirming geographic accuracy. Unlike fine-tuned models, Atlantis cities lie on the same manifold as other cities.

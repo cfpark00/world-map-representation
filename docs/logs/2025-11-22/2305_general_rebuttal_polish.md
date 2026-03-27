@@ -41,7 +41,7 @@ Rewrote the entire General section with proper structure:
 - Consistent bullet point structure
 
 ### Paper Edit
-- Modified contribution #2 in paper/iclr2026_conference.tex
+- Modified contribution #2 in papers/iclr/iclr2026_conference.tex
 - Changed: "This provides controlled evidence for the Platonic Representation Hypothesis"
 - To: "This provides partial evidence for the Multitask Scaling Hypothesis, one proposed mechanism for the Platonic Representation Hypothesis"
 - Recompiled paper and regenerated paper.zip

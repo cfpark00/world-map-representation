@@ -47,11 +47,11 @@ Polished ICML 2026 paper Discussion section, added Future Work paragraph, rewrot
 - Removed `%## KEY SPECULATION ##` comment block (content surfaced in Future Work)
 - Removed `%##POINTER##` comments
 - Kept `%% ORIGINAL` backup comments for Discussion paragraphs and Conclusion
-- Fixed paper_icml/ embedded git repo issue (removed .git, added files directly)
+- Fixed papers/icml/ embedded git repo issue (removed .git, added files directly)
 
 ## Files Modified
-- `paper_icml/main.tex` - All Discussion/Conclusion edits
-- `paper_icml/main.bib` - Added li2025justintimedistributedtaskrepresentations
+- `papers/icml/main.tex` - All Discussion/Conclusion edits
+- `papers/icml/main.bib` - Added li2025justintimedistributedtaskrepresentations
 
 ## Files Created
 - `resources/icml_2026_style/` - Downloaded ICML 2026 style files (for reference)

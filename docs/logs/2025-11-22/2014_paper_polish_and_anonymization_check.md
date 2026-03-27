@@ -56,7 +56,7 @@ Removed redundant self-citations to reduce from 8 to 4 total:
 - No identifying info in comments or file paths
 
 ## Files Modified
-- `paper/iclr2026_conference.tex`
+- `papers/iclr/iclr2026_conference.tex`
 
 ## Final State
 - Paper recompiled successfully (30 pages)

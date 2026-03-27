@@ -55,8 +55,8 @@ Addressed reviewer concern about 2D planar world:
 - Created `paper_submission.zip` for submission
 
 ## Files Modified
-- `paper/iclr2026_conference.tex` - Multiple sections
-- `paper/iclr2026_conference.bib` - Removed duplicate
+- `papers/iclr/iclr2026_conference.tex` - Multiple sections
+- `papers/iclr/iclr2026_conference.bib` - Removed duplicate
 
 ## Final State
 - Paper compiles successfully

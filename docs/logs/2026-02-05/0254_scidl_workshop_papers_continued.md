@@ -34,10 +34,10 @@ Continued work on splitting the arXiv paper into two SciForDL workshop papers. P
 
 ## Files Modified
 
-- `paper/workshops/scidl_1/scidl_pretraining.tex` - Main pretraining paper
-- `paper/workshops/scidl_2/scidl_finetuning.tex` - Main finetuning paper
-- `paper/workshops/scidl_1/iclr2026_conference.bib` - Copied bib file
-- `paper/workshops/scidl_2/iclr2026_conference.bib` - Copied bib file
+- `papers/iclr/workshops/scidl_1/scidl_pretraining.tex` - Main pretraining paper
+- `papers/iclr/workshops/scidl_2/scidl_finetuning.tex` - Main finetuning paper
+- `papers/iclr/workshops/scidl_1/iclr2026_conference.bib` - Copied bib file
+- `papers/iclr/workshops/scidl_2/iclr2026_conference.bib` - Copied bib file
 
 ## Current Paper Structure
 

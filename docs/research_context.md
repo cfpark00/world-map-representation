@@ -890,7 +890,7 @@ Added `%## KEY SPECULATION ##` comment block in Discussion:
 - Abstract deadline: January 23, 2026 AoE (passed)
 - Full paper deadline: January 28, 2026 AoE
 - 8 pages main body (strict limit)
-- Paper location: `paper_icml/`
+- Paper location: `papers/icml/`
 
 ### Paper Polish Session (2026-01-27 07:46)
 **Discussion section tightening:**
@@ -914,16 +914,16 @@ Added `%## KEY SPECULATION ##` comment block in Discussion:
 **ICLR 2026 rejected, ICML 2026 submitted.** Now preparing arXiv preprint in ICLR format with ICML text changes.
 
 ### What Was Done
-- Ported all text/content changes from `paper_icml/main.tex` to `paper/iclr2026_conference.tex` (ICLR styling preserved)
+- Ported all text/content changes from `papers/icml/main.tex` to `papers/iclr/iclr2026_conference.tex` (ICLR styling preserved)
 - De-anonymized: uncommented `\iclrfinalcopy`, added author block (Core Francisco Park, 3 affiliations)
 - Header changed to "Preprint" in `iclr2026_conference.sty`
 - arXiv readiness fixes: removed anonymization artifacts, "peer review" language, "Supp. Mat." references, ICLR comments
 - Added Research Process link (`https://cfpark00.github.io/world-rep-research-flow/`) between abstract and intro + in appendix
-- All changes pushed to Overleaf via `paper/` git repo
+- All changes pushed to Overleaf via `papers/iclr/` git repo
 
 ### Paper Location
-- `paper/` - ICLR-formatted preprint (Overleaf-synced, its own git repo)
-- `paper_icml/` - ICML submission (reference only)
+- `papers/iclr/` - ICLR-formatted preprint (Overleaf-synced, its own git repo)
+- `papers/icml/` - ICML submission (reference only)
 
 ### Status
 - Ready for arXiv submission (must submit full TeX source, not just PDF)
@@ -965,7 +965,7 @@ The arXiv paper naturally splits into pretraining findings and finetuning findin
 
 ### Paper 1: Pretraining Convergence
 - **Title**: "Multi-Task Pretraining Drives Representational Convergence"
-- **Location**: `paper/workshops/scidl_1/scidl_pretraining.tex`
+- **Location**: `papers/iclr/workshops/scidl_1/scidl_pretraining.tex`
 - **Main text figures**: Fig 1 (overview, no Atlantis), Fig 2 (task-dependent geometry), Fig 3 (multi-task convergence), Fig 4 (7-task model as wrapfig)
 - **Sections**: Introduction, Results, Conclusion
 - **Status** (2026-02-05 07:21): Extensively polished:
@@ -979,7 +979,7 @@ The arXiv paper naturally splits into pretraining findings and finetuning findin
 
 ### Paper 2: Finetuning Divergence
 - **Title**: "Divergent Tasks Harm Integration of New Entities via Fine-Tuning"
-- **Location**: `paper/workshops/scidl_2/scidl_finetuning.tex`
+- **Location**: `papers/iclr/workshops/scidl_2/scidl_finetuning.tex`
 - **Main text figures**: Fig 1 (overview), Fig 2 (7-task model), Fig 3 (FT generalization + CKA), Fig 4 (divergent tasks harm)
 - **Sections**: Introduction, Results (no separate Experimental Framework section)
 - **Status** (2026-02-05 06:34): Extensively polished for page limits:
@@ -994,7 +994,7 @@ The arXiv paper naturally splits into pretraining findings and finetuning findin
 - Both papers have full appendix from the original paper
 - Related Work moved to top of appendix (removed from main text)
 - Discussion section removed from main text
-- Papers live in `paper/workshops/` to share Overleaf git
+- Papers live in `papers/iclr/workshops/` to share Overleaf git
 
 ### Status (2026-02-05 07:21)
 - **Paper 1 (Pretraining)**: Extensively polished, complete

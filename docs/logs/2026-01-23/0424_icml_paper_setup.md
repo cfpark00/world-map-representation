@@ -6,8 +6,8 @@
 ## Tasks Completed
 
 ### Paper Setup
-- Cloned Overleaf repo for ICML paper (`paper_icml/`)
-- Copied entire content from ICLR paper (`paper/iclr2026_conference.tex`) to ICML format
+- Cloned Overleaf repo for ICML paper (`papers/icml/`)
+- Copied entire content from ICLR paper (`papers/iclr/iclr2026_conference.tex`) to ICML format
 - Copied bibliography file (`main.bib`)
 - Created `figures/` directory and copied all 21 figures
 
@@ -39,11 +39,11 @@
 - Confirmed no page adjustment needed for now
 
 ## Files Modified/Created
-- `paper_icml/main.tex` - Main ICML paper (ported from ICLR)
-- `paper_icml/main.bib` - Bibliography
-- `paper_icml/figures/` - All figures (21 files)
-- `paper_icml/.gitignore` - Added AUTHOR_INSTRUCTIONS.md
-- `paper_icml/AUTHOR_INSTRUCTIONS.md` - ICML submission guidelines
+- `papers/icml/main.tex` - Main ICML paper (ported from ICLR)
+- `papers/icml/main.bib` - Bibliography
+- `papers/icml/figures/` - All figures (21 files)
+- `papers/icml/.gitignore` - Added AUTHOR_INSTRUCTIONS.md
+- `papers/icml/AUTHOR_INSTRUCTIONS.md` - ICML submission guidelines
 
 ## Key Decisions
 - Used `[t]` placement for `figure*` instead of `[h]` (which is ignored for two-column floats)

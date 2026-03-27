@@ -1,0 +1,1 @@
+Figure 9: Representation dynamics during training. Rows: distance (top), angle (middle), compass (bottom). Columns show PCA projections at gradient steps 8204, 24612, 49224, 123060, 188692, and 328146 (left to right). Cities are colored by geographic region.

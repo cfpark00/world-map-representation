@@ -1,0 +1,1 @@
+Figure 11: CKA matrices for single-task models across layers. Each cell shows mean ± SEM across 3 seeds. D=distance, T=triangle area, A=angle, Co=compass, I=inside, P=perimeter, Cr=crossing. CKA increases in later layers; distance shows consistently lower cross-task similarity.
